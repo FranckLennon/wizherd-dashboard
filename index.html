@@ -6,717 +6,780 @@
 <title>Wizherd — Balancing Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  :root {
-    --bg:#0e0f14;--bg2:#161820;--bg3:#1e2030;--bg4:#252840;
-    --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
-    --text:#e8e9f0;--text2:#8b8fa8;--text3:#555870;
-    --accent:#7f77dd;--accent2:#534ab7;
-    --fire:#e24b4a;--ice:#378add;--earth:#ba7517;--wind:#1d9e75;--lightning:#7f77dd;--necro:#d4537e;
-    --hp:#e24b4a;--mana:#378add;--dmg:#ef9f27;
-    --radius:8px;--radius-lg:14px;
-    --font:'Inter',system-ui,sans-serif;--font-mono:'JetBrains Mono','Fira Code',monospace;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{font-size:15px}
-  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
-  header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:2rem;height:56px;position:sticky;top:0;z-index:100}
-  .logo{font-size:1.1rem;font-weight:700;letter-spacing:.08em;color:var(--text);display:flex;align-items:center;gap:8px;white-space:nowrap}
-  .logo-gem{width:22px;height:22px;background:var(--accent);border-radius:4px;transform:rotate(45deg);flex-shrink:0}
-  nav{display:flex;gap:2px}
-  nav button{background:none;border:none;color:var(--text2);font-size:.875rem;font-family:var(--font);padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s;font-weight:500}
-  nav button:hover{background:var(--bg3);color:var(--text)}
-  nav button.active{background:var(--bg4);color:var(--text)}
-  .live-badge{margin-left:auto;font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:6px}
-  .live-dot{width:7px;height:7px;border-radius:50%;background:#3b6d11;flex-shrink:0}
-  .live-dot.ok{background:#1d9e75;box-shadow:0 0 0 3px rgba(29,158,117,.2)}
-  .live-dot.err{background:var(--fire)}
-  main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
-  .section{display:none}.section.active{display:block}
-  h3{font-size:.9rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
-  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-  .metric{background:var(--bg3);border-radius:var(--radius);padding:1rem 1.125rem}
-  .metric .lbl{font-size:.75rem;color:var(--text2);margin-bottom:4px}
-  .metric .val{font-size:1.6rem;font-weight:700;font-family:var(--font-mono)}
-  .metric .sub{font-size:.7rem;color:var(--text3);margin-top:3px}
-  .ctrl{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-  .ctrl label{font-size:.8rem;color:var(--text2);width:82px;flex-shrink:0;font-weight:500}
-  .ctrl input[type=range]{flex:1;appearance:none;height:4px;background:var(--bg4);border-radius:2px;outline:none;cursor:pointer}
-  .ctrl input[type=range]::-webkit-slider-thumb{appearance:none;width:16px;height:16px;background:var(--text);border-radius:50%;cursor:pointer}
-  .ctrl .num{font-size:.85rem;font-weight:700;font-family:var(--font-mono);min-width:32px;text-align:right}
-  select,input[type=number]{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:.85rem;padding:7px 10px;border-radius:var(--radius);outline:none;cursor:pointer;width:100%}
-  select:focus{border-color:var(--accent)}
-  .badge-pts{display:inline-block;font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);color:var(--text2);margin-bottom:1rem}
-  .badge-pts.over{background:rgba(226,75,74,.15);color:var(--fire)}
-  .build-banner{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 14px;margin-bottom:1.25rem;font-size:.8rem;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
-  .build-banner .bb-item{display:flex;align-items:center;gap:6px}
-  .build-banner .bb-val{font-family:var(--font-mono);font-weight:700;font-size:.95rem}
-  .build-banner .bb-lbl{color:var(--text2)}
-  .build-banner .bb-edit{margin-left:auto;font-size:.72rem;color:var(--accent);cursor:pointer;text-decoration:underline;white-space:nowrap}
-  .chart-wrap{position:relative;width:100%;height:280px}
-  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px}
-  .legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text2)}
-  .legend-swatch{width:18px;height:3px;border-radius:2px;flex-shrink:0}
-  .subtabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
-  .subtab{font-size:.8rem;padding:5px 12px;border:1px solid var(--border2);border-radius:6px;background:none;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .12s;font-weight:500}
-  .subtab:hover{background:var(--bg3);color:var(--text)}
-  .subtab.on{background:var(--bg4);color:var(--text);border-color:var(--accent2)}
-  .sim-grid{display:grid;grid-template-columns:280px 1fr;gap:1.5rem}
-  .result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem}
-  .result-row:last-child{border-bottom:none}
-  .result-row .rval{font-family:var(--font-mono);font-weight:600;color:var(--text)}
-  .result-row .rlbl{color:var(--text2)}
-  .dmg-bar-wrap{margin-top:1rem}
-  .dmg-bar-label{font-size:.75rem;color:var(--text2);margin-bottom:5px}
-  .dmg-bar{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden}
-  .dmg-bar-fill{height:100%;border-radius:4px;transition:width .3s ease}
-  .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
-  .filter-btn{font-size:.78rem;padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;font-family:var(--font);font-weight:500;transition:all .12s}
-  .filter-btn:hover{background:var(--bg3)}
-  .filter-btn.on{color:#fff;border-color:transparent}
-  .spell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-  .spell-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;transition:border-color .15s}
-  .spell-card:hover{border-color:var(--border2)}
-  .spell-name{font-size:.9rem;font-weight:600;margin-bottom:4px}
-  .spell-meta{font-size:.72rem;color:var(--text2);display:flex;gap:8px;margin-bottom:10px}
-  .spell-tier-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;margin-bottom:3px}
-  .spell-tier-row .tval{font-family:var(--font-mono);font-weight:600}
-  .spell-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:8px}
-  .spell-bar-fill{height:100%;border-radius:3px}
-  .elem-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
-  .enemy-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg)}
-  table{width:100%;border-collapse:collapse;font-size:.82rem}
-  thead th{background:var(--bg3);color:var(--text2);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:.06em;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
-  tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
-  tbody tr:last-child{border-bottom:none}
-  tbody tr:hover{background:var(--bg3)}
-  tbody td{padding:10px 14px;color:var(--text)}
-  .type-boss{color:var(--fire);font-weight:700;font-size:.72rem}
-  .type-base{color:var(--text3);font-size:.72rem}
-  .num-cell{font-family:var(--font-mono);font-size:.82rem}
-  .res-pill{display:inline-block;font-size:.68rem;padding:2px 7px;border-radius:20px;font-weight:600;margin:1px}
-  .sep{height:1px;background:var(--border);margin:1.25rem 0}
-  .row{display:flex;gap:1rem;align-items:flex-start}
-  .col{flex:1;min-width:0}
-  .muted{color:var(--text2);font-size:.82rem}
-  ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-track{background:var(--bg)}
-  ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
-  @media(max-width:700px){
-    header{padding:0 1rem;gap:1rem}
-    .logo span{display:none}
-    .sim-grid{grid-template-columns:1fr}
-    .grid-2,.grid-3{grid-template-columns:1fr 1fr}
-    main{padding:1rem}
-  }
+:root{
+  --bg:#0d0e12;--bg2:#13151c;--bg3:#1a1d28;--bg4:#22263a;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#e2e4f0;--text2:#7a7f9a;--text3:#454860;
+  --accent:#6c63d4;--accent2:#4e47a8;
+  --hp:#e04545;--mana:#3480d4;--dmg:#e09820;--enemy:#d45a30;
+  --fire:#e04545;--ice:#3480d4;--earth:#b07010;--wind:#18a070;--lightning:#6c63d4;--necro:#c04878;
+  --r:8px;--rlg:12px;
+  --f:'Inter',system-ui,sans-serif;--fm:'JetBrains Mono','Fira Code',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--f);line-height:1.55;min-height:100vh;font-size:14px}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.75rem;display:flex;align-items:center;gap:1.5rem;height:52px;position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
+.logo{font-size:1rem;font-weight:700;letter-spacing:.08em;display:flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0}
+.gem{width:18px;height:18px;background:var(--accent);border-radius:3px;transform:rotate(45deg)}
+nav{display:flex;gap:1px}
+nav button{background:none;border:none;color:var(--text2);font-size:.82rem;font-family:var(--f);padding:5px 12px;border-radius:6px;cursor:pointer;transition:background .1s,color .1s;font-weight:500;white-space:nowrap}
+nav button:hover{background:var(--bg3);color:var(--text)}
+nav button.on{background:var(--bg4);color:var(--text)}
+.live{margin-left:auto;font-size:.7rem;color:var(--text3);display:flex;align-items:center;gap:5px;flex-shrink:0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.dot.ok{background:#18a070;box-shadow:0 0 0 2px rgba(24,160,112,.2)}
+.dot.err{background:var(--fire)}
+.dot.spin{background:var(--accent);animation:pulse .9s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+main{max-width:1080px;margin:0 auto;padding:1.75rem 1.5rem}
+.tab{display:none}.tab.on{display:block}
+h3{font-size:.72rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.65rem}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:1.1rem 1.35rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}
+.m{background:var(--bg3);border-radius:var(--r);padding:.8rem 1rem}
+.m .l{font-size:.7rem;color:var(--text2);margin-bottom:2px}
+.m .v{font-size:1.4rem;font-weight:700;font-family:var(--fm);line-height:1.2}
+.m .s{font-size:.66rem;color:var(--text3);margin-top:2px}
+.ctrl{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.ctrl label{font-size:.76rem;color:var(--text2);width:76px;flex-shrink:0;font-weight:500}
+.ctrl input[type=range]{flex:1;appearance:none;height:3px;background:var(--bg4);border-radius:2px;outline:none;cursor:pointer}
+.ctrl input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;background:var(--text);border-radius:50%;cursor:pointer}
+.num{font-size:.8rem;font-weight:700;font-family:var(--fm);min-width:28px;text-align:right}
+select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--f);font-size:.8rem;padding:6px 9px;border-radius:var(--r);outline:none;cursor:pointer;width:100%}
+select:focus{border-color:var(--accent)}
+.badge{display:inline-flex;align-items:center;font-size:.7rem;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text2);margin-bottom:.75rem}
+.badge.over{background:rgba(224,69,69,.12);color:var(--fire)}
+.banner{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 12px;margin-bottom:1rem;font-size:.76rem;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.banner b{font-family:var(--fm);font-weight:700}
+.banner a{margin-left:auto;font-size:.68rem;color:var(--accent);cursor:pointer;text-decoration:underline;white-space:nowrap}
+.cw{position:relative;width:100%;height:260px}
+.cw-sm{position:relative;width:100%;height:200px}
+.cw-lg{position:relative;width:100%;height:300px}
+.leg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:7px}
+.li{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text2)}
+.ls{width:14px;height:3px;border-radius:2px;flex-shrink:0}
+.stabs{display:flex;gap:3px;margin-bottom:.85rem;flex-wrap:wrap}
+.stab{font-size:.76rem;padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:none;color:var(--text2);cursor:pointer;font-family:var(--f);transition:all .1s;font-weight:500}
+.stab:hover{background:var(--bg3);color:var(--text)}
+.stab.on{background:var(--bg4);color:var(--text);border-color:var(--accent2)}
+.sg{display:grid;grid-template-columns:260px 1fr;gap:1.25rem}
+.rr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.rr:last-child{border-bottom:none}
+.rv{font-family:var(--fm);font-weight:600}
+.rl{color:var(--text2)}
+.hpbar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:.7rem}
+.hpfill{height:100%;border-radius:3px;transition:width .25s}
+.fb{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem}
+.fb button{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;font-family:var(--f);font-weight:500;transition:all .1s}
+.fb button:hover{background:var(--bg3)}
+.fb button.on{color:#fff;border-color:transparent}
+.spg{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:8px}
+.spc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:.85rem}
+.spc:hover{border-color:var(--border2)}
+.spn{font-size:.86rem;font-weight:600;margin-bottom:3px}
+.spm{font-size:.68rem;color:var(--text2);display:flex;gap:6px;align-items:center;margin-bottom:7px}
+.str{display:flex;justify-content:space-between;align-items:center;font-size:.73rem;margin-bottom:2px}
+.sb{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.sbf{height:100%;border-radius:2px}
+.etw{overflow-x:auto;border:1px solid var(--border);border-radius:var(--rlg)}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+thead th{background:var(--bg3);color:var(--text2);font-weight:600;text-transform:uppercase;font-size:.66rem;letter-spacing:.05em;padding:8px 11px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .08s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg3)}
+tbody td{padding:8px 11px}
+.boss-t{color:var(--fire);font-weight:700;font-size:.68rem}
+.base-t{color:var(--text3);font-size:.68rem}
+.mc{font-family:var(--fm);font-size:.78rem}
+.pill{display:inline-block;font-size:.64rem;padding:1px 6px;border-radius:20px;font-weight:600;margin:1px}
+.sep{height:1px;background:var(--border);margin:1rem 0}
+.row{display:flex;gap:1rem;align-items:flex-start}
+.col{flex:1;min-width:0}
+.muted{color:var(--text2);font-size:.76rem}
+.dsm{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+@media(max-width:680px){
+  header{padding:0 .9rem;gap:.9rem}
+  .sg{grid-template-columns:1fr}
+  .g2,.g3,.g4{grid-template-columns:1fr 1fr}
+  main{padding:1rem .9rem}
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo"><div class="logo-gem"></div><span>WIZHERD</span><span style="color:var(--text3);font-weight:400"> / Balancing</span></div>
+  <div class="logo"><div class="gem"></div>WIZHERD<span style="color:var(--text3);font-weight:400;margin-left:4px">/ Balancing</span></div>
   <nav>
-    <button class="active" onclick="showTab('curves',this)">Stat Curves</button>
-    <button onclick="showTab('combat',this)">Combat Sim</button>
-    <button onclick="showTab('spells',this)">Spells</button>
-    <button onclick="showTab('enemies',this)">Enemies</button>
+    <button class="on" onclick="goTab('curves',this)">Stat Curves</button>
+    <button onclick="goTab('compare',this)">Build Compare</button>
+    <button onclick="goTab('combat',this)">Combat Sim</button>
+    <button onclick="goTab('spells',this)">Spells</button>
+    <button onclick="goTab('enemies',this)">Enemies</button>
   </nav>
-  <div class="live-badge">
-    <div class="live-dot" id="liveDot"></div>
-    <span id="liveStatus">Connecting…</span>
-  </div>
+  <div class="live"><div class="dot spin" id="dot"></div><span id="lbl">Loading live data…</span></div>
 </header>
 
 <main>
 
-<!-- ══ STAT CURVES ══ -->
-<div class="section active" id="sec-curves">
+<div class="tab on" id="tab-curves">
   <div class="row" style="gap:1.5rem;flex-wrap:wrap">
-    <div class="col" style="min-width:220px;max-width:300px">
-      <h3>Totem — Point Allocation</h3>
-      <div class="ctrl">
-        <label style="color:var(--hp)">HP pts</label>
-        <input type="range" id="sHP" min="0" max="99" value="50" step="1" oninput="onBuildChange()">
-        <span class="num" id="vHP" style="color:var(--hp)">50</span>
-      </div>
-      <div class="ctrl">
-        <label style="color:var(--mana)">Mana pts</label>
-        <input type="range" id="sMana" min="0" max="99" value="25" step="1" oninput="onBuildChange()">
-        <span class="num" id="vMana" style="color:var(--mana)">25</span>
-      </div>
-      <div class="ctrl">
-        <label style="color:var(--dmg)">DMG pts</label>
-        <input type="range" id="sDMG" min="0" max="99" value="24" step="1" oninput="onBuildChange()">
-        <span class="num" id="vDMG" style="color:var(--dmg)">24</span>
-      </div>
-      <div id="ptsBadge" class="badge-pts">0 pts remaining</div>
-      <div class="grid-3" style="gap:8px">
-        <div class="metric"><div class="lbl">HP @ L100</div><div class="val" id="cHP" style="color:var(--hp);font-size:1.1rem">—</div><div class="sub" id="sHP2"></div></div>
-        <div class="metric"><div class="lbl">Mana @ L100</div><div class="val" id="cMana" style="color:var(--mana);font-size:1.1rem">—</div><div class="sub" id="sMana2"></div></div>
-        <div class="metric"><div class="lbl">DMG @ L100</div><div class="val" id="cDMG" style="color:var(--dmg);font-size:1.1rem">—</div><div class="sub" id="sDMG2"></div></div>
+    <div class="col" style="min-width:200px;max-width:275px">
+      <h3>Totem — point allocation</h3>
+      <div class="ctrl"><label style="color:var(--hp)">HP pts</label><input type="range" id="sHP" min="0" max="99" value="50" oninput="onBuild()"><span class="num" id="vHP" style="color:var(--hp)">50</span></div>
+      <div class="ctrl"><label style="color:var(--mana)">Mana pts</label><input type="range" id="sMana" min="0" max="99" value="25" oninput="onBuild()"><span class="num" id="vMana" style="color:var(--mana)">25</span></div>
+      <div class="ctrl"><label style="color:var(--dmg)">DMG pts</label><input type="range" id="sDMG" min="0" max="99" value="24" oninput="onBuild()"><span class="num" id="vDMG" style="color:var(--dmg)">24</span></div>
+      <div class="badge" id="ptsBadge">0 pts remaining</div>
+      <div class="g3" style="gap:6px">
+        <div class="m"><div class="l">HP @ L100</div><div class="v" id="cHP" style="color:var(--hp);font-size:.95rem">—</div><div class="s" id="subHP"></div></div>
+        <div class="m"><div class="l">Mana @ L100</div><div class="v" id="cMana" style="color:var(--mana);font-size:.95rem">—</div><div class="s" id="subMana"></div></div>
+        <div class="m"><div class="l">BaseDMG @ L100</div><div class="v" id="cDMG" style="color:var(--dmg);font-size:.95rem">—</div><div class="s" id="subDMG"></div></div>
       </div>
     </div>
     <div class="col">
-      <div class="subtabs">
-        <button class="subtab on" onclick="setCurveTab('hp',this)">HP</button>
-        <button class="subtab" onclick="setCurveTab('mana',this)">Mana</button>
-        <button class="subtab" onclick="setCurveTab('dmg',this)">DMG</button>
-        <button class="subtab" onclick="setCurveTab('all',this)">Normalized</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.85rem; flex-wrap:wrap; gap:10px;">
+        <div class="stabs" style="margin-bottom:0" id="curveTypeTabs">
+          <button class="stab on" data-type="line" onclick="toggleCurveView('line')">View: Progress Curves</button>
+          <button class="stab" data-type="bar" onclick="toggleCurveView('bar')">View: Archetype Compare</button>
+        </div>
+        <div class="stabs" style="margin-bottom:0" id="curveFilterTabs">
+          <button class="stab on" onclick="setCurve('hp',this)">HP</button>
+          <button class="stab" onclick="setCurve('mana',this)">Mana</button>
+          <button class="stab" onclick="setCurve('dmg',this)">Base DMG</button>
+          <button class="stab" onclick="setCurve('all',this)">Normalized</button>
+        </div>
       </div>
-      <div class="legend" id="curveLegend"></div>
-      <div class="chart-wrap"><canvas id="curveChart" role="img" aria-label="Stat progression curves"></canvas></div>
+      <div class="leg" id="curveLeg"></div>
+      <div class="cw"><canvas id="curveC"></canvas></div>
     </div>
   </div>
   <div class="sep"></div>
   <h3>Raw values — key levels</h3>
-  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg)">
-    <table>
-      <thead><tr>
-        <th>Level</th>
-        <th style="color:var(--hp)">HP (build)</th>
-        <th style="color:var(--hp);opacity:.5">HP (full)</th>
-        <th style="color:var(--mana)">Mana (build)</th>
-        <th style="color:var(--mana);opacity:.5">Mana (full)</th>
-        <th style="color:var(--dmg)">Base DMG (build)</th>
-        <th style="color:var(--dmg);opacity:.5">Base DMG (full)</th>
-        <th>Enemy HP</th>
-      </tr></thead>
-      <tbody id="curveTableBody"></tbody>
-    </table>
+  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--rlg)">
+    <table><thead><tr>
+      <th>Lvl</th>
+      <th style="color:var(--hp)">HP (build)</th><th style="color:var(--hp);opacity:.45">HP (full 99)</th>
+      <th style="color:var(--mana)">Mana (build)</th><th style="color:var(--mana);opacity:.45">Mana (full 99)</th>
+      <th style="color:var(--dmg)">Base DMG (build)</th><th style="color:var(--dmg);opacity:.45">DMG (full 99)</th>
+      <th>Enemy HP (sheet)</th>
+    </tr></thead><tbody id="curveRows"></tbody></table>
   </div>
 </div>
 
-<!-- ══ COMBAT SIM ══ -->
-<div class="section" id="sec-combat">
-  <div id="combatBuildBanner" class="build-banner">
-    <div class="bb-item"><span class="bb-lbl">Build:</span></div>
-    <div class="bb-item"><span class="bb-val" id="bbHP" style="color:var(--hp)">—</span><span class="bb-lbl">HP</span></div>
-    <div class="bb-item"><span class="bb-val" id="bbMana" style="color:var(--mana)">—</span><span class="bb-lbl">Mana</span></div>
-    <div class="bb-item"><span class="bb-val" id="bbDMG" style="color:var(--dmg)">—</span><span class="bb-lbl">Base DMG</span></div>
-    <span class="bb-edit" onclick="showTab('curves',null)">← Edit build in Stat Curves</span>
+<div class="tab" id="tab-compare">
+  <div class="stabs" style="margin-bottom:1.25rem">
+    <button class="stab on" onclick="setComp('stats',this)">Stats at L100</button>
+    <button class="stab" onclick="setComp('ttk',this)">Hits to kill (TTK)</button>
+    <button class="stab" onclick="setComp('ttd',this)">Hits to die (TTD)</button>
   </div>
-  <div class="sim-grid">
-    <div>
-      <h3>Configuration</h3>
-      <div class="card" style="display:flex;flex-direction:column;gap:1rem">
-        <div>
-          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Hero Level</div>
-          <div class="ctrl" style="margin-bottom:0">
-            <input type="range" id="heroLvl" min="1" max="100" value="50" step="1" style="flex:1" oninput="document.getElementById('heroLvlVal').textContent=this.value;simUpdate()">
-            <span class="num" id="heroLvlVal" style="color:var(--accent)">50</span>
-          </div>
-        </div>
-        <div>
-          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Spell</div>
-          <select id="spellSel" onchange="simUpdate()"></select>
-        </div>
-        <div>
-          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Spell Tier</div>
-          <div class="ctrl" style="margin-bottom:0">
-            <input type="range" id="spellTier" min="0" max="5" value="3" step="1" style="flex:1" oninput="document.getElementById('spellTierVal').textContent=this.value;simUpdate()">
-            <span class="num" id="spellTierVal" style="color:var(--accent)">3</span>
-          </div>
-        </div>
-        <div>
-          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Enemy</div>
-          <select id="enemySel" onchange="simUpdate()"></select>
-        </div>
-        <div>
-          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Enemy Level</div>
-          <div class="ctrl" style="margin-bottom:0">
-            <input type="range" id="enemyLvl" min="1" max="100" value="50" step="1" style="flex:1" oninput="document.getElementById('enemyLvlVal').textContent=this.value;simUpdate()">
-            <span class="num" id="enemyLvlVal" style="color:var(--fire)">50</span>
-          </div>
-        </div>
-      </div>
+  <div class="g4" style="margin-bottom:1.5rem" id="compMetrics">
+    <div class="m"><div class="l">Full HP (99/0/0)</div><div class="v" id="cmp_fhp" style="color:var(--hp);font-size:1rem">—</div><div class="s">Max tankiness</div></div>
+    <div class="m"><div class="l">Balanced (33/33/33)</div><div class="v" id="cmp_bal" style="color:var(--accent);font-size:1rem">—</div><div class="s">All-rounder</div></div>
+    <div class="m"><div class="l">Your build</div><div class="v" id="cmp_you" style="color:var(--text);font-size:1rem">—</div><div class="s" id="cmp_you_sub">—</div></div>
+    <div class="m"><div class="l">Full DMG (0/0/99)</div><div class="v" id="cmp_fdmg" style="color:var(--dmg);font-size:1rem">—</div><div class="s">Max damage</div></div>
+  </div>
+  <div class="leg" id="compLeg"></div>
+  <div class="cw-lg"><canvas id="compC"></canvas></div>
+  <p class="muted" style="margin-top:.6rem;font-size:.68rem" id="compNote">TTK/TTD reference</p>
+</div>
+
+<div class="tab" id="tab-combat">
+  <div class="banner" id="simBanner">
+    <span style="color:var(--text2)">Build —</span>
+    <span><b id="bHP" style="color:var(--hp)">—</b> HP</span>
+    <span><b id="bMana" style="color:var(--mana)">—</b> Mana</span>
+    <span><b id="bDMG" style="color:var(--dmg)">—</b> Base DMG</span>
+    <a onclick="goTab('curves',null)">← Edit build</a>
+  </div>
+  <div class="sg">
+    <div class="card" style="display:flex;flex-direction:column;gap:.85rem">
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Hero level</div>
+        <div class="ctrl" style="margin-bottom:0"><input type="range" id="heroLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById('hLvlV').textContent=this.value;simCalc()"><span class="num" id="hLvlV" style="color:var(--accent)">50</span></div></div>
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell</div><select id="simSpell" onchange="simCalc()"></select></div>
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell tier</div>
+        <div class="ctrl" style="margin-bottom:0"><input type="range" id="simTier" min="0" max="5" value="3" style="flex:1" oninput="document.getElementById('sTierV').textContent=this.value;simCalc()"><span class="num" id="sTierV" style="color:var(--accent)">3</span></div></div>
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy</div><select id="simEnemy" onchange="simCalc()"></select></div>
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy level</div>
+        <div class="ctrl" style="margin-bottom:0"><input type="range" id="eLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById('eLvlV').textContent=this.value;simCalc()"><span class="num" id="eLvlV" style="color:var(--fire)">50</span></div></div>
     </div>
     <div>
-      <h3>Results</h3>
-      <div class="grid-2" style="margin-bottom:1rem">
-        <div class="metric"><div class="lbl">Effective DMG / hit</div><div class="val" id="simDmg" style="color:var(--dmg)">—</div></div>
-        <div class="metric"><div class="lbl">Hits to kill (TTK)</div><div class="val" id="simTTK" style="color:var(--accent)">—</div></div>
-        <div class="metric"><div class="lbl">Hero HP</div><div class="val" id="simHeroHP" style="color:var(--hp)">—</div><div class="sub" id="simHeroHPSub"></div></div>
-        <div class="metric"><div class="lbl">Hits to die (TTD)</div><div class="val" id="simTTD" style="color:var(--fire)">—</div></div>
+      <div class="g2" style="margin-bottom:.85rem">
+        <div class="m"><div class="l">Effective DMG / hit</div><div class="v" id="sDmg" style="color:var(--dmg)">—</div></div>
+        <div class="m"><div class="l">Hits to kill (TTK)</div><div class="v" id="sTTK" style="color:var(--accent)">—</div></div>
+        <div class="m"><div class="l">Hero HP</div><div class="v" id="sHeroHP" style="color:var(--hp)">—</div><div class="s" id="sHPsub"></div></div>
+        <div class="m"><div class="l">Hits to die (TTD)</div><div class="v" id="sTTD" style="color:var(--fire)">—</div></div>
       </div>
-      <div class="card">
-        <div class="result-row"><span class="rlbl">Enemy HP</span><span class="rval" id="rEnemyHP">—</span></div>
-        <div class="result-row"><span class="rlbl">Enemy DMG / hit</span><span class="rval" id="rEnemyDMG">—</span></div>
-        <div class="result-row"><span class="rlbl">Spell base × scaling</span><span class="rval" id="rSpellBase">—</span></div>
-        <div class="result-row"><span class="rlbl">Resistance / Weakness</span><span class="rval" id="rResWeak">—</span></div>
-        <div class="result-row"><span class="rlbl">Multiplier</span><span class="rval" id="rMulti">—</span></div>
-        <div class="dmg-bar-wrap">
-          <div class="dmg-bar-label">Enemy HP remaining after hits</div>
-          <div class="dmg-bar"><div class="dmg-bar-fill" id="hpBarFill" style="background:var(--fire);width:100%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--text3);margin-top:4px"><span id="hpBarLeft">—</span><span id="hpBarRight">—</span></div>
-        </div>
+      <div class="card" style="margin-bottom:.85rem">
+        <div class="rr"><span class="rl">Enemy HP</span><span class="rv" id="rEHP">—</span></div>
+        <div class="rr"><span class="rl">Enemy DMG / hit</span><span class="rv" id="rEDMG">—</span></div>
+        <div class="rr"><span class="rl">Spell base × SpellDMG%</span><span class="rv" id="rSpell">—</span></div>
+        <div class="rr"><span class="rl">Hero DMG multiplier</span><span class="rv" id="rMult">—</span></div>
+        <div class="rr"><span class="rl">Element modifier</span><span class="rv" id="rElem">—</span></div>
+        <div class="hpbar"><div class="hpfill" id="hpFill" style="background:var(--fire);width:100%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:.66rem;color:var(--text3);margin-top:3px"><span id="hpL">—</span><span id="hpR">—</span></div>
       </div>
-      <div style="margin-top:1rem">
-        <h3>All spells comparison at this level</h3>
-        <div style="position:relative;width:100%;height:220px"><canvas id="simCompChart" role="img" aria-label="Damage comparison across spells"></canvas></div>
-      </div>
+      <h3>All spells at this level</h3>
+      <div class="cw-sm"><canvas id="simComp"></canvas></div>
     </div>
   </div>
 </div>
 
-<!-- ══ SPELLS ══ -->
-<div class="section" id="sec-spells">
-  <div id="spellsBuildBanner" class="build-banner">
-    <div class="bb-item"><span class="bb-lbl">Current build —</span></div>
-    <div class="bb-item"><span class="bb-val" id="sbHP" style="color:var(--hp)">—</span><span class="bb-lbl">HP</span></div>
-    <div class="bb-item"><span class="bb-val" id="sbMana" style="color:var(--mana)">—</span><span class="bb-lbl">Mana</span></div>
-    <div class="bb-item"><span class="bb-val" id="sbDMG" style="color:var(--dmg)">—</span><span class="bb-lbl">Base DMG</span></div>
-    <span class="bb-lbl" style="margin-left:auto;font-size:.72rem">Spell DMG scaled to hero level:</span>
-    <div class="ctrl" style="margin-bottom:0;gap:8px">
-      <input type="range" id="spellPreviewLvl" min="1" max="100" value="50" step="1" style="width:100px" oninput="document.getElementById('spellPreviewLvlVal').textContent=this.value;renderSpells()">
-      <span style="font-size:.8rem;font-family:var(--font-mono);color:var(--accent)" id="spellPreviewLvlVal">50</span>
+<div class="tab" id="tab-spells">
+  <div class="banner">
+    <span style="color:var(--text2)">Effective DMG at level</span>
+    <div class="ctrl" style="margin-bottom:0;gap:6px">
+      <input type="range" id="spLvl" min="1" max="100" value="50" style="width:90px" oninput="document.getElementById('spLvlV').textContent=this.value;renderSpells()">
+      <span class="num" id="spLvlV" style="color:var(--accent)">50</span>
     </div>
+    <span style="color:var(--text3);font-size:.68rem">· using your DMG mult</span>
   </div>
-  <div class="filter-bar" id="spellFilters"></div>
-  <div class="spell-grid" id="spellGrid"></div>
+  <div class="fb" id="spFilters"></div>
+  <div class="spg" id="spGrid"></div>
 </div>
 
-<!-- ══ ENEMIES ══ -->
-<div class="section" id="sec-enemies">
-  <div id="enemiesBuildBanner" class="build-banner">
-    <div class="bb-item"><span class="bb-lbl">Current build —</span></div>
-    <div class="bb-item"><span class="bb-val" id="ebHP" style="color:var(--hp)">—</span><span class="bb-lbl">HP</span></div>
-    <div class="bb-item"><span class="bb-val" id="ebDMG" style="color:var(--dmg)">—</span><span class="bb-lbl">Base DMG</span></div>
-    <span class="bb-lbl" style="margin-left:auto;font-size:.72rem">View at level:</span>
-    <select id="enemyLvlFilter" onchange="renderEnemies()" style="width:auto">
-      <option value="1">Level 1</option><option value="10">Level 10</option><option value="25">Level 25</option>
-      <option value="50" selected>Level 50</option><option value="75">Level 75</option><option value="100">Level 100</option>
-    </select>
+<div class="tab" id="tab-enemies">
+  <div class="banner">
+    <span style="color:var(--text2)">Reference view</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <span class="muted" style="font-size:.68rem">At level</span>
+      <select id="eLvlFilt" onchange="renderEnemies()" style="width:auto">
+        <option value="1">1</option><option value="10">10</option><option value="25">25</option>
+        <option value="50" selected>50</option><option value="75">75</option><option value="100">100</option>
+      </select>
+    </div>
   </div>
-  <div class="filter-bar" id="enemyTypeFilter"></div>
-  <div class="enemy-table-wrap">
-    <table>
-      <thead><tr>
-        <th>Enemy</th><th>Type</th><th>HP</th><th>DMG / hit</th>
-        <th>TTK (your build)</th><th>Hits to kill you</th>
-        <th>Resistance</th><th>Weakness</th>
-      </tr></thead>
-      <tbody id="enemyTableBody"></tbody>
-    </table>
+  <div class="fb" id="eFilters"></div>
+  <div class="etw">
+    <table><thead><tr>
+      <th>Enemy</th><th>Type</th><th>HP</th><th>DMG/hit</th>
+      <th>TTK (your build)</th><th>TTD (you)</th><th>Resist</th><th>Weak</th>
+    </tr></thead><tbody id="eRows"></tbody></table>
   </div>
-  <p class="muted" style="margin-top:.75rem;font-size:.72rem">TTK = Enemy HP ÷ (your Base DMG × spell scaling at hero level) using Fire Strike T3 as reference</p>
 </div>
 
 </main>
 
 <script>
-/* ════ GAME DATA ════ */
-const FULL_SCALING=[
-{level:1,enemyHP:180,dmgDealt:100,heroHP:500,heroMana:100,spellDMG:100},{level:2,enemyHP:189,dmgDealt:105,heroHP:519,heroMana:101,spellDMG:105},{level:3,enemyHP:198,dmgDealt:110,heroHP:539,heroMana:102,spellDMG:110},{level:4,enemyHP:209,dmgDealt:115,heroHP:559,heroMana:103,spellDMG:115},{level:5,enemyHP:220,dmgDealt:120,heroHP:580,heroMana:104,spellDMG:120},{level:6,enemyHP:230,dmgDealt:125,heroHP:602,heroMana:106,spellDMG:126},{level:7,enemyHP:241,dmgDealt:125,heroHP:625,heroMana:107,spellDMG:132},{level:8,enemyHP:254,dmgDealt:130,heroHP:649,heroMana:108,spellDMG:138},{level:9,enemyHP:266,dmgDealt:135,heroHP:674,heroMana:109,spellDMG:144},{level:10,enemyHP:279,dmgDealt:140,heroHP:699,heroMana:110,spellDMG:151},{level:11,enemyHP:293,dmgDealt:145,heroHP:726,heroMana:112,spellDMG:158},{level:12,enemyHP:308,dmgDealt:150,heroHP:754,heroMana:113,spellDMG:166},{level:13,enemyHP:324,dmgDealt:160,heroHP:782,heroMana:114,spellDMG:174},{level:14,enemyHP:340,dmgDealt:165,heroHP:812,heroMana:115,spellDMG:182},{level:15,enemyHP:356,dmgDealt:170,heroHP:843,heroMana:117,spellDMG:190},{level:16,enemyHP:374,dmgDealt:175,heroHP:875,heroMana:118,spellDMG:199},{level:17,enemyHP:392,dmgDealt:180,heroHP:908,heroMana:119,spellDMG:209},{level:18,enemyHP:412,dmgDealt:190,heroHP:943,heroMana:120,spellDMG:218},{level:19,enemyHP:434,dmgDealt:195,heroHP:978,heroMana:122,spellDMG:229},{level:20,enemyHP:455,dmgDealt:205,heroHP:1016,heroMana:123,spellDMG:239},{level:21,enemyHP:477,dmgDealt:210,heroHP:1054,heroMana:124,spellDMG:251},{level:22,enemyHP:502,dmgDealt:220,heroHP:1094,heroMana:126,spellDMG:262},{level:23,enemyHP:527,dmgDealt:225,heroHP:1136,heroMana:127,spellDMG:275},{level:24,enemyHP:553,dmgDealt:235,heroHP:1179,heroMana:129,spellDMG:288},{level:25,enemyHP:581,dmgDealt:245,heroHP:1224,heroMana:130,spellDMG:301},{level:26,enemyHP:610,dmgDealt:250,heroHP:1270,heroMana:131,spellDMG:315},{level:27,enemyHP:641,dmgDealt:260,heroHP:1319,heroMana:133,spellDMG:330},{level:28,enemyHP:671,dmgDealt:270,heroHP:1369,heroMana:134,spellDMG:346},{level:29,enemyHP:706,dmgDealt:280,heroHP:1421,heroMana:136,spellDMG:362},{level:30,enemyHP:742,dmgDealt:290,heroHP:1475,heroMana:137,spellDMG:379},{level:31,enemyHP:778,dmgDealt:300,heroHP:1531,heroMana:139,spellDMG:397},{level:32,enemyHP:817,dmgDealt:315,heroHP:1589,heroMana:140,spellDMG:415},{level:33,enemyHP:857,dmgDealt:325,heroHP:1649,heroMana:142,spellDMG:435},{level:34,enemyHP:900,dmgDealt:335,heroHP:1712,heroMana:143,spellDMG:455},{level:35,enemyHP:945,dmgDealt:350,heroHP:1777,heroMana:145,spellDMG:477},{level:36,enemyHP:994,dmgDealt:360,heroHP:1844,heroMana:147,spellDMG:499},{level:37,enemyHP:1042,dmgDealt:375,heroHP:1915,heroMana:148,spellDMG:522},{level:38,enemyHP:1094,dmgDealt:390,heroHP:1987,heroMana:150,spellDMG:547},{level:39,enemyHP:1150,dmgDealt:405,heroHP:2063,heroMana:152,spellDMG:573},{level:40,enemyHP:1206,dmgDealt:420,heroHP:2141,heroMana:153,spellDMG:600},{level:41,enemyHP:1267,dmgDealt:435,heroHP:2223,heroMana:155,spellDMG:628},{level:42,enemyHP:1330,dmgDealt:450,heroHP:2307,heroMana:157,spellDMG:657},{level:43,enemyHP:1397,dmgDealt:465,heroHP:2395,heroMana:158,spellDMG:688},{level:44,enemyHP:1467,dmgDealt:485,heroHP:2486,heroMana:160,spellDMG:721},{level:45,enemyHP:1541,dmgDealt:500,heroHP:2580,heroMana:162,spellDMG:754},{level:46,enemyHP:1618,dmgDealt:520,heroHP:2678,heroMana:164,spellDMG:790},{level:47,enemyHP:1697,dmgDealt:540,heroHP:2780,heroMana:165,spellDMG:827},{level:48,enemyHP:1784,dmgDealt:560,heroHP:2886,heroMana:167,spellDMG:866},{level:49,enemyHP:1872,dmgDealt:580,heroHP:2995,heroMana:169,spellDMG:907},{level:50,enemyHP:1966,dmgDealt:600,heroHP:3109,heroMana:171,spellDMG:949},{level:51,enemyHP:2065,dmgDealt:625,heroHP:3227,heroMana:173,spellDMG:994},{level:52,enemyHP:2167,dmgDealt:645,heroHP:3350,heroMana:175,spellDMG:1041},{level:53,enemyHP:2275,dmgDealt:670,heroHP:3477,heroMana:177,spellDMG:1090},{level:54,enemyHP:2389,dmgDealt:695,heroHP:3609,heroMana:179,spellDMG:1141},{level:55,enemyHP:2509,dmgDealt:720,heroHP:3747,heroMana:181,spellDMG:1194},{level:56,enemyHP:2635,dmgDealt:750,heroHP:3889,heroMana:183,spellDMG:1250},{level:57,enemyHP:2767,dmgDealt:775,heroHP:4037,heroMana:185,spellDMG:1309},{level:58,enemyHP:2905,dmgDealt:805,heroHP:4190,heroMana:187,spellDMG:1371},{level:59,enemyHP:3049,dmgDealt:835,heroHP:4349,heroMana:189,spellDMG:1435},{level:60,enemyHP:3202,dmgDealt:865,heroHP:4515,heroMana:191,spellDMG:1503},{level:61,enemyHP:3362,dmgDealt:895,heroHP:4686,heroMana:193,spellDMG:1573},{level:62,enemyHP:3530,dmgDealt:930,heroHP:4864,heroMana:195,spellDMG:1647},{level:63,enemyHP:3706,dmgDealt:965,heroHP:5049,heroMana:197,spellDMG:1725},{level:64,enemyHP:3892,dmgDealt:1000,heroHP:5241,heroMana:199,spellDMG:1806},{level:65,enemyHP:4086,dmgDealt:1040,heroHP:5440,heroMana:201,spellDMG:1891},{level:66,enemyHP:4291,dmgDealt:1075,heroHP:5647,heroMana:204,spellDMG:1979},{level:67,enemyHP:4505,dmgDealt:1115,heroHP:5861,heroMana:206,spellDMG:2072},{level:68,enemyHP:4730,dmgDealt:1160,heroHP:6084,heroMana:208,spellDMG:2170},{level:69,enemyHP:4968,dmgDealt:1200,heroHP:6315,heroMana:210,spellDMG:2272},{level:70,enemyHP:5216,dmgDealt:1245,heroHP:6555,heroMana:213,spellDMG:2379},{level:71,enemyHP:5477,dmgDealt:1290,heroHP:6804,heroMana:215,spellDMG:2490},{level:72,enemyHP:5751,dmgDealt:1340,heroHP:7063,heroMana:217,spellDMG:2607},{level:73,enemyHP:6039,dmgDealt:1390,heroHP:7331,heroMana:220,spellDMG:2730},{level:74,enemyHP:6340,dmgDealt:1440,heroHP:7610,heroMana:222,spellDMG:2858},{level:75,enemyHP:6656,dmgDealt:1495,heroHP:7899,heroMana:225,spellDMG:2993},{level:76,enemyHP:6989,dmgDealt:1550,heroHP:8199,heroMana:227,spellDMG:3133},{level:77,enemyHP:7339,dmgDealt:1610,heroHP:8511,heroMana:230,spellDMG:3281},{level:78,enemyHP:7706,dmgDealt:1665,heroHP:8834,heroMana:232,spellDMG:3435},{level:79,enemyHP:8091,dmgDealt:1730,heroHP:9170,heroMana:235,spellDMG:3596},{level:80,enemyHP:8496,dmgDealt:1795,heroHP:9518,heroMana:237,spellDMG:3765},{level:81,enemyHP:8921,dmgDealt:1860,heroHP:9880,heroMana:240,spellDMG:3942},{level:82,enemyHP:9367,dmgDealt:1930,heroHP:10255,heroMana:243,spellDMG:4127},{level:83,enemyHP:9835,dmgDealt:2000,heroHP:10645,heroMana:245,spellDMG:4321},{level:84,enemyHP:10327,dmgDealt:2075,heroHP:11050,heroMana:248,spellDMG:4525},{level:85,enemyHP:10843,dmgDealt:2155,heroHP:11470,heroMana:251,spellDMG:4737},{level:86,enemyHP:11385,dmgDealt:2235,heroHP:11905,heroMana:253,spellDMG:4960},{level:87,enemyHP:11956,dmgDealt:2315,heroHP:12358,heroMana:256,spellDMG:5193},{level:88,enemyHP:12553,dmgDealt:2400,heroHP:12827,heroMana:259,spellDMG:5437},{level:89,enemyHP:13180,dmgDealt:2490,heroHP:13315,heroMana:262,spellDMG:5693},{level:90,enemyHP:13840,dmgDealt:2585,heroHP:13821,heroMana:265,spellDMG:5960},{level:91,enemyHP:14531,dmgDealt:2680,heroHP:14346,heroMana:268,spellDMG:6240},{level:92,enemyHP:15259,dmgDealt:2780,heroHP:14891,heroMana:271,spellDMG:6534},{level:93,enemyHP:16022,dmgDealt:2880,heroHP:15457,heroMana:274,spellDMG:6841},{level:94,enemyHP:16823,dmgDealt:2990,heroHP:16044,heroMana:277,spellDMG:7162},{level:95,enemyHP:17663,dmgDealt:3100,heroHP:16654,heroMana:280,spellDMG:7499},{level:96,enemyHP:18545,dmgDealt:3215,heroHP:17287,heroMana:283,spellDMG:7851},{level:97,enemyHP:19474,dmgDealt:3335,heroHP:17944,heroMana:286,spellDMG:8220},{level:98,enemyHP:20448,dmgDealt:3460,heroHP:18626,heroMana:289,spellDMG:8607},{level:99,enemyHP:21470,dmgDealt:3590,heroHP:19334,heroMana:292,spellDMG:9011},{level:100,enemyHP:22543,dmgDealt:3720,heroHP:20068,heroMana:295,spellDMG:9435}
-];
+const SHEET_ID = '1dr5KLWYXi0LIAEcH4_GTtb2or8NC7rYy3QaKTuNhdIY';
 
-const ENEMIES=[
-  {name:"Femur",prefab:"Skeleton grunt",type:"Base",hp1:250,dmg1:72,hp100:31310,dmg100:2678,res:"Earth",weak:"Wind"},
-  {name:"NecroManager",prefab:"Necromancer",type:"Base",hp1:400,dmg1:84,hp100:50096,dmg100:3125,res:"Ice",weak:"Fire"},
-  {name:"Daddy Femur",prefab:"Big Skeleton",type:"Boss",hp1:16000,dmg1:125,hp100:2003840,dmg100:4650,res:"Earth, Lightning",weak:"Wind"},
-  {name:"Wee Green",prefab:"Goblin",type:"Base",hp1:200,dmg1:50,hp100:25048,dmg100:1860,res:"Wind",weak:"Ice, Lightning"},
-  {name:"Boom Green",prefab:"Goblin Kamikaze",type:"Base",hp1:125,dmg1:150,hp100:15655,dmg100:5580,res:"Fire",weak:"Earth"},
-  {name:"Wolfgang",prefab:"Orc",type:"Boss",hp1:8000,dmg1:200,hp100:1001920,dmg100:7440,res:"Earth",weak:"Fire"},
-  {name:"Dumbbell",prefab:"Golem",type:"Base",hp1:600,dmg1:100,hp100:75144,dmg100:3720,res:"Earth, Lightning",weak:"Wind"},
-  {name:"IceAndBerg",prefab:"Ice Golem",type:"Base",hp1:900,dmg1:125,hp100:112716,dmg100:4650,res:"Ice",weak:"Fire"},
-  {name:"Magmalade",prefab:"Magma Golem",type:"Boss",hp1:20000,dmg1:150,hp100:2504800,dmg100:5580,res:"Fire, Ice",weak:"Earth"},
-  {name:"Caw",prefab:"Crow",type:"Base",hp1:200,dmg1:60,hp100:25048,dmg100:2232,res:"Wind",weak:"Ice, Lightning"},
-  {name:"Ratcoon",prefab:"Rat",type:"Base",hp1:125,dmg1:60,hp100:15655,dmg100:2232,res:"Earth",weak:"Ice"},
-  {name:"Gary Frogman",prefab:"Gary Frog",type:"Boss",hp1:18000,dmg1:130,hp100:2254320,dmg100:4836,res:"Wind",weak:"Ice, Lightning"},
-  {name:"Lord Metalikor",prefab:"Death Warlord",type:"Boss",hp1:22000,dmg1:80,hp100:2755280,dmg100:2976,res:"Fire, Lightning",weak:"Earth"},
-  {name:"IronBurn",prefab:"Flame Knight",type:"Base",hp1:250,dmg1:90,hp100:31310,dmg100:3348,res:"Fire, Ice",weak:"Earth"},
-  {name:"Tartargnan",prefab:"Ranged Knight",type:"Base",hp1:400,dmg1:80,hp100:50096,dmg100:2976,res:"Wind",weak:"Ice, Lightning"},
-  {name:"Batler",prefab:"Bat",type:"Base",hp1:200,dmg1:75,hp100:25048,dmg100:2790,res:"Wind",weak:"Lightning"},
-  {name:"Babewyn",prefab:"Gargoyle",type:"Base",hp1:600,dmg1:75,hp100:75144,dmg100:2790,res:"Earth",weak:"Wind"},
-];
+/* Game Constants for math scaling */
+const T_HP = 200, T_MANA = 10, T_DMG = 2;
+const B_HP = 500, B_MANA = 100, B_DMG = 100;
+const EMULT = 1.055;
 
-const SPELLS=[
-  {name:"Fire Strike",element:"Fire",tier0dmg:100,tier5dmg:3322,unlockLvl:1,type:"Strike"},
-  {name:"Fire Sword",element:"Fire",tier0dmg:70,tier5dmg:3938,unlockLvl:14,type:"Melee"},
-  {name:"Fire Nova",element:"Fire",tier0dmg:100,tier5dmg:3322,unlockLvl:30,type:"Nova"},
-  {name:"Ice Strike",element:"Ice",tier0dmg:100,tier5dmg:3322,unlockLvl:1,type:"Strike"},
-  {name:"Ice Nova",element:"Ice",tier0dmg:80,tier5dmg:3132,unlockLvl:16,type:"Nova"},
-  {name:"Blizzard",element:"Ice",tier0dmg:120,tier5dmg:3511,unlockLvl:40,type:"DoT"},
-  {name:"Frost Stream",element:"Ice",tier0dmg:130,tier5dmg:3606,unlockLvl:22,type:"Stream"},
-  {name:"Boulder",element:"Earth",tier0dmg:150,tier5dmg:3796,unlockLvl:5,type:"Projectile"},
-  {name:"Rock Wall",element:"Earth",tier0dmg:100,tier5dmg:949,unlockLvl:12,type:"Summon"},
-  {name:"Earth Nova",element:"Earth",tier0dmg:110,tier5dmg:3416,unlockLvl:20,type:"Nova"},
-  {name:"Healing Totem",element:"None",tier0dmg:40,tier5dmg:380,unlockLvl:8,type:"Support"},
-  {name:"Wind Strike",element:"Wind",tier0dmg:90,tier5dmg:3227,unlockLvl:1,type:"Strike"},
-  {name:"Wind Stream",element:"Wind",tier0dmg:80,tier5dmg:3606,unlockLvl:10,type:"Stream"},
-  {name:"Wind Nova",element:"Wind",tier0dmg:90,tier5dmg:3227,unlockLvl:25,type:"Nova"},
-  {name:"Lightning Arc",element:"Lightning",tier0dmg:76,tier5dmg:3094,unlockLvl:18,type:"Stream"},
-  {name:"Lightning Strand",element:"Lightning",tier0dmg:250,tier5dmg:2373,unlockLvl:28,type:"Special"},
-  {name:"Volt Gate",element:"Lightning",tier0dmg:200,tier5dmg:6026,unlockLvl:35,type:"Summon"},
-  {name:"Skeletal Horde",element:"Necro",tier0dmg:110,tier5dmg:3796,unlockLvl:25,type:"Summon"},
-  {name:"Spectral Skull",element:"Necro",tier0dmg:160,tier5dmg:4365,unlockLvl:32,type:"Projectile"},
-  {name:"Shadow Form",element:"Necro",tier0dmg:0,tier5dmg:0,unlockLvl:45,type:"Support"},
-];
+const EC = {Fire:'#e04545',Ice:'#3480d4',Earth:'#b07010',Wind:'#18a070',Lightning:'#6c63d4',Necro:'#c04878',None:'#555870'};
 
-const ELEM_COL={Fire:"#e24b4a",Ice:"#378add",Earth:"#ba7517",Wind:"#1d9e75",Lightning:"#7f77dd",Necro:"#d4537e",None:"#888780"};
-const HP_PT=200,MANA_PT=10,DMG_PT=37,B_HP=500,B_MANA=100,B_DMG=100;
-const SHEET_ID='1dr5KLWYXi0LIAEcH4_GTtb2or8NC7rYy3QaKTuNhdIY';
+/* Global dynamically filled structures */
+let SC = [];
+let SPELLS = [];
+let ENEMIES = [];
 
-/* Cumulative spell base dmg per tier (from Spells Upgrade sheet) */
-const SPELL_TIERS={
-  "Fire Strike":     [100,110,130,170,240,350],
-  "Fire Sword":      [70, 85, 115,175,265,415],
-  "Fire Nova":       [100,110,130,170,240,350],
-  "Ice Strike":      [100,110,130,170,240,350],
-  "Ice Nova":        [80, 90, 110,150,220,330],
-  "Blizzard":        [120,130,150,190,260,370],
-  "Frost Stream":    [130,140,160,200,270,380],
-  "Boulder":         [150,160,180,220,290,400],
-  "Rock Wall":       [100,100,100,100,100,100],
-  "Earth Nova":      [110,120,140,180,250,360],
-  "Healing Totem":   [40, 40, 40, 40, 40, 40],
-  "Wind Strike":     [90, 100,120,160,230,340],
-  "Wind Stream":     [80, 95, 125,175,255,380],
-  "Wind Nova":       [90, 100,120,160,230,340],
-  "Lightning Arc":   [76, 86, 106,146,216,326],
-  "Lightning Strand":[250,250,250,250,250,250],
-  "Volt Gate":       [200,225,275,355,475,635],
-  "Skeletal Horde":  [110,120,145,195,275,400],
-  "Spectral Skull":  [160,175,205,255,335,460],
-  "Shadow Form":     [0,  0,  0,  0,  0,  0],
-};
+const BUILD = {hp:50, mana:25, dmg:24};
+let curveTab='hp', curveView='line', compTab='stats';
+const charts={};
 
-/* ════ GLOBAL BUILD STATE ════ */
-const BUILD = { hp: 50, mana: 25, dmg: 24 };
-
-function getBuildStats(level) {
-  const i = Math.min(level, 100) - 1;
-  const ptsAtLvl = (pts) => Math.round(i / 99 * pts);
-  return {
-    hp:   B_HP   + ptsAtLvl(BUILD.hp)   * HP_PT,
-    mana: B_MANA + ptsAtLvl(BUILD.mana) * MANA_PT,
-    dmg:  B_DMG  + ptsAtLvl(BUILD.dmg)  * DMG_PT,
-  };
+// Utility function to fetch specific tabs via JSON endpoint
+async function fetchGoogleTab(sheetId, tabName) {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Tab fetch error: ${tabName}`);
+  const text = await response.text();
+  return JSON.parse(text.substring(47).slice(0, -2)).table;
 }
 
-function getBuildStatsL100() {
-  return {
-    hp:   B_HP   + BUILD.hp   * HP_PT,
-    mana: B_MANA + BUILD.mana * MANA_PT,
-    dmg:  B_DMG  + BUILD.dmg  * DMG_PT,
-  };
+async function loadAllData() {
+  const dot = document.getElementById('dot'), lbl = document.getElementById('lbl');
+  try {
+    // Parallel fetches from your Google Sheet tabs
+    const [scalingTable, spellsTable, enemiesTable] = await Promise.all([
+      fetchGoogleTab(SHEET_ID, 'Scaling Datas'),
+      fetchGoogleTab(SHEET_ID, 'Spells'),
+      fetchGoogleTab(SHEET_ID, 'Enemies')
+    ]);
+
+    // 1. Process Scaling Datas
+    SC = [];
+    scalingTable.rows.forEach(row => {
+      const c = row.c;
+      const lvl = c[0]?.v;
+      if (typeof lvl === 'number' && lvl >= 1 && lvl <= 100) {
+        SC.push({
+          level: lvl,
+          enemyHP: c[4]?.v || 0,
+          enemyDMG: c[5]?.v || 0,
+          heroHP: c[6]?.v || 0,
+          heroMana: c[7]?.v || 0,
+          spellDMGpct: c[8]?.v || 0,
+          spellDMG: c[9]?.v || 0,
+        });
+      }
+    });
+
+    // 2. Process Spells Tab
+    SPELLS = [];
+    spellsTable.rows.forEach((row, index) => {
+      if (index === 0) return; // Skip headers
+      const c = row.c;
+      if (!c[0]?.v) return; // Skip empty rows
+      
+      const spellName = c[0].v;
+      SPELLS.push({
+        n: spellName,
+        el: c[1]?.v || 'None',
+        ul: c[2]?.v || 1,
+        ty: c[3]?.v || 'Strike',
+        tiers: [
+          c[4]?.v || 0, // Tier 0
+          c[5]?.v || 0, // Tier 1
+          c[6]?.v || 0, // Tier 2
+          c[7]?.v || 0, // Tier 3
+          c[8]?.v || 0, // Tier 4
+          c[9]?.v || 0  // Tier 5
+        ]
+      });
+    });
+
+    // 3. Process Enemies Tab
+    ENEMIES = [];
+    enemiesTable.rows.forEach((row, index) => {
+      if (index === 0) return; // Skip headers
+      const c = row.c;
+      if (!c[0]?.v) return;
+      
+      ENEMIES.push({
+        n: c[0].v,
+        pfx: c[1]?.v || '',
+        ty: c[2]?.v || 'Base',
+        hp1: c[3]?.v || 0,
+        dmg1: c[4]?.v || 0,
+        hp100: c[5]?.v || 0,
+        dmg100: c[6]?.v || 0,
+        res: c[7]?.v || 'None',
+        weak: c[8]?.v || 'None'
+      });
+    });
+
+    dot.className = 'dot ok';
+    lbl.textContent = 'Live · ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    initAll();
+  } catch(e) {
+    console.error("Failed to load spreadsheet data dynamically", e);
+    dot.className = 'dot err';
+    lbl.textContent = 'Failed to load live data';
+  }
 }
 
-/* Called whenever sliders change — updates BUILD and refreshes everything */
-function onBuildChange() {
+/* ═══════════════════════════════════════════════════════
+   CORE SYSTEMS & CALCULATIONS
+═══════════════════════════════════════════════════════ */
+const fmt  = n => Math.round(n).toLocaleString('en-US');
+const ceil = Math.ceil;
+const row  = lvl => SC[Math.min(Math.max(+lvl,1),100)-1];
+
+function heroStats(level, hpPts, manaPts, dmgPts) {
+  const i = Math.min(level,100)-1;
+  const p = n => Math.round(i/99*n);
+  return {
+    hp:   B_HP   + p(hpPts)  * T_HP,
+    mana: B_MANA + p(manaPts)* T_MANA,
+    dmg:  B_DMG  + p(dmgPts) * T_DMG,
+  };
+}
+function heroStatsL100(hp,mana,dmg){return{hp:B_HP+hp*T_HP,mana:B_MANA+mana*T_MANA,dmg:B_DMG+dmg*T_DMG}}
+
+function dmgMult(level, dmgPts) {
+  const pts = Math.round((Math.min(level,100)-1)/99 * dmgPts);
+  return (100 + pts * T_DMG) / 100;
+}
+
+function spellBase(name, tier){
+  const s = SPELLS.find(x => x.n === name);
+  return s ? s.tiers[Math.min(tier, 5)] : 0;
+}
+
+function effDmg(name, tier, level, dmgPts) {
+  const r = row(level);
+  return Math.round(spellBase(name,tier) * r.spellDMGpct/100 * dmgMult(level,dmgPts));
+}
+
+function eHP(e,lvl){ return Math.round(e.hp1 * Math.pow(e.hp100/e.hp1, (lvl-1)/99)); }
+function eDMG(e,lvl){ return Math.round(e.dmg1 * Math.pow(e.dmg100/e.dmg1, (lvl-1)/99)); }
+
+function onBuild(){
   BUILD.hp   = +document.getElementById('sHP').value;
   BUILD.mana = +document.getElementById('sMana').value;
   BUILD.dmg  = +document.getElementById('sDMG').value;
-  updateCurveUI();
-  updateAllBanners();
-  simUpdate();
-  renderEnemies();
+  updateCurveUI(); updateBanners(); simCalc(); renderEnemies(); drawComp();
 }
 
-function updateAllBanners() {
-  const s = getBuildStatsL100();
-  const f = (n) => fmt(n);
-  ['bb','sb','eb'].forEach(p => {
-    const hEl = document.getElementById(p+'HP');
-    const mEl = document.getElementById(p+'Mana');
-    const dEl = document.getElementById(p+'DMG');
-    if(hEl) hEl.textContent = f(s.hp);
-    if(mEl) mEl.textContent = f(s.mana);
-    if(dEl) dEl.textContent = f(s.dmg);
+function updateBanners(){
+  const s = heroStatsL100(BUILD.hp,BUILD.mana,BUILD.dmg);
+  ['bHP','bMana','bDMG'].forEach((id,i)=>{
+    const el=document.getElementById(id); if(el) el.textContent=fmt([s.hp,s.mana,s.dmg][i]);
   });
 }
 
-/* ════ HELPERS ════ */
-function fmt(n){return Math.round(n).toLocaleString('en-US')}
-function getRow(lvl){return FULL_SCALING[Math.min(lvl,100)-1]}
-function spellDmgAtTier(spell,tier){
-  const t=SPELL_TIERS[spell.name];
-  return t?t[tier]:Math.round(spell.tier0dmg+(spell.tier5dmg-spell.tier0dmg)*tier/5);
-}
-/* Spell effective dmg = tier_base × spellDMG% (hero level scaling)
-   Totem DMG pts = hero melee/base dmg only, NOT a spell multiplier */
-function effectiveDmg(spellBase,scalingPct){return Math.round(spellBase*scalingPct/100)}
-function getEnemyHP(e,lvl){return Math.round(e.hp1*Math.pow(e.hp100/e.hp1,(lvl-1)/99))}
-function getEnemyDMG(e,lvl){return Math.round(e.dmg1*Math.pow(e.dmg100/e.dmg1,(lvl-1)/99))}
-
-/* ════ NAV ════ */
-function showTab(id, btn) {
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('sec-'+id).classList.add('active');
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  else document.querySelectorAll('nav button').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"))b.classList.add('active')});
-  if(id==='combat') simUpdate();
-  if(id==='spells') renderSpells();
-  if(id==='enemies') renderEnemies();
+function goTab(id, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  else document.querySelectorAll('nav button').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+id+"'")) b.classList.add('on')});
+  const fn={combat:simCalc,spells:renderSpells,enemies:renderEnemies,compare:drawComp};
+  fn[id]?.();
 }
 
-/* ════ STAT CURVES ════ */
-let curveTab='hp', curveChartInst=null;
-
-function setCurveTab(tab,btn){
+/* ═══════════════════════════════════════════════════════
+   STAT CURVES & HISTOGRAM SYSTEM
+═══════════════════════════════════════════════════════ */
+function setCurve(tab,btn){
   curveTab=tab;
-  document.querySelectorAll('#sec-curves .subtab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
+  document.querySelectorAll('#curveFilterTabs .stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); drawCurve();
+}
+
+function toggleCurveView(view){
+  curveView = view;
+  document.querySelectorAll('#curveTypeTabs .stab').forEach(b=>b.classList.remove('on'));
+  document.querySelector(`#curveTypeTabs .stab[data-type="${view}"]`).classList.add('on');
+  
+  const ftTabs = document.getElementById('curveFilterTabs');
+  if(view === 'bar') ftTabs.style.opacity = '0.3', ftTabs.style.pointerEvents = 'none';
+  else ftTabs.style.opacity = '1', ftTabs.style.pointerEvents = 'auto';
+  
   drawCurve();
 }
 
 function updateCurveUI(){
-  const {hp:h,mana:m,dmg:d}=BUILD;
-  const used=h+m+d, rem=99-used;
-  document.getElementById('vHP').textContent=h;
-  document.getElementById('vMana').textContent=m;
-  document.getElementById('vDMG').textContent=d;
+  const {hp,mana,dmg}=BUILD, used=hp+mana+dmg, rem=99-used;
+  ['vHP','vMana','vDMG'].forEach((id,i)=>document.getElementById(id).textContent=[hp,mana,dmg][i]);
   const b=document.getElementById('ptsBadge');
   b.textContent=rem>=0?rem+' pts remaining':Math.abs(rem)+' pts over!';
-  b.className='badge-pts'+(rem<0?' over':'');
-  const s=getBuildStatsL100();
-  document.getElementById('cHP').textContent=fmt(s.hp);
-  document.getElementById('cMana').textContent=fmt(s.mana);
-  document.getElementById('cDMG').textContent=fmt(s.dmg);
-  document.getElementById('sHP2').textContent=Math.round(s.hp/(B_HP+99*HP_PT)*100)+'% of max';
-  document.getElementById('sMana2').textContent=Math.round(s.mana/(B_MANA+99*MANA_PT)*100)+'% of max';
-  document.getElementById('sDMG2').textContent=Math.round(s.dmg/(B_DMG+99*DMG_PT)*100)+'% of max';
-  drawCurve();
-  renderCurveTable();
+  b.className='badge'+(rem<0?' over':'');
+  const s=heroStatsL100(hp,mana,dmg), mx=[B_HP+99*T_HP,B_MANA+99*T_MANA,B_DMG+99*T_DMG];
+  ['cHP','cMana','cDMG'].forEach((id,i)=>document.getElementById(id).textContent=fmt([s.hp,s.mana,s.dmg][i]));
+  ['subHP','subMana','subDMG'].forEach((id,i)=>document.getElementById(id).textContent=Math.round([s.hp,s.mana,s.dmg][i]/mx[i]*100)+'% of max');
+  drawCurve(); renderCurveTable();
 }
 
-function buildCurve(pts,ppt,base){return Array.from({length:100},(_,i)=>base+Math.round(i/99*pts)*ppt)}
-function fullCurve(ppt,base){return Array.from({length:100},(_,i)=>base+i*ppt)}
+function statCurve(pts,ppt,base){return Array.from({length:100},(_,i)=>base+Math.round(i/99*pts)*ppt)}
+function statFull(ppt,base){return Array.from({length:100},(_,i)=>base+i*ppt)}
 
 function drawCurve(){
-  const lvls=Array.from({length:100},(_,i)=>i+1);
-  let datasets=[],legend=[];
-  const {hp,mana,dmg}=BUILD;
-  if(curveTab==='hp'){
-    datasets=[
-      {label:'Your build',data:buildCurve(hp,HP_PT,B_HP),borderColor:'#e24b4a',borderWidth:2.5,pointRadius:0,tension:0.3},
-      {label:'Full HP (99 pts)',data:fullCurve(HP_PT,B_HP),borderColor:'#f09595',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:0.3},
-      {label:'Enemy HP',data:FULL_SCALING.map(r=>r.enemyHP),borderColor:'#d85a30',borderWidth:1.5,pointRadius:0,tension:0.3},
+  if(!SC.length) return;
+  const {hp,mana,dmg}=BUILD, lvls=Array.from({length:100},(_,i)=>i+1);
+  let ds=[], lg=[];
+
+  if (curveView === 'bar') {
+    const archs = {
+      balanced: { hp: 33, mana: 33, dmg: 33 },
+      dps: { hp: 15, mana: 15, dmg: 69 },
+      support: { hp: 69, mana: 15, dmg: 15 },
+      caster: { hp: 15, mana: 69, dmg: 15 }
+    };
+
+    ds = [
+      { label: 'HP pts', data: [hp, archs.balanced.hp, archs.dps.hp, archs.support.hp, archs.caster.hp], backgroundColor: '#e04545cc' },
+      { label: 'Mana pts', data: [mana, archs.balanced.mana, archs.dps.mana, archs.support.mana, archs.caster.mana], backgroundColor: '#3480d4cc' },
+      { label: 'DMG pts', data: [dmg, archs.balanced.dmg, archs.dps.dmg, archs.support.dmg, archs.caster.dmg], backgroundColor: '#e09820cc' }
     ];
-    legend=[{col:'#e24b4a',label:'Your build'},{col:'#f09595',label:'Full HP',dash:true},{col:'#d85a30',label:'Enemy HP'}];
-  } else if(curveTab==='mana'){
-    datasets=[
-      {label:'Your build',data:buildCurve(mana,MANA_PT,B_MANA),borderColor:'#378add',borderWidth:2.5,pointRadius:0,tension:0.3},
-      {label:'Full Mana (99 pts)',data:fullCurve(MANA_PT,B_MANA),borderColor:'#85b7eb',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:0.3},
-    ];
-    legend=[{col:'#378add',label:'Your build'},{col:'#85b7eb',label:'Full Mana',dash:true}];
-  } else if(curveTab==='dmg'){
-    datasets=[
-      {label:'Your build',data:buildCurve(dmg,DMG_PT,B_DMG),borderColor:'#ef9f27',borderWidth:2.5,pointRadius:0,tension:0.3},
-      {label:'Full DMG (99 pts)',data:fullCurve(DMG_PT,B_DMG),borderColor:'#fac775',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:0.3},
-    ];
-    legend=[{col:'#ef9f27',label:'Your build'},{col:'#fac775',label:'Full DMG',dash:true}];
-  } else {
-    const mxHP=B_HP+99*HP_PT,mxM=B_MANA+99*MANA_PT,mxD=B_DMG+99*DMG_PT;
-    datasets=[
-      {label:'HP %',data:buildCurve(hp,HP_PT,B_HP).map(v=>Math.round(v/mxHP*100)),borderColor:'#e24b4a',borderWidth:2,pointRadius:0,tension:0.3},
-      {label:'Mana %',data:buildCurve(mana,MANA_PT,B_MANA).map(v=>Math.round(v/mxM*100)),borderColor:'#378add',borderWidth:2,pointRadius:0,tension:0.3},
-      {label:'Base DMG %',data:buildCurve(dmg,DMG_PT,B_DMG).map(v=>Math.round(v/mxD*100)),borderColor:'#ef9f27',borderWidth:2,pointRadius:0,tension:0.3},
-    ];
-    legend=[{col:'#e24b4a',label:'HP'},{col:'#378add',label:'Mana'},{col:'#ef9f27',label:'Base DMG'}];
-  }
-  document.getElementById('curveLegend').innerHTML=legend.map(l=>`<div class="legend-item"><div class="legend-swatch" style="${l.dash?'background:repeating-linear-gradient(90deg,'+l.col+' 0,'+l.col+' 4px,transparent 4px,transparent 8px)':'background:'+l.col}"></div>${l.label}</div>`).join('');
-  if(curveChartInst) curveChartInst.destroy();
-  curveChartInst=new Chart(document.getElementById('curveChart'),{
-    type:'line',data:{labels:lvls,datasets},
-    options:{responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>'Level '+i[0].label,label:c=>c.dataset.label+': '+fmt(c.raw)+(curveTab==='all'?'%':'')}}},
-      scales:{
-        x:{ticks:{color:'#555870',autoSkip:true,maxTicksLimit:10,font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}},
-        y:{ticks:{color:'#555870',callback:v=>curveTab==='all'?v+'%':fmt(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}
+    lg = [{c:'#e04545',l:'HP Points'}, {c:'#3480d4',l:'Mana Points'}, {c:'#e09820',l:'DMG Points'}];
+    document.getElementById('curveLeg').innerHTML = lg.map(x=>`<div class="li"><div class="ls" style="background:${x.c}"></div>${x.l}</div>`).join('');
+
+    mkC('curveC',{
+      type: 'bar',
+      data: { labels: ['Your Build', 'Balanced', 'DPS', 'Support', 'Caster (Mana)'], datasets: ds },
+      options: {
+        responsive:true,maintainAspectRatio:false,animation:false,
+        scales:{
+          x:{stacked: true, ticks:{color:'#7a7f9a'}, grid:{display:false}},
+          y:{stacked: true, max: 100, ticks:{color:'#454860'}, grid:{color:'rgba(255,255,255,.03)'}}
+        },
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw+' pts'}}
+        }
       }
-    }
-  });
+    });
+    return;
+  }
+
+  if(curveTab==='hp'){
+    ds=[
+      {label:'Your build',data:statCurve(hp,T_HP,B_HP),borderColor:'#e04545',borderWidth:2.5,pointRadius:0,tension:.3},
+      {label:'Full HP',data:statFull(T_HP,B_HP),borderColor:'#f09090',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:.3},
+      {label:'Enemy HP (sheet)',data:SC.map(r=>r.enemyHP),borderColor:'#d45a30',borderWidth:1.5,pointRadius:0,tension:.3},
+    ];
+    lg=[{c:'#e04545',l:'Your build'},{c:'#f09090',l:'Full HP (99)',d:1},{c:'#d45a30',l:'Enemy HP (sheet)'}];
+  } else if(curveTab==='mana'){
+    ds=[
+      {label:'Your build',data:statCurve(mana,T_MANA,B_MANA),borderColor:'#3480d4',borderWidth:2.5,pointRadius:0,tension:.3},
+      {label:'Full Mana',data:statFull(T_MANA,B_MANA),borderColor:'#80b4e8',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:.3},
+      {label:'Sheet Mana',data:SC.map(r=>r.heroMana),borderColor:'#555870',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:.3},
+    ];
+    lg=[{c:'#3480d4',l:'Your build'},{c:'#80b4e8',l:'Full Mana (99)',d:1},{c:'#555870',l:'Sheet Mana',d:1}];
+  } else if(curveTab==='dmg'){
+    ds=[
+      {label:'Your build',data:statCurve(dmg,T_DMG,B_DMG),borderColor:'#e09820',borderWidth:2.5,pointRadius:0,tension:.3},
+      {label:'Full DMG',data:statFull(T_DMG,B_DMG),borderColor:'#f0c870',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:.3},
+    ];
+    lg=[{c:'#e09820',l:'Your build'},{c:'#f0c870',l:'Full DMG (99)',d:1}];
+  } else {
+    const mx=[B_HP+99*T_HP,B_MANA+99*T_MANA,B_DMG+99*T_DMG];
+    ds=[
+      {label:'HP %',data:statCurve(hp,T_HP,B_HP).map(v=>Math.round(v/mx[0]*100)),borderColor:'#e04545',borderWidth:2,pointRadius:0,tension:.3},
+      {label:'Mana %',data:statCurve(mana,T_MANA,B_MANA).map(v=>Math.round(v/mx[1]*100)),borderColor:'#3480d4',borderWidth:2,pointRadius:0,tension:.3},
+      {label:'Base DMG %',data:statCurve(dmg,T_DMG,B_DMG).map(v=>Math.round(v/mx[2]*100)),borderColor:'#e09820',borderWidth:2,pointRadius:0,tension:.3},
+    ];
+    lg=[{c:'#e04545',l:'HP'},{c:'#3480d4',l:'Mana'},{c:'#e09820',l:'Base DMG'}];
+  }
+  document.getElementById('curveLeg').innerHTML=lg.map(x=>`<div class="li"><div class="ls" style="${x.d?'background:repeating-linear-gradient(90deg,'+x.c+' 0,'+x.c+' 4px,transparent 4px,transparent 8px)':'background:'+x.c}"></div>${x.l}</div>`).join('');
+  
+  mkC('curveC',{type:'line',data:{labels:lvls,datasets:ds},options:{
+    responsive:true,maintainAspectRatio:false,animation:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>'Level '+i[0].label,label:c=>c.dataset.label+': '+fmt(c.raw)+(curveTab==='all'?'%':'')}}},
+    scales:{x:{ticks:{color:'#454860',autoSkip:true,maxTicksLimit:10,font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}},
+            y:{ticks:{color:'#454860',callback:v=>curveTab==='all'?v+'%':fmt(v),font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}}}
+  }});
 }
 
 function renderCurveTable(){
+  if(!SC.length) return;
   const {hp,mana,dmg}=BUILD;
-  const milestones=[1,5,10,15,20,25,30,40,50,60,70,75,80,90,100];
-  const body=document.getElementById('curveTableBody'); body.innerHTML='';
-  milestones.forEach(lvl=>{
-    const i=lvl-1, r=FULL_SCALING[i];
-    const hpB=B_HP+Math.round(i/99*hp)*HP_PT, mB=B_MANA+Math.round(i/99*mana)*MANA_PT, dB=B_DMG+Math.round(i/99*dmg)*DMG_PT;
-    const hpF=B_HP+i*HP_PT, mF=B_MANA+i*MANA_PT, dF=B_DMG+i*DMG_PT;
+  const body=document.getElementById('curveRows'); body.innerHTML='';
+  [1,5,10,15,20,25,30,40,50,60,70,75,80,90,100].forEach(lvl=>{
+    const i=lvl-1, r=SC[i];
+    const hB=B_HP+Math.round(i/99*hp)*T_HP, mB=B_MANA+Math.round(i/99*mana)*T_MANA, dB=B_DMG+Math.round(i/99*dmg)*T_DMG;
+    const hF=B_HP+i*T_HP, mF=B_MANA+i*T_MANA, dF=B_DMG+i*T_DMG;
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:var(--accent);font-weight:600">${lvl}</td><td class="num-cell" style="color:var(--hp)">${fmt(hpB)}</td><td class="num-cell" style="color:var(--text3)">${fmt(hpF)}</td><td class="num-cell" style="color:var(--mana)">${fmt(mB)}</td><td class="num-cell" style="color:var(--text3)">${fmt(mF)}</td><td class="num-cell" style="color:var(--dmg)">${fmt(dB)}</td><td class="num-cell" style="color:var(--text3)">${fmt(dF)}</td><td class="num-cell">${fmt(r.enemyHP)}</td>`;
+    tr.innerHTML=`<td style="color:var(--accent);font-weight:600">${lvl}</td>
+      <td class="mc" style="color:var(--hp)">${fmt(hB)}</td><td class="mc" style="color:var(--text3)">${fmt(hF)}</td>
+      <td class="mc" style="color:var(--mana)">${fmt(mB)}</td><td class="mc" style="color:var(--text3)">${fmt(mF)}</td>
+      <td class="mc" style="color:var(--dmg)">${fmt(dB)}</td><td class="mc" style="color:var(--text3)">${fmt(dF)}</td>
+      <td class="mc">${fmt(r?.enemyHP||0)}</td>`;
     body.appendChild(tr);
   });
 }
 
-/* ════ COMBAT SIM ════ */
-let simCompChart=null;
+/* ═══════════════════════════════════════════════════════
+   BUILD COMPARE
+═══════════════════════════════════════════════════════ */
+function setComp(tab,btn){
+  compTab=tab;
+  document.querySelectorAll('#tab-compare .stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); drawComp();
+}
 
+const BUILDS=[
+  {lbl:'Full HP\n99/0/0',    hp:99,mana:0, dmg:0,  col:'#e04545'},
+  {lbl:'HP+Mana\n60/30/9',   hp:60,mana:30,dmg:9,  col:'#c06060'},
+  {lbl:'Balanced\n33/33/33', hp:33,mana:33,dmg:33, col:'#6c63d4'},
+  {lbl:'Your build',          get hp(){return BUILD.hp}, get mana(){return BUILD.mana}, get dmg(){return BUILD.dmg}, col:'#e2e4f0'},
+  {lbl:'HP+DMG\n30/9/60',    hp:30,mana:9, dmg:60, col:'#d4a020'},
+  {lbl:'Full DMG\n0/0/99',   hp:0, mana:0, dmg:99, col:'#e09820'},
+];
+
+function drawComp(){
+  if(!SC.length || !SPELLS.length || !ENEMIES.length) return;
+  const fhp=heroStatsL100(99,0,0), bal=heroStatsL100(33,33,33), fdmg=heroStatsL100(0,0,99), you=heroStatsL100(BUILD.hp,BUILD.mana,BUILD.dmg);
+  document.getElementById('cmp_fhp').textContent=fmt(fhp.hp)+' HP';
+  document.getElementById('cmp_bal').textContent=fmt(bal.hp)+' HP';
+  document.getElementById('cmp_you').textContent=fmt(you.hp)+' HP';
+  document.getElementById('cmp_you_sub').textContent=BUILD.hp+'/'+BUILD.mana+'/'+BUILD.dmg;
+  document.getElementById('cmp_fdmg').textContent=fmt(fdmg.dmg)+' DMG';
+
+  const firstSpellName = SPELLS[0]?.n || '';
+  const firstEnemy = ENEMIES[0];
+
+  const labels=BUILDS.map(b=>{
+    const l=b.lbl;
+    return l==='Your build'?`Your build (${BUILD.hp}/${BUILD.mana}/${BUILD.dmg})`: l.replace('\n',' ');
+  });
+
+  if(compTab==='stats'){
+    document.getElementById('compNote').textContent='Stats comparison at level 100 (Values normalized for visual scaling).';
+    document.getElementById('compLeg').innerHTML=`<div class="li"><div class="ls" style="background:var(--hp)"></div>HP</div><div class="li"><div class="ls" style="background:var(--mana)"></div>Mana ×10</div><div class="li"><div class="ls" style="background:var(--dmg)"></div>Base DMG ×10</div>`;
+    mkC('compC',{type:'bar',data:{labels,datasets:[
+      {label:'HP',       data:BUILDS.map(b=>heroStatsL100(b.hp,b.mana,b.dmg).hp),  backgroundColor:BUILDS.map(b=>b.col+'cc')},
+      {label:'Mana ×10', data:BUILDS.map(b=>heroStatsL100(b.hp,b.mana,b.dmg).mana*10),backgroundColor:'#3480d455'},
+      {label:'DMG ×10',  data:BUILDS.map(b=>heroStatsL100(b.hp,b.mana,b.dmg).dmg*10), backgroundColor:'#e0982055'},
+    ]},options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#7a7f9a',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#454860'},grid:{color:'rgba(255,255,255,.03)'}}}
+    }});
+  } else if(compTab==='ttk'){
+    document.getElementById('compNote').textContent=`TTK = hits to kill ${firstEnemy?.n || 'Enemy'} @ L50 using ${firstSpellName} (T3).`;
+    document.getElementById('compLeg').innerHTML='';
+    const r50=row(50), eHP50=firstEnemy?eHP(firstEnemy,50):1000;
+    const data=BUILDS.map(b=>{
+      const m=dmgMult(50,b.dmg), eff=Math.round(spellBase(firstSpellName,3)*r50.spellDMGpct/100*m);
+      return ceil(eHP50/Math.max(eff,1));
+    });
+    mkC('compC',{type:'bar',data:{labels,datasets:[{data,backgroundColor:BUILDS.map(b=>b.col+'cc')}]},options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#454860',stepSize:1},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#7a7f9a'}}}
+    }});
+  } else {
+    document.getElementById('compNote').textContent=`TTD = hits to die from ${firstEnemy?.n || 'Enemy'} @ L50 (Builds evaluated with their respective max level HP).`;
+    document.getElementById('compLeg').innerHTML='';
+    const eDMG50=firstEnemy?eDMG(firstEnemy,50):100;
+    const data=BUILDS.map(b=>{
+      const hp=heroStatsL100(b.hp,b.mana,b.dmg).hp;
+      return ceil(hp/Math.max(eDMG50,1));
+    });
+    mkC('compC',{type:'bar',data:{labels,datasets:[{data,backgroundColor:BUILDS.map(b=>b.col+'cc')}]},options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#454860',stepSize:1},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#7a7f9a'}}}
+    }});
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMBAT SIMULATOR
+═══════════════════════════════════════════════════════ */
 function initSim(){
-  const ss=document.getElementById('spellSel');
-  SPELLS.forEach(s=>{const o=document.createElement('option');o.value=s.name;o.textContent=s.name+' ('+s.element+')';ss.appendChild(o)});
-  const es=document.getElementById('enemySel');
-  ENEMIES.forEach(e=>{const o=document.createElement('option');o.value=e.name;o.textContent=e.name+(e.type==='Boss'?' ★':'');es.appendChild(o)});
+  const ss=document.getElementById('simSpell'); ss.innerHTML='';
+  SPELLS.forEach(s=>{const o=document.createElement('option');o.value=s.n;o.textContent=s.n+' ('+s.el+')';ss.appendChild(o)});
+  const es=document.getElementById('simEnemy'); es.innerHTML='';
+  ENEMIES.forEach(e=>{const o=document.createElement('option');o.value=e.n;o.textContent=e.n+(e.ty==='Boss'?' ★':'');es.appendChild(o)});
 }
 
-function simUpdate(){
-  const heroLvl=+document.getElementById('heroLvl').value;
-  const spellTier=+document.getElementById('spellTier').value;
-  const enemyLvl=+document.getElementById('enemyLvl').value;
-  const spell=SPELLS.find(s=>s.name===document.getElementById('spellSel').value);
-  const enemy=ENEMIES.find(e=>e.name===document.getElementById('enemySel').value);
-  if(!spell||!enemy) return;
+function simCalc(){
+  if(!SC.length || !SPELLS.length || !ENEMIES.length) return;
+  const hLvl=+document.getElementById('heroLvl').value, tier=+document.getElementById('simTier').value, eLv=+document.getElementById('eLvl').value;
+  const spell=SPELLS.find(s=>s.n===document.getElementById('simSpell').value) || SPELLS[0];
+  const enemy=ENEMIES.find(e=>e.n===document.getElementById('simEnemy').value) || ENEMIES[0];
 
-  const heroRow=getRow(heroLvl);
-  const buildStats=getBuildStats(heroLvl);
+  const r=row(hLvl), bs=heroStats(hLvl,BUILD.hp,BUILD.mana,BUILD.dmg), mult=dmgMult(hLvl,BUILD.dmg);
+  const base=spellBase(spell.n,tier), eff=Math.round(base*r.spellDMGpct/100*mult);
+  const enemHP=eHP(enemy,eLv), enemDMG=eDMG(enemy,eLv);
+  
+  const isRes=enemy.res.split(',').some(x=>x.trim().toLowerCase()===spell.el.toLowerCase()), 
+        isWeak=enemy.weak.split(',').some(x=>x.trim().toLowerCase()===spell.el.toLowerCase());
+  const em=isRes?.5:isWeak?1.5:1, final=Math.round(eff*em);
+  const ttk=ceil(enemHP/Math.max(final,1)), ttd=ceil(bs.hp/Math.max(enemDMG,1));
 
-  /* Hero HP comes from the Totem build */
-  const heroHP=buildStats.hp;
-  /* Spell dmg = tier_base × spellDMG% from level table. Totem DMG pts = melee dmg, NOT spell multiplier */
-  const spellBase=spellDmgAtTier(spell,spellTier);
-  const effDmg=effectiveDmg(spellBase,heroRow.spellDMG);
+  document.getElementById('sDmg').textContent=fmt(final);
+  document.getElementById('sTTK').textContent=ttk+' hits';
+  document.getElementById('sHeroHP').textContent=fmt(bs.hp);
+  document.getElementById('sHPsub').textContent=BUILD.hp+' HP pts';
+  document.getElementById('sTTD').textContent=ttd+' hits';
+  document.getElementById('rEHP').textContent=fmt(enemHP);
+  document.getElementById('rEDMG').textContent=fmt(enemDMG);
+  document.getElementById('rSpell').textContent=`${fmt(base)} × ${r.spellDMGpct}% = ${fmt(Math.round(base*r.spellDMGpct/100))}`;
+  document.getElementById('rMult').textContent=`×${mult.toFixed(2)} (${BUILD.dmg} pts)`;
+  document.getElementById('rElem').innerHTML=`<span style="color:${EC[spell.el]}">${spell.el}</span> ${isRes?'<span style="color:#555">×0.5 Res</span>':isWeak?'<span style="color:#18a070">×1.5 Weak</span>':'×1.0'}`;
+  
+  const shown=Math.min(ttk,20), pct=Math.max(0,Math.round((enemHP-shown*final)/enemHP*100));
+  document.getElementById('hpFill').style.width=pct+'%';
+  document.getElementById('hpL').textContent='After '+shown+' hits';
+  document.getElementById('hpR').textContent=pct+'% remaining';
 
-  const enemyHPVal=getEnemyHP(enemy,enemyLvl);
-  const enemyDMGVal=getEnemyDMG(enemy,enemyLvl);
-
-  const isRes=enemy.res.split(', ').some(r=>r.trim()===spell.element);
-  const isWeak=enemy.weak.split(', ').some(w=>w.trim()===spell.element);
-  const multi=isRes?0.5:isWeak?1.5:1;
-  const finalDmg=Math.round(effDmg*multi);
-
-  const ttk=Math.ceil(enemyHPVal/Math.max(finalDmg,1));
-  const ttd=Math.ceil(heroHP/Math.max(enemyDMGVal,1));
-
-  document.getElementById('simDmg').textContent=fmt(finalDmg);
-  document.getElementById('simTTK').textContent=ttk+' hits';
-  document.getElementById('simHeroHP').textContent=fmt(heroHP);
-  document.getElementById('simHeroHPSub').textContent=BUILD.hp+' HP pts invested';
-  document.getElementById('simTTD').textContent=ttd+' hits';
-  document.getElementById('rEnemyHP').textContent=fmt(enemyHPVal);
-  document.getElementById('rEnemyDMG').textContent=fmt(enemyDMGVal);
-  document.getElementById('rSpellBase').textContent=fmt(spellBase)+' base × '+heroRow.spellDMG+'% scaling = '+fmt(effDmg)+(multi!==1?' × '+multi+' = '+fmt(finalDmg):'');
-  document.getElementById('rResWeak').innerHTML=`<span style="color:${ELEM_COL[spell.element]}">${spell.element}</span> — Res: ${enemy.res} | Weak: ${enemy.weak}`;
-  document.getElementById('rMulti').textContent=isRes?'×0.5 (Resistance)':isWeak?'×1.5 (Weakness)':'×1.0 (Normal)';
-  document.getElementById('rMulti').style.color=isRes?'#888':isWeak?'#1d9e75':'var(--text)';
-
-  const hitsShown=Math.min(ttk,20);
-  const pct=Math.max(0,Math.round((enemyHPVal-hitsShown*finalDmg)/enemyHPVal*100));
-  document.getElementById('hpBarFill').style.width=pct+'%';
-  document.getElementById('hpBarLeft').textContent='After '+hitsShown+' hits';
-  document.getElementById('hpBarRight').textContent=pct+'% HP remaining';
-
-  const compData=SPELLS.filter(s=>s.tier5dmg>0).map(s=>{
-    const base=spellDmgAtTier(s,spellTier);
-    const eff=effectiveDmg(base,heroRow.spellDMG);
-    const r=enemy.res.split(', ').some(r=>r.trim()===s.element);
-    const w=enemy.weak.split(', ').some(w=>w.trim()===s.element);
-    return {name:s.name,dmg:Math.round(eff*(r?0.5:w?1.5:1)),color:ELEM_COL[s.element]||'#888',sel:s.name===spell.name};
+  const comp=SPELLS.map(s=>{
+    const b2=spellBase(s.n,tier), e2=Math.round(b2*r.spellDMGpct/100*mult);
+    const rv=enemy.res.split(',').some(x=>x.trim().toLowerCase()===s.el.toLowerCase()), 
+          wv=enemy.weak.split(',').some(x=>x.trim().toLowerCase()===s.el.toLowerCase());
+    return {name:s.n,dmg:Math.round(e2*(rv?.5:wv?1.5:1)),col:EC[s.el]||'#555',sel:s.n===spell.n};
   }).sort((a,b)=>b.dmg-a.dmg).slice(0,12);
-
-  if(simCompChart) simCompChart.destroy();
-  simCompChart=new Chart(document.getElementById('simCompChart'),{
-    type:'bar',
-    data:{labels:compData.map(d=>d.name),datasets:[{data:compData.map(d=>d.dmg),backgroundColor:compData.map(d=>d.sel?d.color:d.color+'55'),borderColor:compData.map(d=>d.sel?d.color:'transparent'),borderWidth:compData.map(d=>d.sel?2:0)}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+' effective dmg'}}},
-      scales:{x:{ticks:{color:'#555870',callback:v=>fmt(v),font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8b8fa8',font:{size:11}},grid:{display:false}}}
-    }
-  });
+  
+  mkC('simComp',{type:'bar',data:{labels:comp.map(d=>d.name),datasets:[{data:comp.map(d=>d.dmg),backgroundColor:comp.map(d=>d.sel?d.col:d.col+'55')}]},options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'#454860'},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#7a7f9a'}}}
+  }});
 }
 
-/* ════ SPELLS ════ */
-let spellFilter='all';
-
+/* ═══════════════════════════════════════════════════════
+   SPELLS DISPLAY CARD
+═══════════════════════════════════════════════════════ */
+let spellFilt='all';
 function initSpells(){
-  const filters=document.getElementById('spellFilters');
-  ['all','Fire','Ice','Earth','Wind','Lightning','Necro','None'].forEach(e=>{
-    const b=document.createElement('button');
-    b.className='filter-btn'+(e==='all'?' on':'');
-    b.textContent=e==='all'?'All':e;
-    if(e!=='all') b.style.cssText=`background:${ELEM_COL[e]}20;color:${ELEM_COL[e]};border-color:${ELEM_COL[e]}40`;
-    b.onclick=()=>{spellFilter=e;document.querySelectorAll('#spellFilters .filter-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderSpells()};
-    filters.appendChild(b);
+  const fb=document.getElementById('spFilters'); fb.innerHTML='';
+  ['all','Fire','Ice','Earth','Wind','Lightning','Necro'].forEach(e=>{
+    const b=document.createElement('button'); b.textContent=e==='all'?'All':e; b.className=e==='all'?'on':'';
+    if(e!=='all') b.style.cssText=`background:${EC[e]}18;color:${EC[e]};border-color:${EC[e]}35`;
+    b.onclick=()=>{spellFilt=e;document.querySelectorAll('#spFilters button').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderSpells()};
+    fb.appendChild(b);
   });
 }
-
 function renderSpells(){
-  const grid=document.getElementById('spellGrid'); grid.innerHTML='';
-  const lvl=+document.getElementById('spellPreviewLvl').value;
-  const heroRow=getRow(lvl);
-  const maxDmg=Math.max(...Object.values(SPELL_TIERS).map(t=>t[5]));
-  SPELLS.filter(s=>spellFilter==='all'||s.element===spellFilter).forEach(spell=>{
-    const col=ELEM_COL[spell.element]||'#888';
-    const card=document.createElement('div');
-    card.className='spell-card'; card.style.borderColor=col+'30';
-    const tierRows=[0,1,2,3,4,5].map(t=>{
-      const base=spellDmgAtTier(spell,t);
-      const eff=effectiveDmg(base,heroRow.spellDMG);
-      const pct=base>0?Math.round(base/maxDmg*100):0;
-      return `<div class="spell-tier-row"><span style="color:var(--text3)">T${t}</span><span class="tval" style="color:${col}">${base>0?fmt(base):'—'}</span><span style="color:var(--text2);font-size:.7rem">${eff>0?'→ '+fmt(eff):''}</span></div><div class="spell-bar"><div class="spell-bar-fill" style="background:${col};width:${pct}%"></div></div>`;
+  if(!SC.length || !SPELLS.length) return;
+  const grid=document.getElementById('spGrid'); grid.innerHTML='';
+  const lvl=+document.getElementById('spLvl').value, r=row(lvl), mult=dmgMult(lvl,BUILD.dmg);
+  
+  let maxB = 1;
+  SPELLS.forEach(s => s.tiers.forEach(v => { if(v > maxB) maxB = v; }));
+
+  SPELLS.filter(s=>spellFilt==='all'||s.el.toLowerCase()===spellFilt.toLowerCase()).forEach(spell=>{
+    const col=EC[spell.el]||'#555', card=document.createElement('div');
+    card.className='spc'; card.style.borderColor=col+'28';
+    const rows=[0,1,2,3,4,5].map(t=>{
+      const b=spellBase(spell.n,t), eff=b>0?Math.round(b*r.spellDMGpct/100*mult):0, pct=Math.round(b/maxB*100);
+      return `<div class="str"><span style="color:var(--text3)">T${t}</span><span style="font-family:var(--fm);font-weight:600;color:${col}">${b>0?fmt(b):'—'}</span><span style="color:var(--text2);font-size:.66rem">${eff>0?'→ '+fmt(eff):''}</span></div><div class="sb"><div class="sbf" style="background:${col};width:${pct}%"></div></div>`;
     }).join('');
-    card.innerHTML=`<div class="spell-name">${spell.name}</div><div class="spell-meta"><div class="elem-dot" style="background:${col}"></div>${spell.element} · ${spell.type} · Unlock ${spell.unlockLvl}</div><div style="font-size:.68rem;color:var(--text3);margin-bottom:6px">Base → Effective @ L${lvl}</div>${tierRows}`;
+    card.innerHTML=`<div class="spn">${spell.n}</div><div class="spm"><div class="dsm" style="background:${col}"></div>${spell.el} · ${spell.ty} · Lvl ${spell.ul}</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Eff @ L${lvl}</div>${rows}`;
     grid.appendChild(card);
   });
 }
 
-/* ════ ENEMIES ════ */
-let enemyTypeFilter='all';
-
+/* ═══════════════════════════════════════════════════════
+   ENEMIES LIST
+═══════════════════════════════════════════════════════ */
+let enemFilt='all';
 function initEnemies(){
-  const bar=document.getElementById('enemyTypeFilter');
+  const fb=document.getElementById('eFilters'); fb.innerHTML='';
   ['all','Base','Boss'].forEach(t=>{
-    const b=document.createElement('button');
-    b.className='filter-btn'+(t==='all'?' on':'');
-    b.textContent=t==='all'?'All':t;
-    if(t==='Boss') b.style.cssText='color:var(--fire);border-color:var(--fire)40';
-    b.onclick=()=>{enemyTypeFilter=t;document.querySelectorAll('#enemyTypeFilter .filter-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderEnemies()};
-    bar.appendChild(b);
+    const b=document.createElement('button'); b.textContent=t==='all'?'All':t; b.className=t==='all'?'on':'';
+    if(t=='Boss') b.style.cssText='color:var(--fire);border-color:var(--fire)35';
+    b.onclick=()=>{enemFilt=t;document.querySelectorAll('#eFilters button').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderEnemies()};
+    fb.appendChild(b);
   });
 }
-
 function renderEnemies(){
-  const lvl=+document.getElementById('enemyLvlFilter').value;
-  const body=document.getElementById('enemyTableBody'); body.innerHTML='';
-  const heroRow=getRow(lvl);
-  const buildStats=getBuildStats(lvl);
-  const heroHP=buildStats.hp;
-  /* Spell reference: Fire Strike T3, no build DMG mult */
-  const refEff=effectiveDmg(spellDmgAtTier(SPELLS[0],3),heroRow.spellDMG);
-
-  ENEMIES.filter(e=>enemyTypeFilter==='all'||e.type===enemyTypeFilter).forEach(enemy=>{
-    const hp=getEnemyHP(enemy,lvl);
-    const dmg=getEnemyDMG(enemy,lvl);
-    const ttk=enemy.type==='Boss'?null:Math.ceil(hp/Math.max(refEff,1));
-    const ttd=Math.ceil(heroHP/Math.max(dmg,1));
-    const resCols=enemy.res.split(', ').map(r=>`<span class="res-pill" style="background:${ELEM_COL[r.trim()]||'#333'}30;color:${ELEM_COL[r.trim()]||'#888'}">${r.trim()}</span>`).join('');
-    const weakCols=enemy.weak.split(', ').map(w=>`<span class="res-pill" style="background:${ELEM_COL[w.trim()]||'#333'}30;color:${ELEM_COL[w.trim()]||'#888'}">${w.trim()}</span>`).join('');
+  if(!SC.length || !ENEMIES.length) return;
+  const lvl=+document.getElementById('eLvlFilt').value, r=row(lvl), mult=dmgMult(lvl,BUILD.dmg);
+  const firstSpellName = SPELLS[0]?.n || '';
+  const refEff=Math.round(spellBase(firstSpellName,3)*r.spellDMGpct/100*mult);
+  const heroHp=heroStats(lvl,BUILD.hp,BUILD.mana,BUILD.dmg).hp;
+  const body=document.getElementById('eRows'); body.innerHTML='';
+  
+  ENEMIES.filter(e=>enemFilt==='all'||e.ty.toLowerCase()===enemFilt.toLowerCase()).forEach(enemy=>{
+    const hp=eHP(enemy,lvl), dmg=eDMG(enemy,lvl);
+    const ttk=enemy.ty==='Boss'?null:ceil(hp/Math.max(refEff,1)), ttd=ceil(heroHp/Math.max(dmg,1));
+    const res=enemy.res==='None'?'':enemy.res.split(',').map(x=>`<span class="pill" style="background:${EC[x.trim()]||'#333'}20;color:${EC[x.trim()]||'#888'}">${x.trim()}</span>`).join('');
+    const wk=enemy.weak==='None'?'':enemy.weak.split(',').map(x=>`<span class="pill" style="background:${EC[x.trim()]||'#333'}20;color:${EC[x.trim()]||'#888'}">${x.trim()}</span>`).join('');
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><div style="font-weight:600">${enemy.name}</div><div style="color:var(--text3);font-size:.72rem">${enemy.prefab}</div></td><td><span class="type-${enemy.type.toLowerCase()}">${enemy.type}</span></td><td class="num-cell">${fmt(hp)}</td><td class="num-cell">${fmt(dmg)}</td><td class="num-cell" style="color:var(--accent)">${ttk?ttk+' hits':'<span style="color:var(--text3)">Boss</span>'}</td><td class="num-cell" style="color:var(--fire)">${ttd} hits</td><td>${resCols}</td><td>${weakCols}</td>`;
+    tr.innerHTML=`<td><div style="font-weight:600">${enemy.n}</div><div style="color:var(--text3);font-size:.68rem">${enemy.pfx}</div></td>
+      <td><span class="${enemy.ty.toLowerCase()}-t">${enemy.ty}</span></td>
+      <td class="mc">${fmt(hp)}</td><td class="mc">${fmt(dmg)}</td>
+      <td class="mc" style="color:var(--accent)">${ttk?ttk+' hits':'<span style="color:var(--text3)">Boss</span>'}</td>
+      <td class="mc" style="color:var(--fire)">${ttd} hits</td>
+      <td>${res}</td><td>${wk}</td>`;
     body.appendChild(tr);
   });
 }
 
-/* ════ LIVE DATA ════ */
-async function tryLoadLiveData(){
-  const dot=document.getElementById('liveDot'), status=document.getElementById('liveStatus');
-  try{
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Scaling%20Datas`;
-    const resp=await fetch(url);
-    if(!resp.ok) throw new Error();
-    const text=await resp.text();
-    JSON.parse(text.substring(47).slice(0,-2));
-    dot.className='live-dot ok';
-    status.textContent='Live · '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  }catch(e){
-    dot.className='live-dot err';
-    status.textContent='Offline mode';
-  }
+function mkC(id,cfg){if(charts[id]) charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg)}
+
+function initAll(){
+  updateCurveUI();
+  updateBanners();
+  initSim(); 
+  simCalc();
+  initSpells(); 
+  renderSpells();
+  initEnemies(); 
+  renderEnemies();
+  drawComp();
 }
 
-/* ════ INIT ════ */
-window.addEventListener('DOMContentLoaded',()=>{
-  updateCurveUI();
-  updateAllBanners();
-  initSim(); simUpdate();
-  initSpells(); renderSpells();
-  initEnemies(); renderEnemies();
-  tryLoadLiveData();
-});
+window.addEventListener('DOMContentLoaded', loadAllData);
 </script>
 </body>
 </html>
