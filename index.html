@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0059)file:///Users/francklennon/Downloads/wizherd_dashboard.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wizherd — Balancing Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="./index_files/chart.umd.js"></script>
 <style>
 :root{
   --bg:#0d0e12;--bg2:#13151c;--bg3:#1a1d28;--bg4:#22263a;
@@ -13,12 +13,13 @@
   --accent:#6c63d4;--accent2:#4e47a8;
   --hp:#e04545;--mana:#3480d4;--dmg:#e09820;--enemy:#d45a30;
   --fire:#e04545;--ice:#3480d4;--earth:#b07010;--wind:#18a070;--lightning:#6c63d4;--necro:#c04878;
+  --soft:#f0b429;--hard:#e04545;
   --r:8px;--rlg:12px;
   --f:'Inter',system-ui,sans-serif;--fm:'JetBrains Mono','Fira Code',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--f);line-height:1.55;min-height:100vh;font-size:14px}
-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.75rem;display:flex;align-items:center;gap:1.5rem;height:52px;position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.75rem;display:flex;align-items:center;gap:1.5rem;height:52px;position:sticky;top:0;z-index:100}
 .logo{font-size:1rem;font-weight:700;letter-spacing:.08em;display:flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0}
 .gem{width:18px;height:18px;background:var(--accent);border-radius:3px;transform:rotate(45deg)}
 nav{display:flex;gap:1px}
@@ -31,7 +32,7 @@ nav button.on{background:var(--bg4);color:var(--text)}
 .dot.err{background:var(--fire)}
 .dot.spin{background:var(--accent);animation:pulse .9s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-main{max-width:1080px;margin:0 auto;padding:1.75rem 1.5rem}
+main{max-width:1100px;margin:0 auto;padding:1.75rem 1.5rem}
 .tab{display:none}.tab.on{display:block}
 h3{font-size:.72rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.65rem}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:1.1rem 1.35rem}
@@ -49,14 +50,14 @@ h3{font-size:.72rem;font-weight:600;color:var(--text2);text-transform:uppercase;
 .num{font-size:.8rem;font-weight:700;font-family:var(--fm);min-width:28px;text-align:right}
 select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--f);font-size:.8rem;padding:6px 9px;border-radius:var(--r);outline:none;cursor:pointer;width:100%}
 select:focus{border-color:var(--accent)}
-.badge{display:inline-flex;align-items:center;font-size:.7rem;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text2);margin-bottom:.75rem}
+.badge{display:inline-flex;align-items:center;font-size:.7rem;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text2);margin-bottom:.6rem}
 .badge.over{background:rgba(224,69,69,.12);color:var(--fire)}
 .banner{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 12px;margin-bottom:1rem;font-size:.76rem;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .banner b{font-family:var(--fm);font-weight:700}
 .banner a{margin-left:auto;font-size:.68rem;color:var(--accent);cursor:pointer;text-decoration:underline;white-space:nowrap}
 .cw{position:relative;width:100%;height:260px}
 .cw-sm{position:relative;width:100%;height:200px}
-.cw-lg{position:relative;width:100%;height:300px}
+.cw-lg{position:relative;width:100%;height:320px}
 .leg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:7px}
 .li{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text2)}
 .ls{width:14px;height:3px;border-radius:2px;flex-shrink:0}
@@ -64,13 +65,29 @@ select:focus{border-color:var(--accent)}
 .stab{font-size:.76rem;padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:none;color:var(--text2);cursor:pointer;font-family:var(--f);transition:all .1s;font-weight:500}
 .stab:hover{background:var(--bg3);color:var(--text)}
 .stab.on{background:var(--bg4);color:var(--text);border-color:var(--accent2)}
+/* Archetype preset buttons */
+.preset-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.75rem}
+.preset-btn{font-size:.73rem;padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;font-family:var(--f);font-weight:500;transition:all .1s;white-space:nowrap}
+.preset-btn:hover{background:var(--bg3);color:var(--text)}
+.preset-btn.balanced{border-color:#6c63d4;color:#6c63d4}
+.preset-btn.dps{border-color:#e09820;color:#e09820}
+.preset-btn.support{border-color:#e04545;color:#e04545}
+.preset-btn.caster{border-color:#3480d4;color:#3480d4}
+/* Cap zone indicators */
+.cap-zones{display:flex;gap:3px;margin-bottom:.5rem;font-size:.65rem}
+.cap-zone{display:flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px}
+.cap-zone.base{background:rgba(24,160,112,.12);color:#18a070;border:1px solid rgba(24,160,112,.25)}
+.cap-zone.soft{background:rgba(240,180,41,.12);color:var(--soft);border:1px solid rgba(240,180,41,.25)}
+.cap-zone.hard{background:rgba(224,69,69,.12);color:var(--hard);border:1px solid rgba(224,69,69,.25)}
+/* Toggle bar/line */
+.view-toggle{display:flex;gap:3px;margin-bottom:.75rem}
+.vtbtn{font-size:.72rem;padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:none;color:var(--text2);cursor:pointer;font-family:var(--f);font-weight:500;transition:all .1s}
+.vtbtn.on{background:var(--bg4);color:var(--text);border-color:var(--accent2)}
 .sg{display:grid;grid-template-columns:260px 1fr;gap:1.25rem}
 .rr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem}
 .rr:last-child{border-bottom:none}
 .rv{font-family:var(--fm);font-weight:600}
 .rl{color:var(--text2)}
-.hpbar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:.7rem}
-.hpfill{height:100%;border-radius:3px;transition:width .25s}
 .fb{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem}
 .fb button{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;font-family:var(--f);font-weight:500;transition:all .1s}
 .fb button:hover{background:var(--bg3)}
@@ -104,59 +121,90 @@ tbody td{padding:8px 11px}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
 @media(max-width:680px){
   header{padding:0 .9rem;gap:.9rem}
+  .logo span.sub{display:none}
   .sg{grid-template-columns:1fr}
   .g2,.g3,.g4{grid-template-columns:1fr 1fr}
   main{padding:1rem .9rem}
 }
 </style>
 </head>
-<body>
+<body style="overscroll-behavior-x: auto;">
 
 <header>
-  <div class="logo"><div class="gem"></div>WIZHERD<span style="color:var(--text3);font-weight:400;margin-left:4px">/ Balancing</span></div>
+  <div class="logo"><div class="gem"></div>WIZHERD<span class="sub" style="color:var(--text3);font-weight:400;margin-left:4px">/ Balancing</span></div>
   <nav>
-    <button class="on" onclick="goTab('curves',this)">Stat Curves</button>
-    <button onclick="goTab('compare',this)">Build Compare</button>
-    <button onclick="goTab('combat',this)">Combat Sim</button>
-    <button onclick="goTab('spells',this)">Spells</button>
-    <button onclick="goTab('enemies',this)">Enemies</button>
+    <button class="" onclick="goTab(&#39;curves&#39;,this)">Stat Curves</button>
+    <button onclick="goTab(&#39;combat&#39;,this)" class="on">Combat Sim</button>
+    <button onclick="goTab(&#39;spells&#39;,this)">Spells</button>
+    <button onclick="goTab(&#39;enemies&#39;,this)">Enemies</button>
   </nav>
-  <div class="live"><div class="dot spin" id="dot"></div><span id="lbl">Loading live data…</span></div>
+  <div class="live"><div class="dot err" id="dot"></div><span id="lbl">Offline — fallback data</span></div>
 </header>
 
 <main>
 
-<div class="tab on" id="tab-curves">
+<!-- ═══ STAT CURVES ═══ -->
+<div class="tab" id="tab-curves">
   <div class="row" style="gap:1.5rem;flex-wrap:wrap">
-    <div class="col" style="min-width:200px;max-width:275px">
+
+    <!-- Left panel: allocation -->
+    <div class="col" style="min-width:210px;max-width:290px">
       <h3>Totem — point allocation</h3>
-      <div class="ctrl"><label style="color:var(--hp)">HP pts</label><input type="range" id="sHP" min="0" max="99" value="50" oninput="onBuild()"><span class="num" id="vHP" style="color:var(--hp)">50</span></div>
-      <div class="ctrl"><label style="color:var(--mana)">Mana pts</label><input type="range" id="sMana" min="0" max="99" value="25" oninput="onBuild()"><span class="num" id="vMana" style="color:var(--mana)">25</span></div>
-      <div class="ctrl"><label style="color:var(--dmg)">DMG pts</label><input type="range" id="sDMG" min="0" max="99" value="24" oninput="onBuild()"><span class="num" id="vDMG" style="color:var(--dmg)">24</span></div>
+
+      <!-- Sliders -->
+      <div class="ctrl"><label style="color:var(--hp)">HP pts</label><input type="range" id="sHP" min="0" max="99" value="33" oninput="onBuild()"><span class="num" id="vHP" style="color:var(--hp)">33</span></div>
+      <div class="ctrl"><label style="color:var(--mana)">Mana pts</label><input type="range" id="sMana" min="0" max="99" value="33" oninput="onBuild()"><span class="num" id="vMana" style="color:var(--mana)">33</span></div>
+      <div class="ctrl"><label style="color:var(--dmg)">DMG pts</label><input type="range" id="sDMG" min="0" max="99" value="33" oninput="onBuild()"><span class="num" id="vDMG" style="color:var(--dmg)">33</span></div>
       <div class="badge" id="ptsBadge">0 pts remaining</div>
+
+      <!-- Archetype presets -->
+      <h3 style="margin-top:.1rem">Quick presets</h3>
+      <div class="preset-row">
+        <button class="preset-btn balanced" onclick="applyPreset(&#39;balanced&#39;)">Balanced</button>
+        <button class="preset-btn dps" onclick="applyPreset(&#39;dps&#39;)">DPS</button>
+        <button class="preset-btn support" onclick="applyPreset(&#39;support&#39;)">Support</button>
+        <button class="preset-btn caster" onclick="applyPreset(&#39;caster&#39;)">Caster</button>
+      </div>
+
+      <!-- Stat results at L100 -->
       <div class="g3" style="gap:6px">
-        <div class="m"><div class="l">HP @ L100</div><div class="v" id="cHP" style="color:var(--hp);font-size:.95rem">—</div><div class="s" id="subHP"></div></div>
-        <div class="m"><div class="l">Mana @ L100</div><div class="v" id="cMana" style="color:var(--mana);font-size:.95rem">—</div><div class="s" id="subMana"></div></div>
-        <div class="m"><div class="l">BaseDMG @ L100</div><div class="v" id="cDMG" style="color:var(--dmg);font-size:.95rem">—</div><div class="s" id="subDMG"></div></div>
+        <div class="m"><div class="l">HP @ L100</div><div class="v" id="cHP" style="color:var(--hp);font-size:.95rem">4,663</div><div class="s" id="subHP">28% of max</div></div>
+        <div class="m"><div class="l">Mana @ L100</div><div class="v" id="cMana" style="color:var(--mana);font-size:.95rem">265</div><div class="s" id="subMana">61% of max</div></div>
+        <div class="m"><div class="l">BaseDMG @ L100</div><div class="v" id="cDMG" style="color:var(--dmg);font-size:.95rem">2,323</div><div class="s" id="subDMG">19% of max</div></div>
       </div>
     </div>
+
+    <!-- Right panel: chart -->
     <div class="col">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.85rem; flex-wrap:wrap; gap:10px;">
-        <div class="stabs" style="margin-bottom:0" id="curveTypeTabs">
-          <button class="stab on" data-type="line" onclick="toggleCurveView('line')">View: Progress Curves</button>
-          <button class="stab" data-type="bar" onclick="toggleCurveView('bar')">View: Archetype Compare</button>
+      <!-- View toggle -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+        <div class="stabs" style="margin-bottom:0">
+          <button class="stab on" onclick="setCurve(&#39;hp&#39;,this)">HP</button>
+          <button class="stab" onclick="setCurve(&#39;mana&#39;,this)">Mana</button>
+          <button class="stab" onclick="setCurve(&#39;dmg&#39;,this)">Base DMG</button>
+          <button class="stab" onclick="setCurve(&#39;all&#39;,this)">Normalized</button>
         </div>
-        <div class="stabs" style="margin-bottom:0" id="curveFilterTabs">
-          <button class="stab on" onclick="setCurve('hp',this)">HP</button>
-          <button class="stab" onclick="setCurve('mana',this)">Mana</button>
-          <button class="stab" onclick="setCurve('dmg',this)">Base DMG</button>
-          <button class="stab" onclick="setCurve('all',this)">Normalized</button>
+        <div class="view-toggle">
+          <button class="vtbtn on" id="vtLine" onclick="setCurveView(&#39;line&#39;,this)">📈 Line</button>
+          <button class="vtbtn" id="vtBar" onclick="setCurveView(&#39;bar&#39;,this)">📊 Bar</button>
         </div>
       </div>
-      <div class="leg" id="curveLeg"></div>
-      <div class="cw"><canvas id="curveC"></canvas></div>
+      <div class="leg" id="curveLeg"><div class="li"><div class="ls" style="background:#e04545"></div>Your build</div><div class="li"><div class="ls" style="background:repeating-linear-gradient(90deg,#6c63d4 0,#6c63d4 4px,transparent 4px,transparent 8px)"></div>Balanced</div><div class="li"><div class="ls" style="background:repeating-linear-gradient(90deg,#e09820 0,#e09820 4px,transparent 4px,transparent 8px)"></div>DPS</div><div class="li"><div class="ls" style="background:repeating-linear-gradient(90deg,#e04545 0,#e04545 4px,transparent 4px,transparent 8px)"></div>Support</div><div class="li"><div class="ls" style="background:repeating-linear-gradient(90deg,#3480d4 0,#3480d4 4px,transparent 4px,transparent 8px)"></div>Caster</div></div>
+      <div class="cw"><canvas id="curveC" style="box-sizing: border-box; display: block; height: 260px; width: 738px;" width="1476" height="520"></canvas></div>
     </div>
   </div>
+
+  <div class="sep"></div>
+  <h3>Archetype comparison — grouped bars</h3>
+  <div class="stabs" style="margin-bottom:.75rem">
+    <button class="stab on" onclick="setCompStat(&#39;hp&#39;,this)">HP</button>
+    <button class="stab" onclick="setCompStat(&#39;mana&#39;,this)">Mana</button>
+    <button class="stab" onclick="setCompStat(&#39;dmg&#39;,this)">Base DMG</button>
+    <button class="stab" onclick="setCompStat(&#39;all&#39;,this)">All stats</button>
+  </div>
+  <div class="cw-lg"><canvas id="compC" style="box-sizing: border-box; display: block; height: 320px; width: 1052px;" width="2104" height="640"></canvas></div>
+  <p class="muted" style="margin-top:.5rem;font-size:.68rem">Stats at level 100 for each archetype. Your build is highlighted.</p>
+
   <div class="sep"></div>
   <h3>Raw values — key levels</h3>
   <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--rlg)">
@@ -166,264 +214,572 @@ tbody td{padding:8px 11px}
       <th style="color:var(--mana)">Mana (build)</th><th style="color:var(--mana);opacity:.45">Mana (full 99)</th>
       <th style="color:var(--dmg)">Base DMG (build)</th><th style="color:var(--dmg);opacity:.45">DMG (full 99)</th>
       <th>Enemy HP (sheet)</th>
-    </tr></thead><tbody id="curveRows"></tbody></table>
+    </tr></thead><tbody id="curveRows"><tr><td style="color:var(--accent);font-weight:600">1</td>
+      <td class="mc" style="color:var(--hp)">500</td><td class="mc" style="color:var(--text3)">500</td>
+      <td class="mc" style="color:var(--mana)">100</td><td class="mc" style="color:var(--text3)">100</td>
+      <td class="mc" style="color:var(--dmg)">100</td><td class="mc" style="color:var(--text3)">100</td>
+      <td class="mc">180</td></tr><tr><td style="color:var(--accent);font-weight:600">5</td>
+      <td class="mc" style="color:var(--hp)">535</td><td class="mc" style="color:var(--text3)">655</td>
+      <td class="mc" style="color:var(--mana)">105</td><td class="mc" style="color:var(--text3)">120</td>
+      <td class="mc" style="color:var(--dmg)">110</td><td class="mc" style="color:var(--text3)">146</td>
+      <td class="mc">223</td></tr><tr><td style="color:var(--accent);font-weight:600">10</td>
+      <td class="mc" style="color:var(--hp)">613</td><td class="mc" style="color:var(--text3)">919</td>
+      <td class="mc" style="color:var(--mana)">115</td><td class="mc" style="color:var(--text3)">145</td>
+      <td class="mc" style="color:var(--dmg)">133</td><td class="mc" style="color:var(--text3)">236</td>
+      <td class="mc">292</td></tr><tr><td style="color:var(--accent);font-weight:600">15</td>
+      <td class="mc" style="color:var(--hp)">701</td><td class="mc" style="color:var(--text3)">1,289</td>
+      <td class="mc" style="color:var(--mana)">125</td><td class="mc" style="color:var(--text3)">170</td>
+      <td class="mc" style="color:var(--dmg)">161</td><td class="mc" style="color:var(--text3)">380</td>
+      <td class="mc">382</td></tr><tr><td style="color:var(--accent);font-weight:600">20</td>
+      <td class="mc" style="color:var(--hp)">750</td><td class="mc" style="color:var(--text3)">1,808</td>
+      <td class="mc" style="color:var(--mana)">130</td><td class="mc" style="color:var(--text3)">195</td>
+      <td class="mc" style="color:var(--dmg)">177</td><td class="mc" style="color:var(--text3)">612</td>
+      <td class="mc">499</td></tr><tr><td style="color:var(--accent);font-weight:600">25</td>
+      <td class="mc" style="color:var(--hp)">859</td><td class="mc" style="color:var(--text3)">2,536</td>
+      <td class="mc" style="color:var(--mana)">140</td><td class="mc" style="color:var(--text3)">220</td>
+      <td class="mc" style="color:var(--dmg)">214</td><td class="mc" style="color:var(--text3)">985</td>
+      <td class="mc">650</td></tr><tr><td style="color:var(--accent);font-weight:600">30</td>
+      <td class="mc" style="color:var(--hp)">984</td><td class="mc" style="color:var(--text3)">3,557</td>
+      <td class="mc" style="color:var(--mana)">150</td><td class="mc" style="color:var(--text3)">245</td>
+      <td class="mc" style="color:var(--dmg)">259</td><td class="mc" style="color:var(--text3)">1,586</td>
+      <td class="mc">850</td></tr><tr><td style="color:var(--accent);font-weight:600">40</td>
+      <td class="mc" style="color:var(--hp)">1,205</td><td class="mc" style="color:var(--text3)">6,997</td>
+      <td class="mc" style="color:var(--mana)">165</td><td class="mc" style="color:var(--text3)">295</td>
+      <td class="mc" style="color:var(--dmg)">345</td><td class="mc" style="color:var(--text3)">4,114</td>
+      <td class="mc">1,453</td></tr><tr><td style="color:var(--accent);font-weight:600">50</td>
+      <td class="mc" style="color:var(--hp)">1,476</td><td class="mc" style="color:var(--text3)">8,948</td>
+      <td class="mc" style="color:var(--mana)">180</td><td class="mc" style="color:var(--text3)">327</td>
+      <td class="mc" style="color:var(--dmg)">459</td><td class="mc" style="color:var(--text3)">5,905</td>
+      <td class="mc">2,480</td></tr><tr><td style="color:var(--accent);font-weight:600">60</td>
+      <td class="mc" style="color:var(--hp)">1,935</td><td class="mc" style="color:var(--text3)">10,907</td>
+      <td class="mc" style="color:var(--mana)">200</td><td class="mc" style="color:var(--text3)">357</td>
+      <td class="mc" style="color:var(--dmg)">673</td><td class="mc" style="color:var(--text3)">7,936</td>
+      <td class="mc">4,237</td></tr><tr><td style="color:var(--accent);font-weight:600">70</td>
+      <td class="mc" style="color:var(--hp)">2,370</td><td class="mc" style="color:var(--text3)">12,168</td>
+      <td class="mc" style="color:var(--mana)">215</td><td class="mc" style="color:var(--text3)">378</td>
+      <td class="mc" style="color:var(--dmg)">895</td><td class="mc" style="color:var(--text3)">8,940</td>
+      <td class="mc">7,240</td></tr><tr><td style="color:var(--accent);font-weight:600">75</td>
+      <td class="mc" style="color:var(--hp)">2,714</td><td class="mc" style="color:var(--text3)">12,789</td>
+      <td class="mc" style="color:var(--mana)">225</td><td class="mc" style="color:var(--text3)">388</td>
+      <td class="mc" style="color:var(--dmg)">1,083</td><td class="mc" style="color:var(--text3)">9,396</td>
+      <td class="mc">9,461</td></tr><tr><td style="color:var(--accent);font-weight:600">80</td>
+      <td class="mc" style="color:var(--hp)">2,904</td><td class="mc" style="color:var(--text3)">13,441</td>
+      <td class="mc" style="color:var(--mana)">230</td><td class="mc" style="color:var(--text3)">398</td>
+      <td class="mc" style="color:var(--dmg)">1,192</td><td class="mc" style="color:var(--text3)">9,875</td>
+      <td class="mc">12,366</td></tr><tr><td style="color:var(--accent);font-weight:600">90</td>
+      <td class="mc" style="color:var(--hp)">3,806</td><td class="mc" style="color:var(--text3)">14,847</td>
+      <td class="mc" style="color:var(--mana)">250</td><td class="mc" style="color:var(--text3)">418</td>
+      <td class="mc" style="color:var(--dmg)">1,745</td><td class="mc" style="color:var(--text3)">10,909</td>
+      <td class="mc">21,123</td></tr><tr><td style="color:var(--accent);font-weight:600">100</td>
+      <td class="mc" style="color:var(--hp)">4,663</td><td class="mc" style="color:var(--text3)">16,401</td>
+      <td class="mc" style="color:var(--mana)">265</td><td class="mc" style="color:var(--text3)">438</td>
+      <td class="mc" style="color:var(--dmg)">2,323</td><td class="mc" style="color:var(--text3)">12,050</td>
+      <td class="mc">36,079</td></tr></tbody></table>
   </div>
 </div>
 
-<div class="tab" id="tab-compare">
-  <div class="stabs" style="margin-bottom:1.25rem">
-    <button class="stab on" onclick="setComp('stats',this)">Stats at L100</button>
-    <button class="stab" onclick="setComp('ttk',this)">Hits to kill (TTK)</button>
-    <button class="stab" onclick="setComp('ttd',this)">Hits to die (TTD)</button>
-  </div>
-  <div class="g4" style="margin-bottom:1.5rem" id="compMetrics">
-    <div class="m"><div class="l">Full HP (99/0/0)</div><div class="v" id="cmp_fhp" style="color:var(--hp);font-size:1rem">—</div><div class="s">Max tankiness</div></div>
-    <div class="m"><div class="l">Balanced (33/33/33)</div><div class="v" id="cmp_bal" style="color:var(--accent);font-size:1rem">—</div><div class="s">All-rounder</div></div>
-    <div class="m"><div class="l">Your build</div><div class="v" id="cmp_you" style="color:var(--text);font-size:1rem">—</div><div class="s" id="cmp_you_sub">—</div></div>
-    <div class="m"><div class="l">Full DMG (0/0/99)</div><div class="v" id="cmp_fdmg" style="color:var(--dmg);font-size:1rem">—</div><div class="s">Max damage</div></div>
-  </div>
-  <div class="leg" id="compLeg"></div>
-  <div class="cw-lg"><canvas id="compC"></canvas></div>
-  <p class="muted" style="margin-top:.6rem;font-size:.68rem" id="compNote">TTK/TTD reference</p>
-</div>
+<!-- ═══ BUILD COMPARE (hidden — chart shown inside Stat Curves) ═══ -->
+<div class="tab" id="tab-compare" style="display:none!important"></div>
 
-<div class="tab" id="tab-combat">
+<!-- ═══ COMBAT SIM ═══ -->
+<div class="tab on" id="tab-combat">
   <div class="banner" id="simBanner">
     <span style="color:var(--text2)">Build —</span>
-    <span><b id="bHP" style="color:var(--hp)">—</b> HP</span>
-    <span><b id="bMana" style="color:var(--mana)">—</b> Mana</span>
-    <span><b id="bDMG" style="color:var(--dmg)">—</b> Base DMG</span>
-    <a onclick="goTab('curves',null)">← Edit build</a>
+    <span><b id="bHP" style="color:var(--hp)">4,663</b> HP</span>
+    <span><b id="bMana" style="color:var(--mana)">265</b> Mana</span>
+    <span><b id="bDMG" style="color:var(--dmg)">2,323</b> Base DMG</span>
+    <a onclick="goTab(&#39;curves&#39;,null)">← Edit build</a>
   </div>
   <div class="sg">
     <div class="card" style="display:flex;flex-direction:column;gap:.85rem">
-      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Hero level</div>
-        <div class="ctrl" style="margin-bottom:0"><input type="range" id="heroLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById('hLvlV').textContent=this.value;simCalc()"><span class="num" id="hLvlV" style="color:var(--accent)">50</span></div></div>
-      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell</div><select id="simSpell" onchange="simCalc()"></select></div>
-      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell tier</div>
-        <div class="ctrl" style="margin-bottom:0"><input type="range" id="simTier" min="0" max="5" value="3" style="flex:1" oninput="document.getElementById('sTierV').textContent=this.value;simCalc()"><span class="num" id="sTierV" style="color:var(--accent)">3</span></div></div>
-      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy</div><select id="simEnemy" onchange="simCalc()"></select></div>
-      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy level</div>
-        <div class="ctrl" style="margin-bottom:0"><input type="range" id="eLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById('eLvlV').textContent=this.value;simCalc()"><span class="num" id="eLvlV" style="color:var(--fire)">50</span></div></div>
+      <div>
+        <div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Hero level</div>
+        <div class="ctrl" style="margin-bottom:0">
+          <input type="range" id="heroLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById(&#39;hLvlV&#39;).textContent=this.value;simCalc()">
+          <span class="num" id="hLvlV" style="color:var(--accent)">15</span>
+        </div>
+        <div style="font-size:.66rem;color:var(--text3);margin-top:3px">Points available: <span id="heroAvailPts" style="color:var(--text2);font-family:var(--fm)">14</span></div>
+        <!-- Archetype selector for sim -->
+        <div style="margin-top:7px">
+          <div class="muted" style="margin-bottom:4px;font-size:.66rem">Build for this level</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button id="simPresetBalanced" class="preset-btn balanced on" onclick="setSimPreset(&#39;balanced&#39;)">Balanced</button>
+            <button id="simPresetDps" class="preset-btn dps" onclick="setSimPreset(&#39;dps&#39;)">DPS</button>
+            <button id="simPresetSupport" class="preset-btn support" onclick="setSimPreset(&#39;support&#39;)">Support</button>
+            <button id="simPresetCaster" class="preset-btn caster" onclick="setSimPreset(&#39;caster&#39;)">Caster</button>
+            <button id="simPresetCustom" class="preset-btn" style="border-color:var(--text3);color:var(--text2)" onclick="setSimPreset(&#39;custom&#39;)">Custom</button>
+          </div>
+          <div id="simBuildInfo" style="font-size:.66rem;color:var(--text3);margin-top:4px">Pts: 5 HP / 5 Mana / 5 DMG</div>
+        </div>
+      </div>
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell</div><select id="simSpell" onchange="simCalc()"><option value="Fire Strike">Fire Strike (Fire)</option><option value="Fire Sword">Fire Sword (Fire)</option><option value="Fire Nova">Fire Nova (Fire)</option><option value="Ice Strike">Ice Strike (Ice)</option><option value="Ice Nova">Ice Nova (Ice)</option><option value="Blizzard">Blizzard (Ice)</option><option value="Frost Stream">Frost Stream (Ice)</option><option value="Boulder">Boulder (Earth)</option><option value="Rock Wall">Rock Wall (Earth)</option><option value="Earth Nova">Earth Nova (Earth)</option><option value="Healing Totem">Healing Totem (None)</option><option value="Wind Strike">Wind Strike (Wind)</option><option value="Wind Stream">Wind Stream (Wind)</option><option value="Wind Nova">Wind Nova (Wind)</option><option value="Lightning Arc">Lightning Arc (Lightning)</option><option value="Lightning Strand">Lightning Strand (Lightning)</option><option value="Volt Gate">Volt Gate (Lightning)</option><option value="Skeletal Horde">Skeletal Horde (Necro)</option><option value="Spectral Skull">Spectral Skull (Necro)</option><option value="Shadow Form">Shadow Form (Necro)</option></select></div>
+      <div>
+        <div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell tier</div>
+        <div class="ctrl" style="margin-bottom:0">
+          <input type="range" id="simTier" min="0" max="5" value="3" style="flex:1" oninput="document.getElementById(&#39;sTierV&#39;).textContent=this.value;simCalc()">
+          <span class="num" id="sTierV" style="color:var(--accent)">0</span>
+        </div>
+      </div>
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy</div><select id="simEnemy" onchange="simCalc()"><option value="Femur">Femur</option><option value="NecroManager">NecroManager</option><option value="Daddy Femur">Daddy Femur ★</option><option value="Wee Green">Wee Green</option><option value="Boom Green">Boom Green</option><option value="Wolfgang">Wolfgang ★</option><option value="Dumbbell">Dumbbell</option><option value="IceAndBerg">IceAndBerg</option><option value="Magmalade">Magmalade ★</option><option value="Caw">Caw</option><option value="Ratcoon">Ratcoon</option><option value="Gary Frogman">Gary Frogman ★</option><option value="Lord Metalikor">Lord Metalikor ★</option><option value="IronBurn">IronBurn</option><option value="Tartargnan">Tartargnan</option><option value="Batler">Batler</option><option value="Babewyn">Babewyn</option></select></div>
+      <div>
+        <div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy level</div>
+        <div class="ctrl" style="margin-bottom:0">
+          <input type="range" id="eLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById(&#39;eLvlV&#39;).textContent=this.value;simCalc()">
+          <span class="num" id="eLvlV" style="color:var(--fire)">50</span>
+        </div>
+      </div>
     </div>
     <div>
       <div class="g2" style="margin-bottom:.85rem">
-        <div class="m"><div class="l">Effective DMG / hit</div><div class="v" id="sDmg" style="color:var(--dmg)">—</div></div>
-        <div class="m"><div class="l">Hits to kill (TTK)</div><div class="v" id="sTTK" style="color:var(--accent)">—</div></div>
-        <div class="m"><div class="l">Hero HP</div><div class="v" id="sHeroHP" style="color:var(--hp)">—</div><div class="s" id="sHPsub"></div></div>
-        <div class="m"><div class="l">Hits to die (TTD)</div><div class="v" id="sTTD" style="color:var(--fire)">—</div></div>
+        <div class="m"><div class="l">Effective DMG / hit</div><div class="v" id="sDmg" style="color:var(--dmg)">612</div></div>
+        <div class="m"><div class="l">Hits to kill (TTK)</div><div class="v" id="sTTK" style="color:var(--accent)">6 hits</div></div>
+        <div class="m"><div class="l">Hero HP</div><div class="v" id="sHeroHP" style="color:var(--hp)">701</div><div class="s" id="sHPsub">5 pts at L15 (33 total)</div></div>
+        <div class="m"><div class="l">Hits to die (TTD)</div><div class="v" id="sTTD" style="color:var(--fire)">3 hits</div></div>
       </div>
       <div class="card" style="margin-bottom:.85rem">
-        <div class="rr"><span class="rl">Enemy HP</span><span class="rv" id="rEHP">—</span></div>
-        <div class="rr"><span class="rl">Enemy DMG / hit</span><span class="rv" id="rEDMG">—</span></div>
-        <div class="rr"><span class="rl">Spell base × SpellDMG%</span><span class="rv" id="rSpell">—</span></div>
-        <div class="rr"><span class="rl">Hero DMG multiplier</span><span class="rv" id="rMult">—</span></div>
-        <div class="rr"><span class="rl">Element modifier</span><span class="rv" id="rElem">—</span></div>
-        <div class="hpbar"><div class="hpfill" id="hpFill" style="background:var(--fire);width:100%"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:.66rem;color:var(--text3);margin-top:3px"><span id="hpL">—</span><span id="hpR">—</span></div>
+        <div class="rr"><span class="rl">Enemy HP</span><span class="rv" id="rEHP">3,446</span></div>
+        <div class="rr"><span class="rl">Enemy DMG / hit</span><span class="rv" id="rEDMG">242</span></div>
+        <div class="rr"><span class="rl">Spell base × SpellDMG%</span><span class="rv" id="rSpell">100 × 380% = 380</span></div>
+        <div class="rr"><span class="rl">Hero DMG multiplier</span><span class="rv" id="rMult">×1.61 (5 pts → 161 base DMG)</span></div>
+        <div class="rr"><span class="rl">Element modifier</span><span class="rv" id="rElem"><span style="color:#e04545">Fire</span> ×1.0 normal</span></div>
       </div>
       <h3>All spells at this level</h3>
-      <div class="cw-sm"><canvas id="simComp"></canvas></div>
+      <div class="cw-sm"><canvas id="simComp" style="box-sizing: border-box; display: block; height: 200px; width: 772px;" width="1544" height="400"></canvas></div>
     </div>
   </div>
 </div>
 
+<!-- ═══ SPELLS ═══ -->
 <div class="tab" id="tab-spells">
   <div class="banner">
     <span style="color:var(--text2)">Effective DMG at level</span>
     <div class="ctrl" style="margin-bottom:0;gap:6px">
-      <input type="range" id="spLvl" min="1" max="100" value="50" style="width:90px" oninput="document.getElementById('spLvlV').textContent=this.value;renderSpells()">
+      <input type="range" id="spLvl" min="1" max="100" value="50" style="width:90px" oninput="document.getElementById(&#39;spLvlV&#39;).textContent=this.value;renderSpells()">
       <span class="num" id="spLvlV" style="color:var(--accent)">50</span>
     </div>
     <span style="color:var(--text3);font-size:.68rem">· using your DMG mult</span>
   </div>
-  <div class="fb" id="spFilters"></div>
-  <div class="spg" id="spGrid"></div>
+  <div class="fb" id="spFilters"><button class="on">All</button><button class="" style="background: rgba(224, 69, 69, 0.094); color: rgb(224, 69, 69); border-color: rgba(224, 69, 69, 0.208);">Fire</button><button class="" style="background: rgba(52, 128, 212, 0.094); color: rgb(52, 128, 212); border-color: rgba(52, 128, 212, 0.208);">Ice</button><button class="" style="background: rgba(176, 112, 16, 0.094); color: rgb(176, 112, 16); border-color: rgba(176, 112, 16, 0.208);">Earth</button><button class="" style="background: rgba(24, 160, 112, 0.094); color: rgb(24, 160, 112); border-color: rgba(24, 160, 112, 0.208);">Wind</button><button class="" style="background: rgba(108, 99, 212, 0.094); color: rgb(108, 99, 212); border-color: rgba(108, 99, 212, 0.208);">Lightning</button><button class="" style="background: rgba(192, 72, 120, 0.094); color: rgb(192, 72, 120); border-color: rgba(192, 72, 120, 0.208);">Necro</button></div>
+  <div class="spg" id="spGrid"><div class="spc" style="border-color: rgba(224, 69, 69, 0.157);"><div class="spn">Fire Strike</div><div class="spm"><div class="dsm" style="background:#e04545"></div>Fire · Strike · Unlock 1</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">170</span><span style="color:var(--text2);font-size:.66rem">→ 46,077</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:27%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">240</span><span style="color:var(--text2);font-size:.66rem">→ 65,049</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:38%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">350</span><span style="color:var(--text2);font-size:.66rem">→ 94,864</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:55%"></div></div></div><div class="spc" style="border-color: rgba(224, 69, 69, 0.157);"><div class="spn">Fire Sword</div><div class="spm"><div class="dsm" style="background:#e04545"></div>Fire · Melee · Unlock 14</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">70</span><span style="color:var(--text2);font-size:.66rem">→ 18,973</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:11%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">85</span><span style="color:var(--text2);font-size:.66rem">→ 23,038</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:13%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">115</span><span style="color:var(--text2);font-size:.66rem">→ 31,170</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:18%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">175</span><span style="color:var(--text2);font-size:.66rem">→ 47,432</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">265</span><span style="color:var(--text2);font-size:.66rem">→ 71,825</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:42%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">415</span><span style="color:var(--text2);font-size:.66rem">→ 112,481</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:65%"></div></div></div><div class="spc" style="border-color: rgba(224, 69, 69, 0.157);"><div class="spn">Fire Nova</div><div class="spm"><div class="dsm" style="background:#e04545"></div>Fire · Nova · Unlock 30</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">170</span><span style="color:var(--text2);font-size:.66rem">→ 46,077</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:27%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">240</span><span style="color:var(--text2);font-size:.66rem">→ 65,049</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:38%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">350</span><span style="color:var(--text2);font-size:.66rem">→ 94,864</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:55%"></div></div></div><div class="spc" style="border-color: rgba(52, 128, 212, 0.157);"><div class="spn">Ice Strike</div><div class="spm"><div class="dsm" style="background:#3480d4"></div>Ice · Strike · Unlock 1</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">170</span><span style="color:var(--text2);font-size:.66rem">→ 46,077</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:27%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">240</span><span style="color:var(--text2);font-size:.66rem">→ 65,049</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:38%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">350</span><span style="color:var(--text2);font-size:.66rem">→ 94,864</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:55%"></div></div></div><div class="spc" style="border-color: rgba(52, 128, 212, 0.157);"><div class="spn">Ice Nova</div><div class="spm"><div class="dsm" style="background:#3480d4"></div>Ice · Nova · Unlock 16</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">80</span><span style="color:var(--text2);font-size:.66rem">→ 21,683</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:13%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">90</span><span style="color:var(--text2);font-size:.66rem">→ 24,394</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:14%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">150</span><span style="color:var(--text2);font-size:.66rem">→ 40,656</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:24%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">220</span><span style="color:var(--text2);font-size:.66rem">→ 59,629</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:35%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">330</span><span style="color:var(--text2);font-size:.66rem">→ 89,443</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:52%"></div></div></div><div class="spc" style="border-color: rgba(52, 128, 212, 0.157);"><div class="spn">Blizzard</div><div class="spm"><div class="dsm" style="background:#3480d4"></div>Ice · DoT · Unlock 40</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">150</span><span style="color:var(--text2);font-size:.66rem">→ 40,656</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:24%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">190</span><span style="color:var(--text2);font-size:.66rem">→ 51,498</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:30%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">260</span><span style="color:var(--text2);font-size:.66rem">→ 70,470</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:41%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">370</span><span style="color:var(--text2);font-size:.66rem">→ 100,285</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:58%"></div></div></div><div class="spc" style="border-color: rgba(52, 128, 212, 0.157);"><div class="spn">Frost Stream</div><div class="spm"><div class="dsm" style="background:#3480d4"></div>Ice · Stream · Unlock 22</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">140</span><span style="color:var(--text2);font-size:.66rem">→ 37,946</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:22%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">200</span><span style="color:var(--text2);font-size:.66rem">→ 54,208</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:31%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">270</span><span style="color:var(--text2);font-size:.66rem">→ 73,181</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:43%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">380</span><span style="color:var(--text2);font-size:.66rem">→ 102,995</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:60%"></div></div></div><div class="spc" style="border-color: rgba(176, 112, 16, 0.157);"><div class="spn">Boulder</div><div class="spm"><div class="dsm" style="background:#b07010"></div>Earth · Projectile · Unlock 5</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">150</span><span style="color:var(--text2);font-size:.66rem">→ 40,656</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:24%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">180</span><span style="color:var(--text2);font-size:.66rem">→ 48,787</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">220</span><span style="color:var(--text2);font-size:.66rem">→ 59,629</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:35%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">290</span><span style="color:var(--text2);font-size:.66rem">→ 78,601</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:46%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">400</span><span style="color:var(--text2);font-size:.66rem">→ 108,416</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:63%"></div></div></div><div class="spc" style="border-color: rgba(176, 112, 16, 0.157);"><div class="spn">Rock Wall</div><div class="spm"><div class="dsm" style="background:#b07010"></div>Earth · Summon · Unlock 12</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div></div><div class="spc" style="border-color: rgba(176, 112, 16, 0.157);"><div class="spn">Earth Nova</div><div class="spm"><div class="dsm" style="background:#b07010"></div>Earth · Nova · Unlock 20</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">140</span><span style="color:var(--text2);font-size:.66rem">→ 37,946</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:22%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">180</span><span style="color:var(--text2);font-size:.66rem">→ 48,787</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">360</span><span style="color:var(--text2);font-size:.66rem">→ 97,574</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:57%"></div></div></div><div class="spc" style="border-color: rgba(85, 88, 112, 0.157);"><div class="spn">Healing Totem</div><div class="spm"><div class="dsm" style="background:#555870"></div>None · Support · Unlock 8</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div></div><div class="spc" style="border-color: rgba(24, 160, 112, 0.157);"><div class="spn">Wind Strike</div><div class="spm"><div class="dsm" style="background:#18a070"></div>Wind · Strike · Unlock 1</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">90</span><span style="color:var(--text2);font-size:.66rem">→ 24,394</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:14%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">230</span><span style="color:var(--text2);font-size:.66rem">→ 62,339</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:36%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">340</span><span style="color:var(--text2);font-size:.66rem">→ 92,153</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:54%"></div></div></div><div class="spc" style="border-color: rgba(24, 160, 112, 0.157);"><div class="spn">Wind Stream</div><div class="spm"><div class="dsm" style="background:#18a070"></div>Wind · Stream · Unlock 10</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">80</span><span style="color:var(--text2);font-size:.66rem">→ 21,683</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:13%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">95</span><span style="color:var(--text2);font-size:.66rem">→ 25,749</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:15%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">125</span><span style="color:var(--text2);font-size:.66rem">→ 33,880</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">175</span><span style="color:var(--text2);font-size:.66rem">→ 47,432</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">255</span><span style="color:var(--text2);font-size:.66rem">→ 69,115</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:40%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">380</span><span style="color:var(--text2);font-size:.66rem">→ 102,995</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:60%"></div></div></div><div class="spc" style="border-color: rgba(24, 160, 112, 0.157);"><div class="spn">Wind Nova</div><div class="spm"><div class="dsm" style="background:#18a070"></div>Wind · Nova · Unlock 25</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">90</span><span style="color:var(--text2);font-size:.66rem">→ 24,394</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:14%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">230</span><span style="color:var(--text2);font-size:.66rem">→ 62,339</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:36%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">340</span><span style="color:var(--text2);font-size:.66rem">→ 92,153</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:54%"></div></div></div><div class="spc" style="border-color: rgba(108, 99, 212, 0.157);"><div class="spn">Lightning Arc</div><div class="spm"><div class="dsm" style="background:#6c63d4"></div>Lightning · Stream · Unlock 18</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">76</span><span style="color:var(--text2);font-size:.66rem">→ 20,599</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:12%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">86</span><span style="color:var(--text2);font-size:.66rem">→ 23,309</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:14%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">106</span><span style="color:var(--text2);font-size:.66rem">→ 28,730</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">146</span><span style="color:var(--text2);font-size:.66rem">→ 39,572</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:23%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">216</span><span style="color:var(--text2);font-size:.66rem">→ 58,545</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:34%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">326</span><span style="color:var(--text2);font-size:.66rem">→ 88,359</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:51%"></div></div></div><div class="spc" style="border-color: rgba(108, 99, 212, 0.157);"><div class="spn">Lightning Strand</div><div class="spm"><div class="dsm" style="background:#6c63d4"></div>Lightning · Special · Unlock 28</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div></div><div class="spc" style="border-color: rgba(108, 99, 212, 0.157);"><div class="spn">Volt Gate</div><div class="spm"><div class="dsm" style="background:#6c63d4"></div>Lightning · Summon · Unlock 35</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">200</span><span style="color:var(--text2);font-size:.66rem">→ 54,208</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:31%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">225</span><span style="color:var(--text2);font-size:.66rem">→ 60,984</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:35%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">275</span><span style="color:var(--text2);font-size:.66rem">→ 74,536</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:43%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">355</span><span style="color:var(--text2);font-size:.66rem">→ 96,219</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:56%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">475</span><span style="color:var(--text2);font-size:.66rem">→ 128,744</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:75%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">635</span><span style="color:var(--text2);font-size:.66rem">→ 172,110</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:100%"></div></div></div><div class="spc" style="border-color: rgba(192, 72, 120, 0.157);"><div class="spn">Skeletal Horde</div><div class="spm"><div class="dsm" style="background:#c04878"></div>Necro · Summon · Unlock 25</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">145</span><span style="color:var(--text2);font-size:.66rem">→ 39,301</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:23%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">195</span><span style="color:var(--text2);font-size:.66rem">→ 52,853</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:31%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">275</span><span style="color:var(--text2);font-size:.66rem">→ 74,536</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:43%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">400</span><span style="color:var(--text2);font-size:.66rem">→ 108,416</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:63%"></div></div></div><div class="spc" style="border-color: rgba(192, 72, 120, 0.157);"><div class="spn">Spectral Skull</div><div class="spm"><div class="dsm" style="background:#c04878"></div>Necro · Projectile · Unlock 32</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">175</span><span style="color:var(--text2);font-size:.66rem">→ 47,432</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">205</span><span style="color:var(--text2);font-size:.66rem">→ 55,563</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:32%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">255</span><span style="color:var(--text2);font-size:.66rem">→ 69,115</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:40%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">335</span><span style="color:var(--text2);font-size:.66rem">→ 90,798</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:53%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">460</span><span style="color:var(--text2);font-size:.66rem">→ 124,678</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:72%"></div></div></div><div class="spc" style="border-color: rgba(192, 72, 120, 0.157);"><div class="spn">Shadow Form</div><div class="spm"><div class="dsm" style="background:#c04878"></div>Necro · Support · Unlock 45</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div></div></div>
 </div>
 
+<!-- ═══ ENEMIES ═══ -->
 <div class="tab" id="tab-enemies">
   <div class="banner">
-    <span style="color:var(--text2)">Reference view</span>
+    <span style="color:var(--text2)">Reference: Fire Strike T3</span>
     <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
       <span class="muted" style="font-size:.68rem">At level</span>
       <select id="eLvlFilt" onchange="renderEnemies()" style="width:auto">
         <option value="1">1</option><option value="10">10</option><option value="25">25</option>
-        <option value="50" selected>50</option><option value="75">75</option><option value="100">100</option>
+        <option value="50" selected="">50</option><option value="75">75</option><option value="100">100</option>
       </select>
     </div>
   </div>
-  <div class="fb" id="eFilters"></div>
+  <div class="fb" id="eFilters"><button class="on">All</button><button class="">Base</button><button class="" style="color: var(--fire); border-color: var(--fire)35;">Boss</button></div>
   <div class="etw">
     <table><thead><tr>
       <th>Enemy</th><th>Type</th><th>HP</th><th>DMG/hit</th>
       <th>TTK (your build)</th><th>TTD (you)</th><th>Resist</th><th>Weak</th>
-    </tr></thead><tbody id="eRows"></tbody></table>
+    </tr></thead><tbody id="eRows"><tr><td><div style="font-weight:600">Femur</div><div style="color:var(--text3);font-size:.68rem">Skeleton grunt</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">3,446</td><td class="mc">242</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">7 hits</td>
+      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td><td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td></tr><tr><td><div style="font-weight:600">NecroManager</div><div style="color:var(--text3);font-size:.68rem">Necromancer</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">5,513</td><td class="mc">282</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">6 hits</td>
+      <td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td><td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span></td></tr><tr><td><div style="font-weight:600">Daddy Femur</div><div style="color:var(--text3);font-size:.68rem">Big Skeleton</div></td>
+      <td><span class="boss-t">Boss</span></td>
+      <td class="mc">220,539</td><td class="mc">420</td>
+      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
+      <td class="mc" style="color:var(--fire)">4 hits</td>
+      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td><td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td></tr><tr><td><div style="font-weight:600">Wee Green</div><div style="color:var(--text3);font-size:.68rem">Goblin</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">2,757</td><td class="mc">168</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">9 hits</td>
+      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Boom Green</div><div style="color:var(--text3);font-size:.68rem">Goblin Kamikaze</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">1,723</td><td class="mc">504</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">3 hits</td>
+      <td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span></td><td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td></tr><tr><td><div style="font-weight:600">Wolfgang</div><div style="color:var(--text3);font-size:.68rem">Orc</div></td>
+      <td><span class="boss-t">Boss</span></td>
+      <td class="mc">110,270</td><td class="mc">671</td>
+      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
+      <td class="mc" style="color:var(--fire)">3 hits</td>
+      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td><td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span></td></tr><tr><td><div style="font-weight:600">Dumbbell</div><div style="color:var(--text3);font-size:.68rem">Golem</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">8,270</td><td class="mc">336</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">5 hits</td>
+      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td><td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td></tr><tr><td><div style="font-weight:600">IceAndBerg</div><div style="color:var(--text3);font-size:.68rem">Ice Golem</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">12,405</td><td class="mc">420</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">4 hits</td>
+      <td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td><td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span></td></tr><tr><td><div style="font-weight:600">Magmalade</div><div style="color:var(--text3);font-size:.68rem">Magma Golem</div></td>
+      <td><span class="boss-t">Boss</span></td>
+      <td class="mc">275,674</td><td class="mc">504</td>
+      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
+      <td class="mc" style="color:var(--fire)">3 hits</td>
+      <td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td><td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td></tr><tr><td><div style="font-weight:600">Caw</div><div style="color:var(--text3);font-size:.68rem">Crow</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">2,757</td><td class="mc">201</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">8 hits</td>
+      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Ratcoon</div><div style="color:var(--text3);font-size:.68rem">Rat</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">1,723</td><td class="mc">201</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">8 hits</td>
+      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td></tr><tr><td><div style="font-weight:600">Gary Frogman</div><div style="color:var(--text3);font-size:.68rem">Gary Frog</div></td>
+      <td><span class="boss-t">Boss</span></td>
+      <td class="mc">248,107</td><td class="mc">436</td>
+      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
+      <td class="mc" style="color:var(--fire)">4 hits</td>
+      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Lord Metalikor</div><div style="color:var(--text3);font-size:.68rem">Death Warlord</div></td>
+      <td><span class="boss-t">Boss</span></td>
+      <td class="mc">303,242</td><td class="mc">269</td>
+      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
+      <td class="mc" style="color:var(--fire)">6 hits</td>
+      <td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td><td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td></tr><tr><td><div style="font-weight:600">IronBurn</div><div style="color:var(--text3);font-size:.68rem">Flame Knight</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">3,446</td><td class="mc">302</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">5 hits</td>
+      <td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td><td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td></tr><tr><td><div style="font-weight:600">Tartargnan</div><div style="color:var(--text3);font-size:.68rem">Ranged Knight</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">5,513</td><td class="mc">269</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">6 hits</td>
+      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Batler</div><div style="color:var(--text3);font-size:.68rem">Bat</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">2,757</td><td class="mc">252</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">6 hits</td>
+      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Babewyn</div><div style="color:var(--text3);font-size:.68rem">Gargoyle</div></td>
+      <td><span class="base-t">Base</span></td>
+      <td class="mc">8,270</td><td class="mc">252</td>
+      <td class="mc" style="color:var(--accent)">1 hits</td>
+      <td class="mc" style="color:var(--fire)">6 hits</td>
+      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td><td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td></tr></tbody></table>
   </div>
+  <p class="muted" style="margin-top:.5rem;font-size:.66rem">TTK = Enemy HP ÷ effective DMG. TTD = Your HP ÷ Enemy DMG. Enemies scale ×1.055/level.</p>
 </div>
 
 </main>
-
 <script>
+/* ══════════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════════ */
 const SHEET_ID = '1dr5KLWYXi0LIAEcH4_GTtb2or8NC7rYy3QaKTuNhdIY';
 
-/* Game Constants for math scaling */
-const T_HP = 200, T_MANA = 10, T_DMG = 2;
-const B_HP = 500, B_MANA = 100, B_DMG = 100;
-const EMULT = 1.055;
+/* Cap thresholds (in points allocated to a stat) */
+const CAP_SOFT = 40, CAP_HARD = 60;
+
+/* Per-point multipliers/flat by zone */
+const HP_MULT  = [1.07, 1.02, 1.01];   // HP: multiplicative
+const MANA_FLAT= [5,    3,    2  ];     // Mana: additive flat
+const DMG_MULT = [1.1,  1.03, 1.01];   // DMG: multiplicative
+const BASE_HP = 500, BASE_MANA = 100, BASE_DMG = 100;
+
+/* Compute stat value from points, applying caps */
+function statHP(pts) {
+  let v = BASE_HP;
+  for (let p = 0; p < pts; p++) {
+    v *= p < CAP_SOFT ? HP_MULT[0] : p < CAP_HARD ? HP_MULT[1] : HP_MULT[2];
+  }
+  return Math.round(v);
+}
+function statMana(pts) {
+  let v = BASE_MANA;
+  for (let p = 0; p < pts; p++) {
+    v += p < CAP_SOFT ? MANA_FLAT[0] : p < CAP_HARD ? MANA_FLAT[1] : MANA_FLAT[2];
+  }
+  return Math.round(v);
+}
+function statDMG(pts) {
+  let v = BASE_DMG;
+  for (let p = 0; p < pts; p++) {
+    v *= p < CAP_SOFT ? DMG_MULT[0] : p < CAP_HARD ? DMG_MULT[1] : DMG_MULT[2];
+  }
+  return Math.round(v);
+}
+
+/* Scale pts proportionally to a given level (level N = N-1 points total) */
+function ptsAtLevel(totalPts, level) {
+  const available = Math.max(0, level - 1);
+  const maxPts = 99; // at level 100
+  return Math.round(available / maxPts * totalPts);
+}
+
+/* Full hero stats at a given level with given build */
+function heroStats(level, hpPts, manaPts, dmgPts) {
+  return {
+    hp:   statHP(ptsAtLevel(hpPts, level)),
+    mana: statMana(ptsAtLevel(manaPts, level)),
+    dmg:  statDMG(ptsAtLevel(dmgPts, level)),
+  };
+}
 
 const EC = {Fire:'#e04545',Ice:'#3480d4',Earth:'#b07010',Wind:'#18a070',Lightning:'#6c63d4',Necro:'#c04878',None:'#555870'};
 
-/* Global dynamically filled structures */
-let SC = [];
-let SPELLS = [];
-let ENEMIES = [];
+/* Archetype definitions (pts out of 99) */
+const PRESETS = {
+  balanced: {hp:33, mana:33, dmg:33},
+  dps:      {hp:15, mana:15, dmg:69},
+  support:  {hp:69, mana:15, dmg:15},
+  caster:   {hp:15, mana:69, dmg:15},
+};
 
-const BUILD = {hp:50, mana:25, dmg:24};
-let curveTab='hp', curveView='line', compTab='stats';
+/* Spell tier base damage (cumulative) */
+const ST = {
+  'Fire Strike':     [100,110,130,170,240,350],
+  'Fire Sword':      [70, 85, 115,175,265,415],
+  'Fire Nova':       [100,110,130,170,240,350],
+  'Ice Strike':      [100,110,130,170,240,350],
+  'Ice Nova':        [80, 90, 110,150,220,330],
+  'Blizzard':        [120,130,150,190,260,370],
+  'Frost Stream':    [130,140,160,200,270,380],
+  'Boulder':         [150,160,180,220,290,400],
+  'Rock Wall':       [100,100,100,100,100,100],
+  'Earth Nova':      [110,120,140,180,250,360],
+  'Healing Totem':   [40, 40, 40, 40, 40, 40],
+  'Wind Strike':     [90, 100,120,160,230,340],
+  'Wind Stream':     [80, 95, 125,175,255,380],
+  'Wind Nova':       [90, 100,120,160,230,340],
+  'Lightning Arc':   [76, 86, 106,146,216,326],
+  'Lightning Strand':[250,250,250,250,250,250],
+  'Volt Gate':       [200,225,275,355,475,635],
+  'Skeletal Horde':  [110,120,145,195,275,400],
+  'Spectral Skull':  [160,175,205,255,335,460],
+  'Shadow Form':     [0,  0,  0,  0,  0,  0],
+};
+const SPELLS = [
+  {n:'Fire Strike',   el:'Fire',      ul:1,  ty:'Strike'},
+  {n:'Fire Sword',    el:'Fire',      ul:14, ty:'Melee'},
+  {n:'Fire Nova',     el:'Fire',      ul:30, ty:'Nova'},
+  {n:'Ice Strike',    el:'Ice',       ul:1,  ty:'Strike'},
+  {n:'Ice Nova',      el:'Ice',       ul:16, ty:'Nova'},
+  {n:'Blizzard',      el:'Ice',       ul:40, ty:'DoT'},
+  {n:'Frost Stream',  el:'Ice',       ul:22, ty:'Stream'},
+  {n:'Boulder',       el:'Earth',     ul:5,  ty:'Projectile'},
+  {n:'Rock Wall',     el:'Earth',     ul:12, ty:'Summon'},
+  {n:'Earth Nova',    el:'Earth',     ul:20, ty:'Nova'},
+  {n:'Healing Totem', el:'None',      ul:8,  ty:'Support'},
+  {n:'Wind Strike',   el:'Wind',      ul:1,  ty:'Strike'},
+  {n:'Wind Stream',   el:'Wind',      ul:10, ty:'Stream'},
+  {n:'Wind Nova',     el:'Wind',      ul:25, ty:'Nova'},
+  {n:'Lightning Arc', el:'Lightning', ul:18, ty:'Stream'},
+  {n:'Lightning Strand',el:'Lightning',ul:28,ty:'Special'},
+  {n:'Volt Gate',     el:'Lightning', ul:35, ty:'Summon'},
+  {n:'Skeletal Horde',el:'Necro',     ul:25, ty:'Summon'},
+  {n:'Spectral Skull',el:'Necro',     ul:32, ty:'Projectile'},
+  {n:'Shadow Form',   el:'Necro',     ul:45, ty:'Support'},
+];
+const ENEMIES = [
+  {n:'Femur',        pfx:'Skeleton grunt',   ty:'Base',hp1:250,  dmg1:72,  hp100:50110,  dmg100:832,  res:'Earth',           weak:'Wind'},
+  {n:'NecroManager', pfx:'Necromancer',      ty:'Base',hp1:400,  dmg1:84,  hp100:80176,  dmg100:970,  res:'Ice',             weak:'Fire'},
+  {n:'Daddy Femur',  pfx:'Big Skeleton',     ty:'Boss',hp1:16000,dmg1:125, hp100:3207040,dmg100:1444, res:'Earth, Lightning',weak:'Wind'},
+  {n:'Wee Green',    pfx:'Goblin',           ty:'Base',hp1:200,  dmg1:50,  hp100:40088,  dmg100:578,  res:'Wind',            weak:'Ice, Lightning'},
+  {n:'Boom Green',   pfx:'Goblin Kamikaze',  ty:'Base',hp1:125,  dmg1:150, hp100:25055,  dmg100:1733, res:'Fire',            weak:'Earth'},
+  {n:'Wolfgang',     pfx:'Orc',              ty:'Boss',hp1:8000, dmg1:200, hp100:1603520,dmg100:2310, res:'Earth',           weak:'Fire'},
+  {n:'Dumbbell',     pfx:'Golem',            ty:'Base',hp1:600,  dmg1:100, hp100:120264, dmg100:1155, res:'Earth, Lightning',weak:'Wind'},
+  {n:'IceAndBerg',   pfx:'Ice Golem',        ty:'Base',hp1:900,  dmg1:125, hp100:180396, dmg100:1444, res:'Ice',             weak:'Fire'},
+  {n:'Magmalade',    pfx:'Magma Golem',      ty:'Boss',hp1:20000,dmg1:150, hp100:4008800,dmg100:1733, res:'Fire, Ice',       weak:'Earth'},
+  {n:'Caw',          pfx:'Crow',             ty:'Base',hp1:200,  dmg1:60,  hp100:40088,  dmg100:693,  res:'Wind',            weak:'Ice, Lightning'},
+  {n:'Ratcoon',      pfx:'Rat',              ty:'Base',hp1:125,  dmg1:60,  hp100:25055,  dmg100:693,  res:'Earth',           weak:'Ice'},
+  {n:'Gary Frogman', pfx:'Gary Frog',        ty:'Boss',hp1:18000,dmg1:130, hp100:3607920,dmg100:1502, res:'Wind',            weak:'Ice, Lightning'},
+  {n:'Lord Metalikor',pfx:'Death Warlord',   ty:'Boss',hp1:22000,dmg1:80,  hp100:4409680,dmg100:924,  res:'Fire, Lightning', weak:'Earth'},
+  {n:'IronBurn',     pfx:'Flame Knight',     ty:'Base',hp1:250,  dmg1:90,  hp100:50110,  dmg100:1040, res:'Fire, Ice',       weak:'Earth'},
+  {n:'Tartargnan',   pfx:'Ranged Knight',    ty:'Base',hp1:400,  dmg1:80,  hp100:80176,  dmg100:924,  res:'Wind',            weak:'Ice, Lightning'},
+  {n:'Batler',       pfx:'Bat',              ty:'Base',hp1:200,  dmg1:75,  hp100:40088,  dmg100:866,  res:'Wind',            weak:'Lightning'},
+  {n:'Babewyn',      pfx:'Gargoyle',         ty:'Base',hp1:600,  dmg1:75,  hp100:120264, dmg100:866,  res:'Earth',           weak:'Wind'},
+];
+
+/* ══════════════════════════════════════════════════
+   LIVE DATA
+══════════════════════════════════════════════════ */
+let SC = null;
+async function fetchSheet() {
+  const dot=document.getElementById('dot'), lbl=document.getElementById('lbl');
+  try {
+    /* ── Scaling Datas ── */
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Scaling%20Datas`;
+    const r=await fetch(url);
+    if(!r.ok) throw new Error();
+    const txt=await r.text();
+    const json=JSON.parse(txt.substring(47).slice(0,-2));
+    SC=[];
+    for(const row of json.table.rows){
+      const c=row.c; const lvl=c[0]?.v;
+      if(typeof lvl!=='number'||lvl<1||lvl>100) continue;
+      SC.push({level:lvl,enemyHP:c[4]?.v||0,enemyDMG:c[5]?.v||0,heroHP:c[6]?.v||0,heroMana:c[7]?.v||0,spellDMGpct:c[8]?.v||0,spellDMG:c[9]?.v||0});
+      if(SC.length>=100) break;
+    }
+
+    /* ── Enemies Datas ── */
+    await fetchEnemies();
+
+    /* ── Spells Upgrade ── */
+    await fetchSpells();
+
+    dot.className='dot ok'; lbl.textContent='Live · '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    dot.className='dot err'; lbl.textContent='Offline — fallback data';
+    if(!SC) SC=FALLBACK;
+  }
+  initAll();
+}
+
+async function fetchEnemies(){
+  try {
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Enemies%20Datas`;
+    const r=await fetch(url); if(!r.ok) return;
+    const txt=await r.text();
+    const json=JSON.parse(txt.substring(47).slice(0,-2));
+    const rows=json.table.rows;
+    /* Header row in sheet: In-game Name, Prefab Name, Type, Description, Level 1 Health, Level 1 DMG, HP Level 60, DMG Level 60, Resistance, Weakness */
+    const parsed=[];
+    for(const row of rows){
+      const c=row.c;
+      const name=c[0]?.v; if(!name||typeof name!=='string'||name.trim()===''||name.includes('Name')) continue;
+      const type=c[2]?.v||'Base';
+      const hp1=c[4]?.v; const dmg1=c[5]?.v;
+      const hp60=c[6]?.v; const dmg60=c[7]?.v;
+      const res=c[8]?.v||'None'; const weak=c[9]?.v||'None';
+      if(!hp1||!hp60) continue;
+      /* Compute hp100 from hp1 and hp60 using ×1.055/level */
+      const hp100=Math.round(hp1*Math.pow(hp60/hp1,99/59));
+      const dmg100=Math.round(dmg1*Math.pow((dmg60||dmg1)/(dmg1||1),99/59));
+      parsed.push({n:name.trim(),pfx:c[1]?.v||name,ty:type.trim(),hp1:Math.round(hp1),dmg1:Math.round(dmg1||0),hp100,dmg100,res:String(res),weak:String(weak)});
+    }
+    if(parsed.length>0) ENEMIES.length=0, ENEMIES.push(...parsed);
+  } catch(e){ /* keep static fallback */ }
+}
+
+async function fetchSpells(){
+  try {
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Spells%20Upgrade`;
+    const r=await fetch(url); if(!r.ok) return;
+    const txt=await r.text();
+    const json=JSON.parse(txt.substring(47).slice(0,-2));
+    /* Parse: col0=Spell name, col1=Tier, col2=Unlock Level, col3=DMG Bonus */
+    /* Build cumulative tier bases per spell */
+    const spellMap={};
+    for(const row of json.table.rows){
+      const c=row.c;
+      const name=c[0]?.v; const tier=c[1]?.v; const unlock=c[2]?.v; const dmgBonus=c[3]?.v;
+      if(!name||!tier||typeof name!=='string') continue;
+      const nm=name.trim();
+      if(!spellMap[nm]) spellMap[nm]={unlock:unlock||1,bases:[0,0,0,0,0,0]};
+      const tierNum=parseInt(String(tier).replace(/tier\s*/i,'').replace(/level\s*/i,''))||0;
+      const bonus=typeof dmgBonus==='string'?parseInt(dmgBonus.replace(/[^0-9]/g,''))||0:dmgBonus||0;
+      spellMap[nm].bases[Math.min(tierNum,5)]=bonus;
+    }
+    /* Convert additive bonuses to cumulative */
+    const newST={}, newSPELLS=[];
+    for(const [nm,data] of Object.entries(spellMap)){
+      const bases=[...data.bases];
+      /* Make cumulative (each tier includes previous DMG bonus) */
+      for(let i=1;i<6;i++) bases[i]=bases[i-1]+bases[i];
+      newST[nm]=bases;
+      /* Try to detect element from existing SPELLS array or default */
+      const existing=SPELLS.find(s=>s.n===nm);
+      const el=existing?.el||'None'; const ty=existing?.ty||'Strike';
+      newSPELLS.push({n:nm,el,ul:data.unlock,ty});
+    }
+    if(Object.keys(newST).length>0){
+      Object.keys(ST).forEach(k=>delete ST[k]);
+      Object.assign(ST,newST);
+      SPELLS.length=0; SPELLS.push(...newSPELLS);
+    }
+  } catch(e){ /* keep static fallback */ }
+}
+
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const ceil=Math.ceil;
+const row=lvl=>SC[Math.min(Math.max(+lvl,1),100)-1];
+function spellBase(name,tier){const t=ST[name];return t?t[Math.min(tier,5)]:0;}
+function effDmg(name,tier,level,dmgPts){
+  const r=row(level);
+  const pts=ptsAtLevel(dmgPts,level);
+  const heroBaseDmg=statDMG(pts);
+  const dmgMultiplier=heroBaseDmg/BASE_DMG;
+  return Math.round(spellBase(name,tier)*r.spellDMGpct/100*dmgMultiplier);
+}
+function eHP(e,lvl){return Math.round(e.hp1*Math.pow(e.hp100/e.hp1,(lvl-1)/99));}
+function eDMG(e,lvl){return Math.round(e.dmg1*Math.pow(e.dmg100/e.dmg1,(lvl-1)/99));}
+
+/* ══════════════════════════════════════════════════
+   GLOBAL BUILD STATE
+══════════════════════════════════════════════════ */
+const BUILD={hp:33,mana:33,dmg:33};
+let curveTab='hp', curveView='line', compTab='stats', compStat='hp';
+/* Which preset is active in combat sim ('balanced','dps','support','caster','custom') */
+let simPreset='balanced';
 const charts={};
 
-// Utility function to fetch specific tabs via JSON endpoint
-async function fetchGoogleTab(sheetId, tabName) {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Tab fetch error: ${tabName}`);
-  const text = await response.text();
-  return JSON.parse(text.substring(47).slice(0, -2)).table;
-}
-
-async function loadAllData() {
-  const dot = document.getElementById('dot'), lbl = document.getElementById('lbl');
-  try {
-    // Parallel fetches from your Google Sheet tabs
-    const [scalingTable, spellsTable, enemiesTable] = await Promise.all([
-      fetchGoogleTab(SHEET_ID, 'Scaling Datas'),
-      fetchGoogleTab(SHEET_ID, 'Spells'),
-      fetchGoogleTab(SHEET_ID, 'Enemies')
-    ]);
-
-    // 1. Process Scaling Datas
-    SC = [];
-    scalingTable.rows.forEach(row => {
-      const c = row.c;
-      const lvl = c[0]?.v;
-      if (typeof lvl === 'number' && lvl >= 1 && lvl <= 100) {
-        SC.push({
-          level: lvl,
-          enemyHP: c[4]?.v || 0,
-          enemyDMG: c[5]?.v || 0,
-          heroHP: c[6]?.v || 0,
-          heroMana: c[7]?.v || 0,
-          spellDMGpct: c[8]?.v || 0,
-          spellDMG: c[9]?.v || 0,
-        });
-      }
-    });
-
-    // 2. Process Spells Tab
-    SPELLS = [];
-    spellsTable.rows.forEach((row, index) => {
-      if (index === 0) return; // Skip headers
-      const c = row.c;
-      if (!c[0]?.v) return; // Skip empty rows
-      
-      const spellName = c[0].v;
-      SPELLS.push({
-        n: spellName,
-        el: c[1]?.v || 'None',
-        ul: c[2]?.v || 1,
-        ty: c[3]?.v || 'Strike',
-        tiers: [
-          c[4]?.v || 0, // Tier 0
-          c[5]?.v || 0, // Tier 1
-          c[6]?.v || 0, // Tier 2
-          c[7]?.v || 0, // Tier 3
-          c[8]?.v || 0, // Tier 4
-          c[9]?.v || 0  // Tier 5
-        ]
-      });
-    });
-
-    // 3. Process Enemies Tab
-    ENEMIES = [];
-    enemiesTable.rows.forEach((row, index) => {
-      if (index === 0) return; // Skip headers
-      const c = row.c;
-      if (!c[0]?.v) return;
-      
-      ENEMIES.push({
-        n: c[0].v,
-        pfx: c[1]?.v || '',
-        ty: c[2]?.v || 'Base',
-        hp1: c[3]?.v || 0,
-        dmg1: c[4]?.v || 0,
-        hp100: c[5]?.v || 0,
-        dmg100: c[6]?.v || 0,
-        res: c[7]?.v || 'None',
-        weak: c[8]?.v || 'None'
-      });
-    });
-
-    dot.className = 'dot ok';
-    lbl.textContent = 'Live · ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    initAll();
-  } catch(e) {
-    console.error("Failed to load spreadsheet data dynamically", e);
-    dot.className = 'dot err';
-    lbl.textContent = 'Failed to load live data';
-  }
-}
-
-/* ═══════════════════════════════════════════════════════
-   CORE SYSTEMS & CALCULATIONS
-═══════════════════════════════════════════════════════ */
-const fmt  = n => Math.round(n).toLocaleString('en-US');
-const ceil = Math.ceil;
-const row  = lvl => SC[Math.min(Math.max(+lvl,1),100)-1];
-
-function heroStats(level, hpPts, manaPts, dmgPts) {
-  const i = Math.min(level,100)-1;
-  const p = n => Math.round(i/99*n);
-  return {
-    hp:   B_HP   + p(hpPts)  * T_HP,
-    mana: B_MANA + p(manaPts)* T_MANA,
-    dmg:  B_DMG  + p(dmgPts) * T_DMG,
-  };
-}
-function heroStatsL100(hp,mana,dmg){return{hp:B_HP+hp*T_HP,mana:B_MANA+mana*T_MANA,dmg:B_DMG+dmg*T_DMG}}
-
-function dmgMult(level, dmgPts) {
-  const pts = Math.round((Math.min(level,100)-1)/99 * dmgPts);
-  return (100 + pts * T_DMG) / 100;
-}
-
-function spellBase(name, tier){
-  const s = SPELLS.find(x => x.n === name);
-  return s ? s.tiers[Math.min(tier, 5)] : 0;
-}
-
-function effDmg(name, tier, level, dmgPts) {
-  const r = row(level);
-  return Math.round(spellBase(name,tier) * r.spellDMGpct/100 * dmgMult(level,dmgPts));
-}
-
-function eHP(e,lvl){ return Math.round(e.hp1 * Math.pow(e.hp100/e.hp1, (lvl-1)/99)); }
-function eDMG(e,lvl){ return Math.round(e.dmg1 * Math.pow(e.dmg100/e.dmg1, (lvl-1)/99)); }
-
 function onBuild(){
-  BUILD.hp   = +document.getElementById('sHP').value;
-  BUILD.mana = +document.getElementById('sMana').value;
-  BUILD.dmg  = +document.getElementById('sDMG').value;
-  updateCurveUI(); updateBanners(); simCalc(); renderEnemies(); drawComp();
+  BUILD.hp=+document.getElementById('sHP').value;
+  BUILD.mana=+document.getElementById('sMana').value;
+  BUILD.dmg=+document.getElementById('sDMG').value;
+  updateCurveUI(); updateBanners(); simCalc(); renderEnemies(); drawCompBars();
+}
+
+/* Set the archetype used in Combat Sim — resolves pts from available pts at current hero level */
+function setSimPreset(name){
+  simPreset=name;
+  document.querySelectorAll('[id^=simPreset]').forEach(b=>b.classList.remove('on'));
+  const map={balanced:'simPresetBalanced',dps:'simPresetDps',support:'simPresetSupport',caster:'simPresetCaster',custom:'simPresetCustom'};
+  document.getElementById(map[name])?.classList.add('on');
+  simCalc();
+}
+
+/* Get effective build pts for combat sim at current hero level */
+function getSimBuild(heroLevel){
+  const avail = heroLevel - 1;
+  if(simPreset==='custom'){
+    return {hp:Math.round(avail/99*BUILD.hp), mana:Math.round(avail/99*BUILD.mana), dmg:Math.round(avail/99*BUILD.dmg)};
+  }
+  const p = PRESETS[simPreset];
+  return {hp:Math.round(avail/99*p.hp), mana:Math.round(avail/99*p.mana), dmg:Math.round(avail/99*p.dmg)};
+}
+
+/* Comparative grouped bar chart state */
+function setCompStat(stat, btn){
+  compStat=stat;
+  document.querySelectorAll('#tab-curves .stab').forEach(b=>{});
+  // only reset the compare stabs (second stabs row)
+  btn.closest('.stabs').querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  drawCompBars();
+}
+
+function applyPreset(name){
+  const p=PRESETS[name];
+  BUILD.hp=p.hp; BUILD.mana=p.mana; BUILD.dmg=p.dmg;
+  document.getElementById('sHP').value=p.hp;
+  document.getElementById('sMana').value=p.mana;
+  document.getElementById('sDMG').value=p.dmg;
+  onBuild();
 }
 
 function updateBanners(){
-  const s = heroStatsL100(BUILD.hp,BUILD.mana,BUILD.dmg);
-  ['bHP','bMana','bDMG'].forEach((id,i)=>{
-    const el=document.getElementById(id); if(el) el.textContent=fmt([s.hp,s.mana,s.dmg][i]);
-  });
+  const s={hp:statHP(BUILD.hp),mana:statMana(BUILD.mana),dmg:statDMG(BUILD.dmg)};
+  ['bHP','bMana','bDMG'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=fmt([s.hp,s.mana,s.dmg][i])});
 }
 
-function goTab(id, btn){
+/* ══════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════ */
+function goTab(id,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('tab-'+id).classList.add('on');
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
@@ -433,25 +789,18 @@ function goTab(id, btn){
   fn[id]?.();
 }
 
-/* ═══════════════════════════════════════════════════════
-   STAT CURVES & HISTOGRAM SYSTEM
-═══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   STAT CURVES
+══════════════════════════════════════════════════ */
 function setCurve(tab,btn){
   curveTab=tab;
-  document.querySelectorAll('#curveFilterTabs .stab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#tab-curves .stab').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on'); drawCurve();
 }
-
-function toggleCurveView(view){
-  curveView = view;
-  document.querySelectorAll('#curveTypeTabs .stab').forEach(b=>b.classList.remove('on'));
-  document.querySelector(`#curveTypeTabs .stab[data-type="${view}"]`).classList.add('on');
-  
-  const ftTabs = document.getElementById('curveFilterTabs');
-  if(view === 'bar') ftTabs.style.opacity = '0.3', ftTabs.style.pointerEvents = 'none';
-  else ftTabs.style.opacity = '1', ftTabs.style.pointerEvents = 'auto';
-  
-  drawCurve();
+function setCurveView(v,btn){
+  curveView=v;
+  document.querySelectorAll('.vtbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); drawCurve();
 }
 
 function updateCurveUI(){
@@ -460,101 +809,143 @@ function updateCurveUI(){
   const b=document.getElementById('ptsBadge');
   b.textContent=rem>=0?rem+' pts remaining':Math.abs(rem)+' pts over!';
   b.className='badge'+(rem<0?' over':'');
-  const s=heroStatsL100(hp,mana,dmg), mx=[B_HP+99*T_HP,B_MANA+99*T_MANA,B_DMG+99*T_DMG];
-  ['cHP','cMana','cDMG'].forEach((id,i)=>document.getElementById(id).textContent=fmt([s.hp,s.mana,s.dmg][i]));
-  ['subHP','subMana','subDMG'].forEach((id,i)=>document.getElementById(id).textContent=Math.round([s.hp,s.mana,s.dmg][i]/mx[i]*100)+'% of max');
+  const mx=[statHP(99),statMana(99),statDMG(99)];
+  const s=[statHP(hp),statMana(mana),statDMG(dmg)];
+  ['cHP','cMana','cDMG'].forEach((id,i)=>document.getElementById(id).textContent=fmt(s[i]));
+  ['subHP','subMana','subDMG'].forEach((id,i)=>document.getElementById(id).textContent=Math.round(s[i]/mx[i]*100)+'% of max');
   drawCurve(); renderCurveTable();
 }
 
-function statCurve(pts,ppt,base){return Array.from({length:100},(_,i)=>base+Math.round(i/99*pts)*ppt)}
-function statFull(ppt,base){return Array.from({length:100},(_,i)=>base+i*ppt)}
+/* Build curve data for a stat across all 100 levels */
+function buildCurve(pts, statFn) {
+  return Array.from({length:100},(_,i)=>statFn(ptsAtLevel(pts,i+1)));
+}
+
+/* Vertical annotation lines for caps (in point-space, mapped to level space) */
+function getCurveAnnotations(){
+  // Cap at 40 pts: that's achieved at level 41 (40 points available)
+  // Cap at 60 pts: level 61
+  return [
+    {x:40, label:'Soft Cap (40pts)', color:'rgba(240,180,41,0.6)'},
+    {x:60, label:'Hard Cap (60pts)', color:'rgba(224,69,69,0.6)'},
+  ];
+}
 
 function drawCurve(){
-  if(!SC.length) return;
-  const {hp,mana,dmg}=BUILD, lvls=Array.from({length:100},(_,i)=>i+1);
-  let ds=[], lg=[];
+  if(!SC) return;
+  const lvls=Array.from({length:100},(_,i)=>i+1);
+  const {hp,mana,dmg}=BUILD;
 
-  if (curveView === 'bar') {
-    const archs = {
-      balanced: { hp: 33, mana: 33, dmg: 33 },
-      dps: { hp: 15, mana: 15, dmg: 69 },
-      support: { hp: 69, mana: 15, dmg: 15 },
-      caster: { hp: 15, mana: 69, dmg: 15 }
-    };
+  /* Archetype curves */
+  const arches={
+    balanced:PRESETS.balanced,
+    dps:PRESETS.dps,
+    support:PRESETS.support,
+    caster:PRESETS.caster,
+  };
+  const archColors={balanced:'#6c63d444',dps:'#e0982044',support:'#e0454544',caster:'#3480d444'};
+  const archBorders={balanced:'#6c63d4',dps:'#e09820',support:'#e04545',caster:'#3480d4'};
+  const archNames={balanced:'Balanced',dps:'DPS',support:'Support',caster:'Caster'};
 
-    ds = [
-      { label: 'HP pts', data: [hp, archs.balanced.hp, archs.dps.hp, archs.support.hp, archs.caster.hp], backgroundColor: '#e04545cc' },
-      { label: 'Mana pts', data: [mana, archs.balanced.mana, archs.dps.mana, archs.support.mana, archs.caster.mana], backgroundColor: '#3480d4cc' },
-      { label: 'DMG pts', data: [dmg, archs.balanced.dmg, archs.dps.dmg, archs.support.dmg, archs.caster.dmg], backgroundColor: '#e09820cc' }
+  let mainData, mainColor, statFnMain, legend=[];
+  if(curveTab==='hp'){
+    mainData=buildCurve(hp,statHP); mainColor='#e04545'; statFnMain=statHP;
+    legend=[{c:'#e04545',l:'Your build'},{c:'#6c63d4',l:'Balanced',d:1},{c:'#e09820',l:'DPS',d:1},{c:'#e04545',l:'Support',d:1,op:1},{c:'#3480d4',l:'Caster',d:1}];
+  } else if(curveTab==='mana'){
+    mainData=buildCurve(mana,statMana); mainColor='#3480d4'; statFnMain=statMana;
+    legend=[{c:'#3480d4',l:'Your build'},{c:'#6c63d4',l:'Balanced',d:1},{c:'#e09820',l:'DPS',d:1},{c:'#e04545',l:'Support',d:1},{c:'#3480d4',l:'Caster',d:1,op:1}];
+  } else if(curveTab==='dmg'){
+    mainData=buildCurve(dmg,statDMG); mainColor='#e09820'; statFnMain=statDMG;
+    legend=[{c:'#e09820',l:'Your build'},{c:'#6c63d4',l:'Balanced',d:1},{c:'#e09820',l:'DPS',d:1,op:1},{c:'#e04545',l:'Support',d:1},{c:'#3480d4',l:'Caster',d:1}];
+  } else {
+    /* Normalized — show all 3 stats for current build only */
+    const mxHP=statHP(99),mxMana=statMana(99),mxDMG=statDMG(99);
+    const ds=[
+      {label:'HP %',data:buildCurve(hp,statHP).map(v=>Math.round(v/mxHP*100)),borderColor:'#e04545',borderWidth:2,pointRadius:0,tension:.3,fill:false},
+      {label:'Mana %',data:buildCurve(mana,statMana).map(v=>Math.round(v/mxMana*100)),borderColor:'#3480d4',borderWidth:2,pointRadius:0,tension:.3,fill:false},
+      {label:'Base DMG %',data:buildCurve(dmg,statDMG).map(v=>Math.round(v/mxDMG*100)),borderColor:'#e09820',borderWidth:2,pointRadius:0,tension:.3,fill:false},
     ];
-    lg = [{c:'#e04545',l:'HP Points'}, {c:'#3480d4',l:'Mana Points'}, {c:'#e09820',l:'DMG Points'}];
-    document.getElementById('curveLeg').innerHTML = lg.map(x=>`<div class="li"><div class="ls" style="background:${x.c}"></div>${x.l}</div>`).join('');
-
-    mkC('curveC',{
-      type: 'bar',
-      data: { labels: ['Your Build', 'Balanced', 'DPS', 'Support', 'Caster (Mana)'], datasets: ds },
-      options: {
-        responsive:true,maintainAspectRatio:false,animation:false,
-        scales:{
-          x:{stacked: true, ticks:{color:'#7a7f9a'}, grid:{display:false}},
-          y:{stacked: true, max: 100, ticks:{color:'#454860'}, grid:{color:'rgba(255,255,255,.03)'}}
-        },
-        plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw+' pts'}}
-        }
-      }
-    });
+    document.getElementById('curveLeg').innerHTML=[{c:'#e04545',l:'HP'},{c:'#3480d4',l:'Mana'},{c:'#e09820',l:'Base DMG'}].map(x=>`<div class="li"><div class="ls" style="background:${x.c}"></div>${x.l}</div>`).join('');
+    mkC('curveC',{type:'line',data:{labels:lvls,datasets:ds},options:curveOpts(true,lvls)});
     return;
   }
 
-  if(curveTab==='hp'){
-    ds=[
-      {label:'Your build',data:statCurve(hp,T_HP,B_HP),borderColor:'#e04545',borderWidth:2.5,pointRadius:0,tension:.3},
-      {label:'Full HP',data:statFull(T_HP,B_HP),borderColor:'#f09090',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:.3},
-      {label:'Enemy HP (sheet)',data:SC.map(r=>r.enemyHP),borderColor:'#d45a30',borderWidth:1.5,pointRadius:0,tension:.3},
-    ];
-    lg=[{c:'#e04545',l:'Your build'},{c:'#f09090',l:'Full HP (99)',d:1},{c:'#d45a30',l:'Enemy HP (sheet)'}];
-  } else if(curveTab==='mana'){
-    ds=[
-      {label:'Your build',data:statCurve(mana,T_MANA,B_MANA),borderColor:'#3480d4',borderWidth:2.5,pointRadius:0,tension:.3},
-      {label:'Full Mana',data:statFull(T_MANA,B_MANA),borderColor:'#80b4e8',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:.3},
-      {label:'Sheet Mana',data:SC.map(r=>r.heroMana),borderColor:'#555870',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:.3},
-    ];
-    lg=[{c:'#3480d4',l:'Your build'},{c:'#80b4e8',l:'Full Mana (99)',d:1},{c:'#555870',l:'Sheet Mana',d:1}];
-  } else if(curveTab==='dmg'){
-    ds=[
-      {label:'Your build',data:statCurve(dmg,T_DMG,B_DMG),borderColor:'#e09820',borderWidth:2.5,pointRadius:0,tension:.3},
-      {label:'Full DMG',data:statFull(T_DMG,B_DMG),borderColor:'#f0c870',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:.3},
-    ];
-    lg=[{c:'#e09820',l:'Your build'},{c:'#f0c870',l:'Full DMG (99)',d:1}];
-  } else {
-    const mx=[B_HP+99*T_HP,B_MANA+99*T_MANA,B_DMG+99*T_DMG];
-    ds=[
-      {label:'HP %',data:statCurve(hp,T_HP,B_HP).map(v=>Math.round(v/mx[0]*100)),borderColor:'#e04545',borderWidth:2,pointRadius:0,tension:.3},
-      {label:'Mana %',data:statCurve(mana,T_MANA,B_MANA).map(v=>Math.round(v/mx[1]*100)),borderColor:'#3480d4',borderWidth:2,pointRadius:0,tension:.3},
-      {label:'Base DMG %',data:statCurve(dmg,T_DMG,B_DMG).map(v=>Math.round(v/mx[2]*100)),borderColor:'#e09820',borderWidth:2,pointRadius:0,tension:.3},
-    ];
-    lg=[{c:'#e04545',l:'HP'},{c:'#3480d4',l:'Mana'},{c:'#e09820',l:'Base DMG'}];
-  }
-  document.getElementById('curveLeg').innerHTML=lg.map(x=>`<div class="li"><div class="ls" style="${x.d?'background:repeating-linear-gradient(90deg,'+x.c+' 0,'+x.c+' 4px,transparent 4px,transparent 8px)':'background:'+x.c}"></div>${x.l}</div>`).join('');
-  
-  mkC('curveC',{type:'line',data:{labels:lvls,datasets:ds},options:{
-    responsive:true,maintainAspectRatio:false,animation:false,
-    plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>'Level '+i[0].label,label:c=>c.dataset.label+': '+fmt(c.raw)+(curveTab==='all'?'%':'')}}},
-    scales:{x:{ticks:{color:'#454860',autoSkip:true,maxTicksLimit:10,font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}},
-            y:{ticks:{color:'#454860',callback:v=>curveTab==='all'?v+'%':fmt(v),font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}}}
-  }});
+  /* Build archetype comparison datasets */
+  const archDs=Object.entries(arches).map(([k,p])=>{
+    let archCurve;
+    if(curveTab==='hp') archCurve=buildCurve(p.hp,statHP);
+    else if(curveTab==='mana') archCurve=buildCurve(p.mana,statMana);
+    else archCurve=buildCurve(p.dmg,statDMG);
+    return {
+      label:archNames[k],
+      data:archCurve,
+      borderColor:archBorders[k],
+      backgroundColor:archColors[k],
+      borderWidth:1.5,
+      borderDash:[4,3],
+      pointRadius:0,
+      tension:.3,
+      fill:false,
+    };
+  });
+
+  document.getElementById('curveLeg').innerHTML=[{c:mainColor,l:'Your build'},...Object.entries(archBorders).map(([k,c])=>({c,l:archNames[k],d:1}))].map(x=>`<div class="li"><div class="ls" style="${x.d?'background:repeating-linear-gradient(90deg,'+x.c+' 0,'+x.c+' 4px,transparent 4px,transparent 8px)':'background:'+x.c}"></div>${x.l}</div>`).join('');
+
+  const mainDs={label:'Your build',data:mainData,borderColor:mainColor,backgroundColor:mainColor+'22',borderWidth:2.5,pointRadius:0,tension:.3,fill:false};
+
+  const type=curveView==='bar'?'bar':'line';
+  const allDs=[mainDs,...archDs];
+
+  mkC('curveC',{type,data:{labels:lvls,datasets:allDs},options:curveOpts(false,lvls,mainColor)});
 }
 
+function curveOpts(isPct, lvls, mainColor){
+  return {
+    responsive:true,maintainAspectRatio:false,animation:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{title:i=>'Level '+i[0].label,label:c=>c.dataset.label+': '+fmt(c.raw)+(isPct?'%':'')}},
+      capLines:{} /* custom plugin key to trigger registration */
+    },
+    scales:{
+      x:{ticks:{color:'#454860',autoSkip:true,maxTicksLimit:10,font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}},
+      y:{ticks:{color:'#454860',callback:v=>isPct?v+'%':fmt(v),font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}}
+    }
+  };
+}
+
+/* Inline Chart.js plugin for cap dividers — drawn after datasets */
+Chart.register({
+  id:'capLines',
+  afterDraw(chart){
+    const {ctx,chartArea:{top,bottom},scales:{x}}=chart;
+    if(!x) return;
+    const pts=[{v:40,c:'rgba(240,180,41,0.75)',l:'Soft Cap'},{v:60,c:'rgba(224,69,69,0.75)',l:'Hard Cap'}];
+    pts.forEach(({v,c,l})=>{
+      /* v = level index on x axis (40 = label "41", but we want after pt 40 so between idx 40 and 41 = x label 41) */
+      const px=x.getPixelForValue(v);
+      if(px<x.left||px>x.right) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(px,top); ctx.lineTo(px,bottom);
+      ctx.strokeStyle=c; ctx.lineWidth=2.5;
+      ctx.setLineDash([]);
+      ctx.stroke();
+      ctx.fillStyle=c; ctx.font='10px Inter,system-ui,sans-serif'; ctx.textAlign='left';
+      ctx.fillText(l,px+4,top+13);
+      ctx.restore();
+    });
+  }
+});
+
 function renderCurveTable(){
-  if(!SC.length) return;
+  if(!SC) return;
   const {hp,mana,dmg}=BUILD;
   const body=document.getElementById('curveRows'); body.innerHTML='';
   [1,5,10,15,20,25,30,40,50,60,70,75,80,90,100].forEach(lvl=>{
-    const i=lvl-1, r=SC[i];
-    const hB=B_HP+Math.round(i/99*hp)*T_HP, mB=B_MANA+Math.round(i/99*mana)*T_MANA, dB=B_DMG+Math.round(i/99*dmg)*T_DMG;
-    const hF=B_HP+i*T_HP, mF=B_MANA+i*T_MANA, dF=B_DMG+i*T_DMG;
+    const r=SC[lvl-1];
+    const hB=statHP(ptsAtLevel(hp,lvl)), mB=statMana(ptsAtLevel(mana,lvl)), dB=statDMG(ptsAtLevel(dmg,lvl));
+    const hF=statHP(ptsAtLevel(99,lvl)), mF=statMana(ptsAtLevel(99,lvl)), dF=statDMG(ptsAtLevel(99,lvl));
     const tr=document.createElement('tr');
     tr.innerHTML=`<td style="color:var(--accent);font-weight:600">${lvl}</td>
       <td class="mc" style="color:var(--hp)">${fmt(hB)}</td><td class="mc" style="color:var(--text3)">${fmt(hF)}</td>
@@ -565,84 +956,64 @@ function renderCurveTable(){
   });
 }
 
-/* ═══════════════════════════════════════════════════════
-   BUILD COMPARE
-═══════════════════════════════════════════════════════ */
-function setComp(tab,btn){
-  compTab=tab;
-  document.querySelectorAll('#tab-compare .stab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on'); drawComp();
-}
-
-const BUILDS=[
-  {lbl:'Full HP\n99/0/0',    hp:99,mana:0, dmg:0,  col:'#e04545'},
-  {lbl:'HP+Mana\n60/30/9',   hp:60,mana:30,dmg:9,  col:'#c06060'},
-  {lbl:'Balanced\n33/33/33', hp:33,mana:33,dmg:33, col:'#6c63d4'},
-  {lbl:'Your build',          get hp(){return BUILD.hp}, get mana(){return BUILD.mana}, get dmg(){return BUILD.dmg}, col:'#e2e4f0'},
-  {lbl:'HP+DMG\n30/9/60',    hp:30,mana:9, dmg:60, col:'#d4a020'},
-  {lbl:'Full DMG\n0/0/99',   hp:0, mana:0, dmg:99, col:'#e09820'},
+/* ══════════════════════════════════════════════════
+   GROUPED BAR COMPARISON (in Stat Curves tab)
+   One group per archetype + your build, bars = HP/Mana/DMG
+══════════════════════════════════════════════════ */
+const ARCH_BUILDS=[
+  {key:'balanced', lbl:'Balanced\n33/33/33', hp:33, mana:33, dmg:33, col:'#6c63d4'},
+  {key:'dps',      lbl:'DPS\n15/15/69',     hp:15, mana:15, dmg:69, col:'#e09820'},
+  {key:'support',  lbl:'Support\n69/15/15', hp:69, mana:15, dmg:15, col:'#e04545'},
+  {key:'caster',   lbl:'Caster\n15/69/15',  hp:15, mana:69, dmg:15, col:'#3480d4'},
+  {key:'custom',   get lbl(){return 'Your build\n'+BUILD.hp+'/'+BUILD.mana+'/'+BUILD.dmg}, get hp(){return BUILD.hp}, get mana(){return BUILD.mana}, get dmg(){return BUILD.dmg}, col:'#e2e4f0'},
 ];
 
-function drawComp(){
-  if(!SC.length || !SPELLS.length || !ENEMIES.length) return;
-  const fhp=heroStatsL100(99,0,0), bal=heroStatsL100(33,33,33), fdmg=heroStatsL100(0,0,99), you=heroStatsL100(BUILD.hp,BUILD.mana,BUILD.dmg);
-  document.getElementById('cmp_fhp').textContent=fmt(fhp.hp)+' HP';
-  document.getElementById('cmp_bal').textContent=fmt(bal.hp)+' HP';
-  document.getElementById('cmp_you').textContent=fmt(you.hp)+' HP';
-  document.getElementById('cmp_you_sub').textContent=BUILD.hp+'/'+BUILD.mana+'/'+BUILD.dmg;
-  document.getElementById('cmp_fdmg').textContent=fmt(fdmg.dmg)+' DMG';
+function drawCompBars(){
+  if(!SC) return;
+  const labels = ARCH_BUILDS.map(b=>b.lbl.replace('\n',' '));
 
-  const firstSpellName = SPELLS[0]?.n || '';
-  const firstEnemy = ENEMIES[0];
-
-  const labels=BUILDS.map(b=>{
-    const l=b.lbl;
-    return l==='Your build'?`Your build (${BUILD.hp}/${BUILD.mana}/${BUILD.dmg})`: l.replace('\n',' ');
-  });
-
-  if(compTab==='stats'){
-    document.getElementById('compNote').textContent='Stats comparison at level 100 (Values normalized for visual scaling).';
-    document.getElementById('compLeg').innerHTML=`<div class="li"><div class="ls" style="background:var(--hp)"></div>HP</div><div class="li"><div class="ls" style="background:var(--mana)"></div>Mana ×10</div><div class="li"><div class="ls" style="background:var(--dmg)"></div>Base DMG ×10</div>`;
-    mkC('compC',{type:'bar',data:{labels,datasets:[
-      {label:'HP',       data:BUILDS.map(b=>heroStatsL100(b.hp,b.mana,b.dmg).hp),  backgroundColor:BUILDS.map(b=>b.col+'cc')},
-      {label:'Mana ×10', data:BUILDS.map(b=>heroStatsL100(b.hp,b.mana,b.dmg).mana*10),backgroundColor:'#3480d455'},
-      {label:'DMG ×10',  data:BUILDS.map(b=>heroStatsL100(b.hp,b.mana,b.dmg).dmg*10), backgroundColor:'#e0982055'},
-    ]},options:{responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#7a7f9a',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#454860'},grid:{color:'rgba(255,255,255,.03)'}}}
-    }});
-  } else if(compTab==='ttk'){
-    document.getElementById('compNote').textContent=`TTK = hits to kill ${firstEnemy?.n || 'Enemy'} @ L50 using ${firstSpellName} (T3).`;
-    document.getElementById('compLeg').innerHTML='';
-    const r50=row(50), eHP50=firstEnemy?eHP(firstEnemy,50):1000;
-    const data=BUILDS.map(b=>{
-      const m=dmgMult(50,b.dmg), eff=Math.round(spellBase(firstSpellName,3)*r50.spellDMGpct/100*m);
-      return ceil(eHP50/Math.max(eff,1));
-    });
-    mkC('compC',{type:'bar',data:{labels,datasets:[{data,backgroundColor:BUILDS.map(b=>b.col+'cc')}]},options:{
-      indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#454860',stepSize:1},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#7a7f9a'}}}
+  if(compStat==='all'){
+    /* Grouped: each build has 3 bars (HP, Mana×10, DMG×10) */
+    mkC('compC',{type:'bar', data:{labels, datasets:[
+      {label:'HP',      data:ARCH_BUILDS.map(b=>statHP(b.hp)),        backgroundColor:ARCH_BUILDS.map(b=>b.col+'cc'), borderWidth:0},
+      {label:'Mana ×10',data:ARCH_BUILDS.map(b=>statMana(b.mana)*10), backgroundColor:'#3480d440',borderWidth:0},
+      {label:'DMG ×10', data:ARCH_BUILDS.map(b=>statDMG(b.dmg)*10),  backgroundColor:'#e0982040',borderWidth:0},
+    ]}, options:{
+      responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{labels:{color:'#7a7f9a',font:{size:11}}},tooltip:{callbacks:{label:c=>{
+        if(c.datasetIndex===0) return 'HP: '+fmt(c.raw);
+        if(c.datasetIndex===1) return 'Mana: '+fmt(c.raw/10);
+        return 'Base DMG: '+fmt(c.raw/10);
+      }}}},
+      scales:{x:{ticks:{color:'#7a7f9a',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#454860',callback:v=>fmt(v),font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}}}
     }});
   } else {
-    document.getElementById('compNote').textContent=`TTD = hits to die from ${firstEnemy?.n || 'Enemy'} @ L50 (Builds evaluated with their respective max level HP).`;
-    document.getElementById('compLeg').innerHTML='';
-    const eDMG50=firstEnemy?eDMG(firstEnemy,50):100;
-    const data=BUILDS.map(b=>{
-      const hp=heroStatsL100(b.hp,b.mana,b.dmg).hp;
-      return ceil(hp/Math.max(eDMG50,1));
-    });
-    mkC('compC',{type:'bar',data:{labels,datasets:[{data,backgroundColor:BUILDS.map(b=>b.col+'cc')}]},options:{
-      indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#454860',stepSize:1},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#7a7f9a'}}}
+    /* Single stat — one bar per archetype, highlight "your build" */
+    const statFn = compStat==='hp'?statHP:compStat==='mana'?statMana:statDMG;
+    const ptsFn  = compStat==='hp'?b=>b.hp:compStat==='mana'?b=>b.mana:b=>b.dmg;
+    const data   = ARCH_BUILDS.map(b=>statFn(ptsFn(b)));
+    const colors = ARCH_BUILDS.map(b=>b.key==='custom'?'#e2e4f0':b.col+'cc');
+    const borders= ARCH_BUILDS.map(b=>b.key==='custom'?'#e2e4f0':'transparent');
+    const bwidths= ARCH_BUILDS.map(b=>b.key==='custom'?2:0);
+    const statLabel= compStat==='hp'?'HP':compStat==='mana'?'Mana':'Base DMG';
+    mkC('compC',{type:'bar', data:{labels, datasets:[
+      {label:statLabel, data, backgroundColor:colors, borderColor:borders, borderWidth:bwidths}
+    ]}, options:{
+      responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>statLabel+': '+fmt(c.raw)}}},
+      scales:{x:{ticks:{color:'#7a7f9a',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#454860',callback:v=>fmt(v),font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}}}
     }});
   }
 }
 
-/* ═══════════════════════════════════════════════════════
-   COMBAT SIMULATOR
-═══════════════════════════════════════════════════════ */
+/* Keep old drawComp as alias */
+function drawComp(){ drawCompBars(); }
+
+/* ══════════════════════════════════════════════════
+   COMBAT SIM — correctly scales by hero level
+   At level N: player has N-1 points to distribute
+   Points per stat = round((N-1)/99 * stat_pts)
+══════════════════════════════════════════════════ */
 function initSim(){
   const ss=document.getElementById('simSpell'); ss.innerHTML='';
   SPELLS.forEach(s=>{const o=document.createElement('option');o.value=s.n;o.textContent=s.n+' ('+s.el+')';ss.appendChild(o)});
@@ -651,56 +1022,75 @@ function initSim(){
 }
 
 function simCalc(){
-  if(!SC.length || !SPELLS.length || !ENEMIES.length) return;
-  const hLvl=+document.getElementById('heroLvl').value, tier=+document.getElementById('simTier').value, eLv=+document.getElementById('eLvl').value;
-  const spell=SPELLS.find(s=>s.n===document.getElementById('simSpell').value) || SPELLS[0];
-  const enemy=ENEMIES.find(e=>e.n===document.getElementById('simEnemy').value) || ENEMIES[0];
+  if(!SC) return;
+  const hLvl=+document.getElementById('heroLvl').value;
+  const tier=+document.getElementById('simTier').value;
+  const eLv=+document.getElementById('eLvl').value;
+  const spell=SPELLS.find(s=>s.n===document.getElementById('simSpell').value);
+  const enemy=ENEMIES.find(e=>e.n===document.getElementById('simEnemy').value);
+  if(!spell||!enemy) return;
 
-  const r=row(hLvl), bs=heroStats(hLvl,BUILD.hp,BUILD.mana,BUILD.dmg), mult=dmgMult(hLvl,BUILD.dmg);
-  const base=spellBase(spell.n,tier), eff=Math.round(base*r.spellDMGpct/100*mult);
+  /* Available points = level - 1 */
+  const availPts = hLvl - 1;
+  document.getElementById('heroAvailPts').textContent = availPts;
+
+  /* Resolve build pts from chosen preset at this level */
+  const simB = getSimBuild(hLvl);
+  const hpPtsAtLvl   = simB.hp;
+  const manaPtsAtLvl = simB.mana;
+  const dmgPtsAtLvl  = simB.dmg;
+
+  /* Update build info label */
+  const infoEl = document.getElementById('simBuildInfo');
+  if(infoEl) infoEl.textContent = `Pts: ${hpPtsAtLvl} HP / ${manaPtsAtLvl} Mana / ${dmgPtsAtLvl} DMG`;
+
+  /* Compute hero stats using capped multipliers */
+  const heroHp   = statHP(hpPtsAtLvl);
+  const heroMana = statMana(manaPtsAtLvl);
+  const heroBaseDmg = statDMG(dmgPtsAtLvl);
+  const dmgMultiplier = heroBaseDmg / BASE_DMG;
+
+  const r=row(hLvl);
+  const base=spellBase(spell.n,tier);
+  const eff=Math.round(base*r.spellDMGpct/100*dmgMultiplier);
+
   const enemHP=eHP(enemy,eLv), enemDMG=eDMG(enemy,eLv);
-  
-  const isRes=enemy.res.split(',').some(x=>x.trim().toLowerCase()===spell.el.toLowerCase()), 
-        isWeak=enemy.weak.split(',').some(x=>x.trim().toLowerCase()===spell.el.toLowerCase());
-  const em=isRes?.5:isWeak?1.5:1, final=Math.round(eff*em);
-  const ttk=ceil(enemHP/Math.max(final,1)), ttd=ceil(bs.hp/Math.max(enemDMG,1));
+  const isRes=enemy.res.split(', ').some(x=>x.trim()===spell.el);
+  const isWeak=enemy.weak.split(', ').some(x=>x.trim()===spell.el);
+  const em=isRes?.5:isWeak?1.5:1;
+  const final=Math.round(eff*em);
+  const ttk=ceil(enemHP/Math.max(final,1)), ttd=ceil(heroHp/Math.max(enemDMG,1));
 
   document.getElementById('sDmg').textContent=fmt(final);
   document.getElementById('sTTK').textContent=ttk+' hits';
-  document.getElementById('sHeroHP').textContent=fmt(bs.hp);
-  document.getElementById('sHPsub').textContent=BUILD.hp+' HP pts';
+  document.getElementById('sHeroHP').textContent=fmt(heroHp);
+  document.getElementById('sHPsub').textContent=`${hpPtsAtLvl} pts at L${hLvl} (${BUILD.hp} total)`;
   document.getElementById('sTTD').textContent=ttd+' hits';
   document.getElementById('rEHP').textContent=fmt(enemHP);
   document.getElementById('rEDMG').textContent=fmt(enemDMG);
   document.getElementById('rSpell').textContent=`${fmt(base)} × ${r.spellDMGpct}% = ${fmt(Math.round(base*r.spellDMGpct/100))}`;
-  document.getElementById('rMult').textContent=`×${mult.toFixed(2)} (${BUILD.dmg} pts)`;
-  document.getElementById('rElem').innerHTML=`<span style="color:${EC[spell.el]}">${spell.el}</span> ${isRes?'<span style="color:#555">×0.5 Res</span>':isWeak?'<span style="color:#18a070">×1.5 Weak</span>':'×1.0'}`;
-  
-  const shown=Math.min(ttk,20), pct=Math.max(0,Math.round((enemHP-shown*final)/enemHP*100));
-  document.getElementById('hpFill').style.width=pct+'%';
-  document.getElementById('hpL').textContent='After '+shown+' hits';
-  document.getElementById('hpR').textContent=pct+'% remaining';
+  document.getElementById('rMult').textContent=`×${dmgMultiplier.toFixed(2)} (${dmgPtsAtLvl} pts → ${fmt(heroBaseDmg)} base DMG)`;
+  document.getElementById('rElem').innerHTML=`<span style="color:${EC[spell.el]}">${spell.el}</span> ${isRes?'<span style="color:#555">×0.5 resist</span>':isWeak?'<span style="color:#18a070">×1.5 weakness</span>':'×1.0 normal'}`;
 
-  const comp=SPELLS.map(s=>{
-    const b2=spellBase(s.n,tier), e2=Math.round(b2*r.spellDMGpct/100*mult);
-    const rv=enemy.res.split(',').some(x=>x.trim().toLowerCase()===s.el.toLowerCase()), 
-          wv=enemy.weak.split(',').some(x=>x.trim().toLowerCase()===s.el.toLowerCase());
+  /* Spell comparison chart */
+  const comp=SPELLS.filter(s=>ST[s.n]?.[tier]>0).map(s=>{
+    const b2=spellBase(s.n,tier), e2=Math.round(b2*r.spellDMGpct/100*dmgMultiplier);
+    const rv=enemy.res.split(', ').some(x=>x.trim()===s.el), wv=enemy.weak.split(', ').some(x=>x.trim()===s.el);
     return {name:s.n,dmg:Math.round(e2*(rv?.5:wv?1.5:1)),col:EC[s.el]||'#555',sel:s.n===spell.n};
   }).sort((a,b)=>b.dmg-a.dmg).slice(0,12);
-  
-  mkC('simComp',{type:'bar',data:{labels:comp.map(d=>d.name),datasets:[{data:comp.map(d=>d.dmg),backgroundColor:comp.map(d=>d.sel?d.col:d.col+'55')}]},options:{
+  mkC('simComp',{type:'bar',data:{labels:comp.map(d=>d.name),datasets:[{data:comp.map(d=>d.dmg),backgroundColor:comp.map(d=>d.sel?d.col:d.col+'55'),borderColor:comp.map(d=>d.sel?d.col:'transparent'),borderWidth:comp.map(d=>d.sel?2:0)}]},options:{
     indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
-    plugins:{legend:{display:false}},
-    scales:{x:{ticks:{color:'#454860'},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#7a7f9a'}}}
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+' dmg'}}},
+    scales:{x:{ticks:{color:'#454860',callback:v=>fmt(v),font:{size:10}},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#7a7f9a',font:{size:11}},grid:{display:false}}}
   }});
 }
 
-/* ═══════════════════════════════════════════════════════
-   SPELLS DISPLAY CARD
-═══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   SPELLS
+══════════════════════════════════════════════════ */
 let spellFilt='all';
 function initSpells(){
-  const fb=document.getElementById('spFilters'); fb.innerHTML='';
+  const fb=document.getElementById('spFilters');
   ['all','Fire','Ice','Earth','Wind','Lightning','Necro'].forEach(e=>{
     const b=document.createElement('button'); b.textContent=e==='all'?'All':e; b.className=e==='all'?'on':'';
     if(e!=='all') b.style.cssText=`background:${EC[e]}18;color:${EC[e]};border-color:${EC[e]}35`;
@@ -709,51 +1099,50 @@ function initSpells(){
   });
 }
 function renderSpells(){
-  if(!SC.length || !SPELLS.length) return;
+  if(!SC) return;
   const grid=document.getElementById('spGrid'); grid.innerHTML='';
-  const lvl=+document.getElementById('spLvl').value, r=row(lvl), mult=dmgMult(lvl,BUILD.dmg);
-  
-  let maxB = 1;
-  SPELLS.forEach(s => s.tiers.forEach(v => { if(v > maxB) maxB = v; }));
-
-  SPELLS.filter(s=>spellFilt==='all'||s.el.toLowerCase()===spellFilt.toLowerCase()).forEach(spell=>{
+  const lvl=+document.getElementById('spLvl').value, r=row(lvl);
+  const dmgPtsAtLvl=ptsAtLevel(BUILD.dmg,lvl);
+  const heroBaseDmg=statDMG(dmgPtsAtLvl), dmgMult=heroBaseDmg/BASE_DMG;
+  const maxB=Math.max(...Object.values(ST).map(t=>t[5]));
+  SPELLS.filter(s=>spellFilt==='all'||s.el===spellFilt).forEach(spell=>{
     const col=EC[spell.el]||'#555', card=document.createElement('div');
     card.className='spc'; card.style.borderColor=col+'28';
     const rows=[0,1,2,3,4,5].map(t=>{
-      const b=spellBase(spell.n,t), eff=b>0?Math.round(b*r.spellDMGpct/100*mult):0, pct=Math.round(b/maxB*100);
+      const b=spellBase(spell.n,t), eff=b>0?Math.round(b*r.spellDMGpct/100*dmgMult):0, pct=Math.round(b/maxB*100);
       return `<div class="str"><span style="color:var(--text3)">T${t}</span><span style="font-family:var(--fm);font-weight:600;color:${col}">${b>0?fmt(b):'—'}</span><span style="color:var(--text2);font-size:.66rem">${eff>0?'→ '+fmt(eff):''}</span></div><div class="sb"><div class="sbf" style="background:${col};width:${pct}%"></div></div>`;
     }).join('');
-    card.innerHTML=`<div class="spn">${spell.n}</div><div class="spm"><div class="dsm" style="background:${col}"></div>${spell.el} · ${spell.ty} · Lvl ${spell.ul}</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Eff @ L${lvl}</div>${rows}`;
+    card.innerHTML=`<div class="spn">${spell.n}</div><div class="spm"><div class="dsm" style="background:${col}"></div>${spell.el} · ${spell.ty} · Unlock ${spell.ul}</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L${lvl}</div>${rows}`;
     grid.appendChild(card);
   });
 }
 
-/* ═══════════════════════════════════════════════════════
-   ENEMIES LIST
-═══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   ENEMIES
+══════════════════════════════════════════════════ */
 let enemFilt='all';
 function initEnemies(){
-  const fb=document.getElementById('eFilters'); fb.innerHTML='';
+  const fb=document.getElementById('eFilters');
   ['all','Base','Boss'].forEach(t=>{
     const b=document.createElement('button'); b.textContent=t==='all'?'All':t; b.className=t==='all'?'on':'';
-    if(t=='Boss') b.style.cssText='color:var(--fire);border-color:var(--fire)35';
+    if(t==='Boss') b.style.cssText='color:var(--fire);border-color:var(--fire)35';
     b.onclick=()=>{enemFilt=t;document.querySelectorAll('#eFilters button').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderEnemies()};
     fb.appendChild(b);
   });
 }
 function renderEnemies(){
-  if(!SC.length || !ENEMIES.length) return;
-  const lvl=+document.getElementById('eLvlFilt').value, r=row(lvl), mult=dmgMult(lvl,BUILD.dmg);
-  const firstSpellName = SPELLS[0]?.n || '';
-  const refEff=Math.round(spellBase(firstSpellName,3)*r.spellDMGpct/100*mult);
-  const heroHp=heroStats(lvl,BUILD.hp,BUILD.mana,BUILD.dmg).hp;
+  if(!SC) return;
+  const lvl=+document.getElementById('eLvlFilt').value, r=row(lvl);
+  const dmgPtsAtLvl=ptsAtLevel(BUILD.dmg,lvl);
+  const heroBaseDmg=statDMG(dmgPtsAtLvl), dmgMult=heroBaseDmg/BASE_DMG;
+  const refEff=Math.round(spellBase('Fire Strike',3)*r.spellDMGpct/100*dmgMult);
+  const heroHp=statHP(ptsAtLevel(BUILD.hp,lvl));
   const body=document.getElementById('eRows'); body.innerHTML='';
-  
-  ENEMIES.filter(e=>enemFilt==='all'||e.ty.toLowerCase()===enemFilt.toLowerCase()).forEach(enemy=>{
+  ENEMIES.filter(e=>enemFilt==='all'||e.ty===enemFilt).forEach(enemy=>{
     const hp=eHP(enemy,lvl), dmg=eDMG(enemy,lvl);
     const ttk=enemy.ty==='Boss'?null:ceil(hp/Math.max(refEff,1)), ttd=ceil(heroHp/Math.max(dmg,1));
-    const res=enemy.res==='None'?'':enemy.res.split(',').map(x=>`<span class="pill" style="background:${EC[x.trim()]||'#333'}20;color:${EC[x.trim()]||'#888'}">${x.trim()}</span>`).join('');
-    const wk=enemy.weak==='None'?'':enemy.weak.split(',').map(x=>`<span class="pill" style="background:${EC[x.trim()]||'#333'}20;color:${EC[x.trim()]||'#888'}">${x.trim()}</span>`).join('');
+    const res=enemy.res.split(', ').map(x=>`<span class="pill" style="background:${EC[x.trim()]||'#333'}20;color:${EC[x.trim()]||'#888'}">${x.trim()}</span>`).join('');
+    const wk=enemy.weak.split(', ').map(x=>`<span class="pill" style="background:${EC[x.trim()]||'#333'}20;color:${EC[x.trim()]||'#888'}">${x.trim()}</span>`).join('');
     const tr=document.createElement('tr');
     tr.innerHTML=`<td><div style="font-weight:600">${enemy.n}</div><div style="color:var(--text3);font-size:.68rem">${enemy.pfx}</div></td>
       <td><span class="${enemy.ty.toLowerCase()}-t">${enemy.ty}</span></td>
@@ -765,21 +1154,28 @@ function renderEnemies(){
   });
 }
 
-function mkC(id,cfg){if(charts[id]) charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg)}
+/* ══════════════════════════════════════════════════
+   CHART HELPER
+══════════════════════════════════════════════════ */
+function mkC(id,cfg){if(charts[id]) charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg);}
 
+/* ══════════════════════════════════════════════════
+   FALLBACK DATA (from CSV — exact values)
+══════════════════════════════════════════════════ */
+const FALLBACK=[{level:1,enemyHP:180,enemyDMG:72,heroHP:500,heroMana:100,spellDMGpct:100,spellDMG:100},{level:2,enemyHP:191,enemyDMG:76,heroHP:535,heroMana:105,spellDMGpct:110,spellDMG:110},{level:3,enemyHP:200,enemyDMG:79,heroHP:570,heroMana:110,spellDMGpct:120,spellDMG:120},{level:4,enemyHP:211,enemyDMG:79,heroHP:615,heroMana:115,spellDMGpct:135,spellDMG:135},{level:5,enemyHP:223,enemyDMG:83,heroHP:655,heroMana:120,spellDMGpct:145,spellDMG:145},{level:6,enemyHP:236,enemyDMG:83,heroHP:700,heroMana:125,spellDMGpct:160,spellDMG:160},{level:7,enemyHP:248,enemyDMG:86,heroHP:750,heroMana:130,spellDMGpct:175,spellDMG:175},{level:8,enemyHP:261,enemyDMG:86,heroHP:805,heroMana:135,spellDMGpct:195,spellDMG:195},{level:9,enemyHP:275,enemyDMG:90,heroHP:860,heroMana:140,spellDMGpct:215,spellDMG:215},{level:10,enemyHP:292,enemyDMG:90,heroHP:920,heroMana:145,spellDMGpct:235,spellDMG:235},{level:11,enemyHP:308,enemyDMG:94,heroHP:985,heroMana:150,spellDMGpct:260,spellDMG:260},{level:12,enemyHP:324,enemyDMG:97,heroHP:1050,heroMana:155,spellDMGpct:285,spellDMG:285},{level:13,enemyHP:342,enemyDMG:97,heroHP:1125,heroMana:160,spellDMGpct:315,spellDMG:315},{level:14,enemyHP:362,enemyDMG:101,heroHP:1205,heroMana:165,spellDMGpct:345,spellDMG:345},{level:15,enemyHP:382,enemyDMG:104,heroHP:1290,heroMana:170,spellDMGpct:380,spellDMG:380},{level:16,enemyHP:401,enemyDMG:104,heroHP:1380,heroMana:175,spellDMGpct:420,spellDMG:420},{level:17,enemyHP:425,enemyDMG:108,heroHP:1475,heroMana:180,spellDMGpct:460,spellDMG:460},{level:18,enemyHP:446,enemyDMG:112,heroHP:1580,heroMana:185,spellDMGpct:505,spellDMG:505},{level:19,enemyHP:472,enemyDMG:115,heroHP:1690,heroMana:190,spellDMGpct:555,spellDMG:555},{level:20,enemyHP:499,enemyDMG:115,heroHP:1810,heroMana:195,spellDMGpct:610,spellDMG:610},{level:21,enemyHP:526,enemyDMG:119,heroHP:1935,heroMana:200,spellDMGpct:675,spellDMG:675},{level:22,enemyHP:554,enemyDMG:122,heroHP:2070,heroMana:205,spellDMGpct:740,spellDMG:740},{level:23,enemyHP:585,enemyDMG:126,heroHP:2215,heroMana:210,spellDMGpct:815,spellDMG:815},{level:24,enemyHP:617,enemyDMG:130,heroHP:2370,heroMana:215,spellDMGpct:895,spellDMG:895},{level:25,enemyHP:650,enemyDMG:133,heroHP:2535,heroMana:220,spellDMGpct:985,spellDMG:985},{level:26,enemyHP:686,enemyDMG:137,heroHP:2715,heroMana:225,spellDMGpct:1085,spellDMG:1085},{level:27,enemyHP:724,enemyDMG:140,heroHP:2905,heroMana:230,spellDMGpct:1190,spellDMG:1190},{level:28,enemyHP:763,enemyDMG:140,heroHP:3105,heroMana:235,spellDMGpct:1310,spellDMG:1310},{level:29,enemyHP:806,enemyDMG:144,heroHP:3325,heroMana:240,spellDMGpct:1440,spellDMG:1440},{level:30,enemyHP:850,enemyDMG:148,heroHP:3555,heroMana:245,spellDMGpct:1585,spellDMG:1585},{level:31,enemyHP:896,enemyDMG:151,heroHP:3805,heroMana:250,spellDMGpct:1745,spellDMG:1745},{level:32,enemyHP:947,enemyDMG:158,heroHP:4075,heroMana:255,spellDMGpct:1920,spellDMG:1920},{level:33,enemyHP:999,enemyDMG:162,heroHP:4360,heroMana:260,spellDMGpct:2110,spellDMG:2110},{level:34,enemyHP:1053,enemyDMG:166,heroHP:4665,heroMana:265,spellDMGpct:2325,spellDMG:2325},{level:35,enemyHP:1111,enemyDMG:169,heroHP:4990,heroMana:270,spellDMGpct:2555,spellDMG:2555},{level:36,enemyHP:1172,enemyDMG:173,heroHP:5340,heroMana:275,spellDMGpct:2810,spellDMG:2810},{level:37,enemyHP:1237,enemyDMG:176,heroHP:5710,heroMana:280,spellDMGpct:3090,spellDMG:3090},{level:38,enemyHP:1305,enemyDMG:180,heroHP:6110,heroMana:285,spellDMGpct:3400,spellDMG:3400},{level:39,enemyHP:1377,enemyDMG:187,heroHP:6540,heroMana:290,spellDMGpct:3740,spellDMG:3740},{level:40,enemyHP:1453,enemyDMG:191,heroHP:6995,heroMana:295,spellDMGpct:4115,spellDMG:4115},{level:41,enemyHP:1532,enemyDMG:194,heroHP:7485,heroMana:300,spellDMGpct:4525,spellDMG:4525},{level:42,enemyHP:1616,enemyDMG:202,heroHP:7635,heroMana:303,spellDMGpct:4660,spellDMG:4660},{level:43,enemyHP:1706,enemyDMG:205,heroHP:7790,heroMana:306,spellDMGpct:4800,spellDMG:4800},{level:44,enemyHP:1800,enemyDMG:209,heroHP:7945,heroMana:309,spellDMGpct:4945,spellDMG:4945},{level:45,enemyHP:1899,enemyDMG:216,heroHP:8105,heroMana:312,spellDMGpct:5095,spellDMG:5095},{level:46,enemyHP:2003,enemyDMG:220,heroHP:8265,heroMana:315,spellDMGpct:5245,spellDMG:5245},{level:47,enemyHP:2113,enemyDMG:227,heroHP:8430,heroMana:318,spellDMGpct:5405,spellDMG:5405},{level:48,enemyHP:2228,enemyDMG:230,heroHP:8600,heroMana:321,spellDMGpct:5565,spellDMG:5565},{level:49,enemyHP:2353,enemyDMG:238,heroHP:8770,heroMana:324,spellDMGpct:5735,spellDMG:5735},{level:50,enemyHP:2480,enemyDMG:245,heroHP:8950,heroMana:327,spellDMGpct:5905,spellDMG:5905},{level:51,enemyHP:2617,enemyDMG:248,heroHP:9125,heroMana:330,spellDMGpct:6080,spellDMG:6080},{level:52,enemyHP:2761,enemyDMG:256,heroHP:9310,heroMana:333,spellDMGpct:6265,spellDMG:6265},{level:53,enemyHP:2914,enemyDMG:263,heroHP:9495,heroMana:336,spellDMGpct:6455,spellDMG:6455},{level:54,enemyHP:3074,enemyDMG:270,heroHP:9685,heroMana:339,spellDMGpct:6645,spellDMG:6645},{level:55,enemyHP:3242,enemyDMG:274,heroHP:9880,heroMana:342,spellDMGpct:6845,spellDMG:6845},{level:56,enemyHP:3422,enemyDMG:281,heroHP:10075,heroMana:345,spellDMGpct:7050,spellDMG:7050},{level:57,enemyHP:3609,enemyDMG:288,heroHP:10280,heroMana:348,spellDMGpct:7265,spellDMG:7265},{level:58,enemyHP:3807,enemyDMG:295,heroHP:10485,heroMana:351,spellDMGpct:7480,spellDMG:7480},{level:59,enemyHP:4018,enemyDMG:302,heroHP:10695,heroMana:354,spellDMGpct:7705,spellDMG:7705},{level:60,enemyHP:4237,enemyDMG:310,heroHP:10905,heroMana:357,spellDMGpct:7935,spellDMG:7935},{level:61,enemyHP:4471,enemyDMG:317,heroHP:11125,heroMana:360,spellDMGpct:8175,spellDMG:8175},{level:62,enemyHP:4718,enemyDMG:328,heroHP:11235,heroMana:362,spellDMGpct:8255,spellDMG:8255},{level:63,enemyHP:4977,enemyDMG:335,heroHP:11350,heroMana:364,spellDMGpct:8340,spellDMG:8340},{level:64,enemyHP:5251,enemyDMG:342,heroHP:11465,heroMana:366,spellDMGpct:8420,spellDMG:8420},{level:65,enemyHP:5539,enemyDMG:353,heroHP:11575,heroMana:368,spellDMGpct:8505,spellDMG:8505},{level:66,enemyHP:5843,enemyDMG:360,heroHP:11695,heroMana:370,spellDMGpct:8590,spellDMG:8590},{level:67,enemyHP:6165,enemyDMG:371,heroHP:11810,heroMana:372,spellDMGpct:8675,spellDMG:8675},{level:68,enemyHP:6503,enemyDMG:378,heroHP:11930,heroMana:374,spellDMGpct:8765,spellDMG:8765},{level:69,enemyHP:6862,enemyDMG:389,heroHP:12045,heroMana:376,spellDMGpct:8850,spellDMG:8850},{level:70,enemyHP:7240,enemyDMG:396,heroHP:12170,heroMana:378,spellDMGpct:8940,spellDMG:8940},{level:71,enemyHP:7637,enemyDMG:407,heroHP:12290,heroMana:380,spellDMGpct:9030,spellDMG:9030},{level:72,enemyHP:8057,enemyDMG:418,heroHP:12415,heroMana:382,spellDMGpct:9120,spellDMG:9120},{level:73,enemyHP:8501,enemyDMG:428,heroHP:12535,heroMana:384,spellDMGpct:9210,spellDMG:9210},{level:74,enemyHP:8968,enemyDMG:439,heroHP:12660,heroMana:386,spellDMGpct:9305,spellDMG:9305},{level:75,enemyHP:9461,enemyDMG:450,heroHP:12790,heroMana:388,spellDMGpct:9395,spellDMG:9395},{level:76,enemyHP:9981,enemyDMG:461,heroHP:12915,heroMana:390,spellDMGpct:9490,spellDMG:9490},{level:77,enemyHP:10530,enemyDMG:472,heroHP:13045,heroMana:392,spellDMGpct:9585,spellDMG:9585},{level:78,enemyHP:11110,enemyDMG:482,heroHP:13175,heroMana:394,spellDMGpct:9680,spellDMG:9680},{level:79,enemyHP:11722,enemyDMG:497,heroHP:13310,heroMana:396,spellDMGpct:9780,spellDMG:9780},{level:80,enemyHP:12366,enemyDMG:508,heroHP:13440,heroMana:398,spellDMGpct:9875,spellDMG:9875},{level:81,enemyHP:13046,enemyDMG:522,heroHP:13575,heroMana:400,spellDMGpct:9975,spellDMG:9975},{level:82,enemyHP:13763,enemyDMG:533,heroHP:13710,heroMana:402,spellDMGpct:10075,spellDMG:10075},{level:83,enemyHP:14521,enemyDMG:547,heroHP:13850,heroMana:404,spellDMGpct:10175,spellDMG:10175},{level:84,enemyHP:15318,enemyDMG:562,heroHP:13985,heroMana:406,spellDMGpct:10275,spellDMG:10275},{level:85,enemyHP:16162,enemyDMG:576,heroHP:14125,heroMana:408,spellDMGpct:10380,spellDMG:10380},{level:86,enemyHP:17050,enemyDMG:590,heroHP:14270,heroMana:410,spellDMGpct:10485,spellDMG:10485},{level:87,enemyHP:17987,enemyDMG:605,heroHP:14410,heroMana:412,spellDMGpct:10590,spellDMG:10590},{level:88,enemyHP:18977,enemyDMG:619,heroHP:14555,heroMana:414,spellDMGpct:10695,spellDMG:10695},{level:89,enemyHP:20021,enemyDMG:634,heroHP:14700,heroMana:416,spellDMGpct:10800,spellDMG:10800},{level:90,enemyHP:21123,enemyDMG:652,heroHP:14845,heroMana:418,spellDMGpct:10910,spellDMG:10910},{level:91,enemyHP:22284,enemyDMG:666,heroHP:14995,heroMana:420,spellDMGpct:11020,spellDMG:11020},{level:92,enemyHP:23510,enemyDMG:684,heroHP:15145,heroMana:422,spellDMGpct:11130,spellDMG:11130},{level:93,enemyHP:24802,enemyDMG:698,heroHP:15295,heroMana:424,spellDMGpct:11240,spellDMG:11240},{level:94,enemyHP:26167,enemyDMG:716,heroHP:15450,heroMana:426,spellDMGpct:11350,spellDMG:11350},{level:95,enemyHP:27607,enemyDMG:734,heroHP:15605,heroMana:428,spellDMGpct:11465,spellDMG:11465},{level:96,enemyHP:29124,enemyDMG:752,heroHP:15760,heroMana:430,spellDMGpct:11580,spellDMG:11580},{level:97,enemyHP:30726,enemyDMG:774,heroHP:15920,heroMana:432,spellDMGpct:11695,spellDMG:11695},{level:98,enemyHP:32416,enemyDMG:792,heroHP:16075,heroMana:434,spellDMGpct:11815,spellDMG:11815},{level:99,enemyHP:34198,enemyDMG:810,heroHP:16240,heroMana:436,spellDMGpct:11930,spellDMG:11930},{level:100,enemyHP:36079,enemyDMG:832,heroHP:16400,heroMana:438,spellDMGpct:12050,spellDMG:12050}];
+
+/* ══════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════ */
 function initAll(){
-  updateCurveUI();
-  updateBanners();
-  initSim(); 
-  simCalc();
-  initSpells(); 
-  renderSpells();
-  initEnemies(); 
-  renderEnemies();
-  drawComp();
+  updateCurveUI(); updateBanners();
+  initSim(); simCalc();
+  initSpells(); renderSpells();
+  initEnemies(); renderEnemies();
+  drawCompBars();
 }
-
-window.addEventListener('DOMContentLoaded', loadAllData);
+window.addEventListener('DOMContentLoaded',fetchSheet);
 </script>
-</body>
-</html>
+
+
+</body></html>
