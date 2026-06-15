@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizherd — Balancing Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg:#0e0f14;--bg2:#161820;--bg3:#1e2030;--bg4:#252840;
+    --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+    --text:#e8e9f0;--text2:#8b8fa8;--text3:#555870;
+    --accent:#7f77dd;--accent2:#534ab7;
+    --fire:#e24b4a;--ice:#378add;--earth:#ba7517;--wind:#1d9e75;--lightning:#7f77dd;--necro:#d4537e;
+    --hp:#e24b4a;--mana:#378add;--dmg:#ef9f27;
+    --radius:8px;--radius-lg:14px;
+    --font:'Inter',system-ui,sans-serif;--font-mono:'JetBrains Mono','Fira Code',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:15px}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+  header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:2rem;height:56px;position:sticky;top:0;z-index:100}
+  .logo{font-size:1.1rem;font-weight:700;letter-spacing:.08em;color:var(--text);display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .logo-gem{width:22px;height:22px;background:var(--accent);border-radius:4px;transform:rotate(45deg);flex-shrink:0}
+  nav{display:flex;gap:2px}
+  nav button{background:none;border:none;color:var(--text2);font-size:.875rem;font-family:var(--font);padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s;font-weight:500}
+  nav button:hover{background:var(--bg3);color:var(--text)}
+  nav button.active{background:var(--bg4);color:var(--text)}
+  .live-badge{margin-left:auto;font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:6px}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#3b6d11;flex-shrink:0}
+  .live-dot.ok{background:#1d9e75;box-shadow:0 0 0 3px rgba(29,158,117,.2)}
+  .live-dot.err{background:var(--fire)}
+  main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+  .section{display:none}.section.active{display:block}
+  h3{font-size:.9rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+  .metric{background:var(--bg3);border-radius:var(--radius);padding:1rem 1.125rem}
+  .metric .lbl{font-size:.75rem;color:var(--text2);margin-bottom:4px}
+  .metric .val{font-size:1.6rem;font-weight:700;font-family:var(--font-mono)}
+  .metric .sub{font-size:.7rem;color:var(--text3);margin-top:3px}
+  .ctrl{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .ctrl label{font-size:.8rem;color:var(--text2);width:82px;flex-shrink:0;font-weight:500}
+  .ctrl input[type=range]{flex:1;appearance:none;height:4px;background:var(--bg4);border-radius:2px;outline:none;cursor:pointer}
+  .ctrl input[type=range]::-webkit-slider-thumb{appearance:none;width:16px;height:16px;background:var(--text);border-radius:50%;cursor:pointer}
+  .ctrl .num{font-size:.85rem;font-weight:700;font-family:var(--font-mono);min-width:32px;text-align:right}
+  select,input[type=number]{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:.85rem;padding:7px 10px;border-radius:var(--radius);outline:none;cursor:pointer;width:100%}
+  select:focus{border-color:var(--accent)}
+  .badge-pts{display:inline-block;font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);color:var(--text2);margin-bottom:1rem}
+  .badge-pts.over{background:rgba(226,75,74,.15);color:var(--fire)}
+  .build-banner{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 14px;margin-bottom:1.25rem;font-size:.8rem;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .build-banner .bb-item{display:flex;align-items:center;gap:6px}
+  .build-banner .bb-val{font-family:var(--font-mono);font-weight:700;font-size:.95rem}
+  .build-banner .bb-lbl{color:var(--text2)}
+  .build-banner .bb-edit{margin-left:auto;font-size:.72rem;color:var(--accent);cursor:pointer;text-decoration:underline;white-space:nowrap}
+  .chart-wrap{position:relative;width:100%;height:280px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text2)}
+  .legend-swatch{width:18px;height:3px;border-radius:2px;flex-shrink:0}
+  .subtabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+  .subtab{font-size:.8rem;padding:5px 12px;border:1px solid var(--border2);border-radius:6px;background:none;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .12s;font-weight:500}
+  .subtab:hover{background:var(--bg3);color:var(--text)}
+  .subtab.on{background:var(--bg4);color:var(--text);border-color:var(--accent2)}
+  .sim-grid{display:grid;grid-template-columns:280px 1fr;gap:1.5rem}
+  .result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+  .result-row:last-child{border-bottom:none}
+  .result-row .rval{font-family:var(--font-mono);font-weight:600;color:var(--text)}
+  .result-row .rlbl{color:var(--text2)}
+  .dmg-bar-wrap{margin-top:1rem}
+  .dmg-bar-label{font-size:.75rem;color:var(--text2);margin-bottom:5px}
+  .dmg-bar{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden}
+  .dmg-bar-fill{height:100%;border-radius:4px;transition:width .3s ease}
+  .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+  .filter-btn{font-size:.78rem;padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;font-family:var(--font);font-weight:500;transition:all .12s}
+  .filter-btn:hover{background:var(--bg3)}
+  .filter-btn.on{color:#fff;border-color:transparent}
+  .spell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .spell-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;transition:border-color .15s}
+  .spell-card:hover{border-color:var(--border2)}
+  .spell-name{font-size:.9rem;font-weight:600;margin-bottom:4px}
+  .spell-meta{font-size:.72rem;color:var(--text2);display:flex;gap:8px;margin-bottom:10px}
+  .spell-tier-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;margin-bottom:3px}
+  .spell-tier-row .tval{font-family:var(--font-mono);font-weight:600}
+  .spell-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:8px}
+  .spell-bar-fill{height:100%;border-radius:3px}
+  .elem-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+  .enemy-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg)}
+  table{width:100%;border-collapse:collapse;font-size:.82rem}
+  thead th{background:var(--bg3);color:var(--text2);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:.06em;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--bg3)}
+  tbody td{padding:10px 14px;color:var(--text)}
+  .type-boss{color:var(--fire);font-weight:700;font-size:.72rem}
+  .type-base{color:var(--text3);font-size:.72rem}
+  .num-cell{font-family:var(--font-mono);font-size:.82rem}
+  .res-pill{display:inline-block;font-size:.68rem;padding:2px 7px;border-radius:20px;font-weight:600;margin:1px}
+  .sep{height:1px;background:var(--border);margin:1.25rem 0}
+  .row{display:flex;gap:1rem;align-items:flex-start}
+  .col{flex:1;min-width:0}
+  .muted{color:var(--text2);font-size:.82rem}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+  @media(max-width:700px){
+    header{padding:0 1rem;gap:1rem}
+    .logo span{display:none}
+    .sim-grid{grid-template-columns:1fr}
+    .grid-2,.grid-3{grid-template-columns:1fr 1fr}
+    main{padding:1rem}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="logo-gem"></div><span>WIZHERD</span><span style="color:var(--text3);font-weight:400"> / Balancing</span></div>
+  <nav>
+    <button class="active" onclick="showTab('curves',this)">Stat Curves</button>
+    <button onclick="showTab('combat',this)">Combat Sim</button>
+    <button onclick="showTab('spells',this)">Spells</button>
+    <button onclick="showTab('enemies',this)">Enemies</button>
+  </nav>
+  <div class="live-badge">
+    <div class="live-dot" id="liveDot"></div>
+    <span id="liveStatus">Connecting…</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ══ STAT CURVES ══ -->
+<div class="section active" id="sec-curves">
+  <div class="row" style="gap:1.5rem;flex-wrap:wrap">
+    <div class="col" style="min-width:220px;max-width:300px">
+      <h3>Totem — Point Allocation</h3>
+      <div class="ctrl">
+        <label style="color:var(--hp)">HP pts</label>
+        <input type="range" id="sHP" min="0" max="99" value="50" step="1" oninput="onBuildChange()">
+        <span class="num" id="vHP" style="color:var(--hp)">50</span>
+      </div>
+      <div class="ctrl">
+        <label style="color:var(--mana)">Mana pts</label>
+        <input type="range" id="sMana" min="0" max="99" value="25" step="1" oninput="onBuildChange()">
+        <span class="num" id="vMana" style="color:var(--mana)">25</span>
+      </div>
+      <div class="ctrl">
+        <label style="color:var(--dmg)">DMG pts</label>
+        <input type="range" id="sDMG" min="0" max="99" value="24" step="1" oninput="onBuildChange()">
+        <span class="num" id="vDMG" style="color:var(--dmg)">24</span>
+      </div>
+      <div id="ptsBadge" class="badge-pts">0 pts remaining</div>
+      <div class="grid-3" style="gap:8px">
+        <div class="metric"><div class="lbl">HP @ L100</div><div class="val" id="cHP" style="color:var(--hp);font-size:1.1rem">—</div><div class="sub" id="sHP2"></div></div>
+        <div class="metric"><div class="lbl">Mana @ L100</div><div class="val" id="cMana" style="color:var(--mana);font-size:1.1rem">—</div><div class="sub" id="sMana2"></div></div>
+        <div class="metric"><div class="lbl">DMG @ L100</div><div class="val" id="cDMG" style="color:var(--dmg);font-size:1.1rem">—</div><div class="sub" id="sDMG2"></div></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="subtabs">
+        <button class="subtab on" onclick="setCurveTab('hp',this)">HP</button>
+        <button class="subtab" onclick="setCurveTab('mana',this)">Mana</button>
+        <button class="subtab" onclick="setCurveTab('dmg',this)">DMG</button>
+        <button class="subtab" onclick="setCurveTab('all',this)">Normalized</button>
+      </div>
+      <div class="legend" id="curveLegend"></div>
+      <div class="chart-wrap"><canvas id="curveChart" role="img" aria-label="Stat progression curves"></canvas></div>
+    </div>
+  </div>
+  <div class="sep"></div>
+  <h3>Raw values — key levels</h3>
+  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg)">
+    <table>
+      <thead><tr>
+        <th>Level</th>
+        <th style="color:var(--hp)">HP (build)</th>
+        <th style="color:var(--hp);opacity:.5">HP (full)</th>
+        <th style="color:var(--mana)">Mana (build)</th>
+        <th style="color:var(--mana);opacity:.5">Mana (full)</th>
+        <th style="color:var(--dmg)">Base DMG (build)</th>
+        <th style="color:var(--dmg);opacity:.5">Base DMG (full)</th>
+        <th>Enemy HP</th>
+      </tr></thead>
+      <tbody id="curveTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ COMBAT SIM ══ -->
+<div class="section" id="sec-combat">
+  <div id="combatBuildBanner" class="build-banner">
+    <div class="bb-item"><span class="bb-lbl">Build:</span></div>
+    <div class="bb-item"><span class="bb-val" id="bbHP" style="color:var(--hp)">—</span><span class="bb-lbl">HP</span></div>
+    <div class="bb-item"><span class="bb-val" id="bbMana" style="color:var(--mana)">—</span><span class="bb-lbl">Mana</span></div>
+    <div class="bb-item"><span class="bb-val" id="bbDMG" style="color:var(--dmg)">—</span><span class="bb-lbl">Base DMG</span></div>
+    <span class="bb-edit" onclick="showTab('curves',null)">← Edit build in Stat Curves</span>
+  </div>
+  <div class="sim-grid">
+    <div>
+      <h3>Configuration</h3>
+      <div class="card" style="display:flex;flex-direction:column;gap:1rem">
+        <div>
+          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Hero Level</div>
+          <div class="ctrl" style="margin-bottom:0">
+            <input type="range" id="heroLvl" min="1" max="100" value="50" step="1" style="flex:1" oninput="document.getElementById('heroLvlVal').textContent=this.value;simUpdate()">
+            <span class="num" id="heroLvlVal" style="color:var(--accent)">50</span>
+          </div>
+        </div>
+        <div>
+          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Spell</div>
+          <select id="spellSel" onchange="simUpdate()"></select>
+        </div>
+        <div>
+          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Spell Tier</div>
+          <div class="ctrl" style="margin-bottom:0">
+            <input type="range" id="spellTier" min="0" max="5" value="3" step="1" style="flex:1" oninput="document.getElementById('spellTierVal').textContent=this.value;simUpdate()">
+            <span class="num" id="spellTierVal" style="color:var(--accent)">3</span>
+          </div>
+        </div>
+        <div>
+          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Enemy</div>
+          <select id="enemySel" onchange="simUpdate()"></select>
+        </div>
+        <div>
+          <div class="muted" style="margin-bottom:6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Enemy Level</div>
+          <div class="ctrl" style="margin-bottom:0">
+            <input type="range" id="enemyLvl" min="1" max="100" value="50" step="1" style="flex:1" oninput="document.getElementById('enemyLvlVal').textContent=this.value;simUpdate()">
+            <span class="num" id="enemyLvlVal" style="color:var(--fire)">50</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3>Results</h3>
+      <div class="grid-2" style="margin-bottom:1rem">
+        <div class="metric"><div class="lbl">Effective DMG / hit</div><div class="val" id="simDmg" style="color:var(--dmg)">—</div></div>
+        <div class="metric"><div class="lbl">Hits to kill (TTK)</div><div class="val" id="simTTK" style="color:var(--accent)">—</div></div>
+        <div class="metric"><div class="lbl">Hero HP</div><div class="val" id="simHeroHP" style="color:var(--hp)">—</div><div class="sub" id="simHeroHPSub"></div></div>
+        <div class="metric"><div class="lbl">Hits to die (TTD)</div><div class="val" id="simTTD" style="color:var(--fire)">—</div></div>
+      </div>
+      <div class="card">
+        <div class="result-row"><span class="rlbl">Enemy HP</span><span class="rval" id="rEnemyHP">—</span></div>
+        <div class="result-row"><span class="rlbl">Enemy DMG / hit</span><span class="rval" id="rEnemyDMG">—</span></div>
+        <div class="result-row"><span class="rlbl">Spell base × scaling</span><span class="rval" id="rSpellBase">—</span></div>
+        <div class="result-row"><span class="rlbl">Resistance / Weakness</span><span class="rval" id="rResWeak">—</span></div>
+        <div class="result-row"><span class="rlbl">Multiplier</span><span class="rval" id="rMulti">—</span></div>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-label">Enemy HP remaining after hits</div>
+          <div class="dmg-bar"><div class="dmg-bar-fill" id="hpBarFill" style="background:var(--fire);width:100%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--text3);margin-top:4px"><span id="hpBarLeft">—</span><span id="hpBarRight">—</span></div>
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <h3>All spells comparison at this level</h3>
+        <div style="position:relative;width:100%;height:220px"><canvas id="simCompChart" role="img" aria-label="Damage comparison across spells"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SPELLS ══ -->
+<div class="section" id="sec-spells">
+  <div id="spellsBuildBanner" class="build-banner">
+    <div class="bb-item"><span class="bb-lbl">Current build —</span></div>
+    <div class="bb-item"><span class="bb-val" id="sbHP" style="color:var(--hp)">—</span><span class="bb-lbl">HP</span></div>
+    <div class="bb-item"><span class="bb-val" id="sbMana" style="color:var(--mana)">—</span><span class="bb-lbl">Mana</span></div>
+    <div class="bb-item"><span class="bb-val" id="sbDMG" style="color:var(--dmg)">—</span><span class="bb-lbl">Base DMG</span></div>
+    <span class="bb-lbl" style="margin-left:auto;font-size:.72rem">Spell DMG scaled to hero level:</span>
+    <div class="ctrl" style="margin-bottom:0;gap:8px">
+      <input type="range" id="spellPreviewLvl" min="1" max="100" value="50" step="1" style="width:100px" oninput="document.getElementById('spellPreviewLvlVal').textContent=this.value;renderSpells()">
+      <span style="font-size:.8rem;font-family:var(--font-mono);color:var(--accent)" id="spellPreviewLvlVal">50</span>
+    </div>
+  </div>
+  <div class="filter-bar" id="spellFilters"></div>
+  <div class="spell-grid" id="spellGrid"></div>
+</div>
+
+<!-- ══ ENEMIES ══ -->
+<div class="section" id="sec-enemies">
+  <div id="enemiesBuildBanner" class="build-banner">
+    <div class="bb-item"><span class="bb-lbl">Current build —</span></div>
+    <div class="bb-item"><span class="bb-val" id="ebHP" style="color:var(--hp)">—</span><span class="bb-lbl">HP</span></div>
+    <div class="bb-item"><span class="bb-val" id="ebDMG" style="color:var(--dmg)">—</span><span class="bb-lbl">Base DMG</span></div>
+    <span class="bb-lbl" style="margin-left:auto;font-size:.72rem">View at level:</span>
+    <select id="enemyLvlFilter" onchange="renderEnemies()" style="width:auto">
+      <option value="1">Level 1</option><option value="10">Level 10</option><option value="25">Level 25</option>
+      <option value="50" selected>Level 50</option><option value="75">Level 75</option><option value="100">Level 100</option>
+    </select>
+  </div>
+  <div class="filter-bar" id="enemyTypeFilter"></div>
+  <div class="enemy-table-wrap">
+    <table>
+      <thead><tr>
+        <th>Enemy</th><th>Type</th><th>HP</th><th>DMG / hit</th>
+        <th>TTK (your build)</th><th>Hits to kill you</th>
+        <th>Resistance</th><th>Weakness</th>
+      </tr></thead>
+      <tbody id="enemyTableBody"></tbody>
+    </table>
+  </div>
+  <p class="muted" style="margin-top:.75rem;font-size:.72rem">TTK = Enemy HP ÷ (your Base DMG × spell scaling at hero level) using Fire Strike T3 as reference</p>
+</div>
+
+</main>
+
+<script>
+/* ════ GAME DATA ════ */
+const FULL_SCALING=[
+{level:1,enemyHP:180,dmgDealt:100,heroHP:500,heroMana:100,spellDMG:100},{level:2,enemyHP:189,dmgDealt:105,heroHP:519,heroMana:101,spellDMG:105},{level:3,enemyHP:198,dmgDealt:110,heroHP:539,heroMana:102,spellDMG:110},{level:4,enemyHP:209,dmgDealt:115,heroHP:559,heroMana:103,spellDMG:115},{level:5,enemyHP:220,dmgDealt:120,heroHP:580,heroMana:104,spellDMG:120},{level:6,enemyHP:230,dmgDealt:125,heroHP:602,heroMana:106,spellDMG:126},{level:7,enemyHP:241,dmgDealt:125,heroHP:625,heroMana:107,spellDMG:132},{level:8,enemyHP:254,dmgDealt:130,heroHP:649,heroMana:108,spellDMG:138},{level:9,enemyHP:266,dmgDealt:135,heroHP:674,heroMana:109,spellDMG:144},{level:10,enemyHP:279,dmgDealt:140,heroHP:699,heroMana:110,spellDMG:151},{level:11,enemyHP:293,dmgDealt:145,heroHP:726,heroMana:112,spellDMG:158},{level:12,enemyHP:308,dmgDealt:150,heroHP:754,heroMana:113,spellDMG:166},{level:13,enemyHP:324,dmgDealt:160,heroHP:782,heroMana:114,spellDMG:174},{level:14,enemyHP:340,dmgDealt:165,heroHP:812,heroMana:115,spellDMG:182},{level:15,enemyHP:356,dmgDealt:170,heroHP:843,heroMana:117,spellDMG:190},{level:16,enemyHP:374,dmgDealt:175,heroHP:875,heroMana:118,spellDMG:199},{level:17,enemyHP:392,dmgDealt:180,heroHP:908,heroMana:119,spellDMG:209},{level:18,enemyHP:412,dmgDealt:190,heroHP:943,heroMana:120,spellDMG:218},{level:19,enemyHP:434,dmgDealt:195,heroHP:978,heroMana:122,spellDMG:229},{level:20,enemyHP:455,dmgDealt:205,heroHP:1016,heroMana:123,spellDMG:239},{level:21,enemyHP:477,dmgDealt:210,heroHP:1054,heroMana:124,spellDMG:251},{level:22,enemyHP:502,dmgDealt:220,heroHP:1094,heroMana:126,spellDMG:262},{level:23,enemyHP:527,dmgDealt:225,heroHP:1136,heroMana:127,spellDMG:275},{level:24,enemyHP:553,dmgDealt:235,heroHP:1179,heroMana:129,spellDMG:288},{level:25,enemyHP:581,dmgDealt:245,heroHP:1224,heroMana:130,spellDMG:301},{level:26,enemyHP:610,dmgDealt:250,heroHP:1270,heroMana:131,spellDMG:315},{level:27,enemyHP:641,dmgDealt:260,heroHP:1319,heroMana:133,spellDMG:330},{level:28,enemyHP:671,dmgDealt:270,heroHP:1369,heroMana:134,spellDMG:346},{level:29,enemyHP:706,dmgDealt:280,heroHP:1421,heroMana:136,spellDMG:362},{level:30,enemyHP:742,dmgDealt:290,heroHP:1475,heroMana:137,spellDMG:379},{level:31,enemyHP:778,dmgDealt:300,heroHP:1531,heroMana:139,spellDMG:397},{level:32,enemyHP:817,dmgDealt:315,heroHP:1589,heroMana:140,spellDMG:415},{level:33,enemyHP:857,dmgDealt:325,heroHP:1649,heroMana:142,spellDMG:435},{level:34,enemyHP:900,dmgDealt:335,heroHP:1712,heroMana:143,spellDMG:455},{level:35,enemyHP:945,dmgDealt:350,heroHP:1777,heroMana:145,spellDMG:477},{level:36,enemyHP:994,dmgDealt:360,heroHP:1844,heroMana:147,spellDMG:499},{level:37,enemyHP:1042,dmgDealt:375,heroHP:1915,heroMana:148,spellDMG:522},{level:38,enemyHP:1094,dmgDealt:390,heroHP:1987,heroMana:150,spellDMG:547},{level:39,enemyHP:1150,dmgDealt:405,heroHP:2063,heroMana:152,spellDMG:573},{level:40,enemyHP:1206,dmgDealt:420,heroHP:2141,heroMana:153,spellDMG:600},{level:41,enemyHP:1267,dmgDealt:435,heroHP:2223,heroMana:155,spellDMG:628},{level:42,enemyHP:1330,dmgDealt:450,heroHP:2307,heroMana:157,spellDMG:657},{level:43,enemyHP:1397,dmgDealt:465,heroHP:2395,heroMana:158,spellDMG:688},{level:44,enemyHP:1467,dmgDealt:485,heroHP:2486,heroMana:160,spellDMG:721},{level:45,enemyHP:1541,dmgDealt:500,heroHP:2580,heroMana:162,spellDMG:754},{level:46,enemyHP:1618,dmgDealt:520,heroHP:2678,heroMana:164,spellDMG:790},{level:47,enemyHP:1697,dmgDealt:540,heroHP:2780,heroMana:165,spellDMG:827},{level:48,enemyHP:1784,dmgDealt:560,heroHP:2886,heroMana:167,spellDMG:866},{level:49,enemyHP:1872,dmgDealt:580,heroHP:2995,heroMana:169,spellDMG:907},{level:50,enemyHP:1966,dmgDealt:600,heroHP:3109,heroMana:171,spellDMG:949},{level:51,enemyHP:2065,dmgDealt:625,heroHP:3227,heroMana:173,spellDMG:994},{level:52,enemyHP:2167,dmgDealt:645,heroHP:3350,heroMana:175,spellDMG:1041},{level:53,enemyHP:2275,dmgDealt:670,heroHP:3477,heroMana:177,spellDMG:1090},{level:54,enemyHP:2389,dmgDealt:695,heroHP:3609,heroMana:179,spellDMG:1141},{level:55,enemyHP:2509,dmgDealt:720,heroHP:3747,heroMana:181,spellDMG:1194},{level:56,enemyHP:2635,dmgDealt:750,heroHP:3889,heroMana:183,spellDMG:1250},{level:57,enemyHP:2767,dmgDealt:775,heroHP:4037,heroMana:185,spellDMG:1309},{level:58,enemyHP:2905,dmgDealt:805,heroHP:4190,heroMana:187,spellDMG:1371},{level:59,enemyHP:3049,dmgDealt:835,heroHP:4349,heroMana:189,spellDMG:1435},{level:60,enemyHP:3202,dmgDealt:865,heroHP:4515,heroMana:191,spellDMG:1503},{level:61,enemyHP:3362,dmgDealt:895,heroHP:4686,heroMana:193,spellDMG:1573},{level:62,enemyHP:3530,dmgDealt:930,heroHP:4864,heroMana:195,spellDMG:1647},{level:63,enemyHP:3706,dmgDealt:965,heroHP:5049,heroMana:197,spellDMG:1725},{level:64,enemyHP:3892,dmgDealt:1000,heroHP:5241,heroMana:199,spellDMG:1806},{level:65,enemyHP:4086,dmgDealt:1040,heroHP:5440,heroMana:201,spellDMG:1891},{level:66,enemyHP:4291,dmgDealt:1075,heroHP:5647,heroMana:204,spellDMG:1979},{level:67,enemyHP:4505,dmgDealt:1115,heroHP:5861,heroMana:206,spellDMG:2072},{level:68,enemyHP:4730,dmgDealt:1160,heroHP:6084,heroMana:208,spellDMG:2170},{level:69,enemyHP:4968,dmgDealt:1200,heroHP:6315,heroMana:210,spellDMG:2272},{level:70,enemyHP:5216,dmgDealt:1245,heroHP:6555,heroMana:213,spellDMG:2379},{level:71,enemyHP:5477,dmgDealt:1290,heroHP:6804,heroMana:215,spellDMG:2490},{level:72,enemyHP:5751,dmgDealt:1340,heroHP:7063,heroMana:217,spellDMG:2607},{level:73,enemyHP:6039,dmgDealt:1390,heroHP:7331,heroMana:220,spellDMG:2730},{level:74,enemyHP:6340,dmgDealt:1440,heroHP:7610,heroMana:222,spellDMG:2858},{level:75,enemyHP:6656,dmgDealt:1495,heroHP:7899,heroMana:225,spellDMG:2993},{level:76,enemyHP:6989,dmgDealt:1550,heroHP:8199,heroMana:227,spellDMG:3133},{level:77,enemyHP:7339,dmgDealt:1610,heroHP:8511,heroMana:230,spellDMG:3281},{level:78,enemyHP:7706,dmgDealt:1665,heroHP:8834,heroMana:232,spellDMG:3435},{level:79,enemyHP:8091,dmgDealt:1730,heroHP:9170,heroMana:235,spellDMG:3596},{level:80,enemyHP:8496,dmgDealt:1795,heroHP:9518,heroMana:237,spellDMG:3765},{level:81,enemyHP:8921,dmgDealt:1860,heroHP:9880,heroMana:240,spellDMG:3942},{level:82,enemyHP:9367,dmgDealt:1930,heroHP:10255,heroMana:243,spellDMG:4127},{level:83,enemyHP:9835,dmgDealt:2000,heroHP:10645,heroMana:245,spellDMG:4321},{level:84,enemyHP:10327,dmgDealt:2075,heroHP:11050,heroMana:248,spellDMG:4525},{level:85,enemyHP:10843,dmgDealt:2155,heroHP:11470,heroMana:251,spellDMG:4737},{level:86,enemyHP:11385,dmgDealt:2235,heroHP:11905,heroMana:253,spellDMG:4960},{level:87,enemyHP:11956,dmgDealt:2315,heroHP:12358,heroMana:256,spellDMG:5193},{level:88,enemyHP:12553,dmgDealt:2400,heroHP:12827,heroMana:259,spellDMG:5437},{level:89,enemyHP:13180,dmgDealt:2490,heroHP:13315,heroMana:262,spellDMG:5693},{level:90,enemyHP:13840,dmgDealt:2585,heroHP:13821,heroMana:265,spellDMG:5960},{level:91,enemyHP:14531,dmgDealt:2680,heroHP:14346,heroMana:268,spellDMG:6240},{level:92,enemyHP:15259,dmgDealt:2780,heroHP:14891,heroMana:271,spellDMG:6534},{level:93,enemyHP:16022,dmgDealt:2880,heroHP:15457,heroMana:274,spellDMG:6841},{level:94,enemyHP:16823,dmgDealt:2990,heroHP:16044,heroMana:277,spellDMG:7162},{level:95,enemyHP:17663,dmgDealt:3100,heroHP:16654,heroMana:280,spellDMG:7499},{level:96,enemyHP:18545,dmgDealt:3215,heroHP:17287,heroMana:283,spellDMG:7851},{level:97,enemyHP:19474,dmgDealt:3335,heroHP:17944,heroMana:286,spellDMG:8220},{level:98,enemyHP:20448,dmgDealt:3460,heroHP:18626,heroMana:289,spellDMG:8607},{level:99,enemyHP:21470,dmgDealt:3590,heroHP:19334,heroMana:292,spellDMG:9011},{level:100,enemyHP:22543,dmgDealt:3720,heroHP:20068,heroMana:295,spellDMG:9435}
+];
+
+const ENEMIES=[
+  {name:"Femur",prefab:"Skeleton grunt",type:"Base",hp1:250,dmg1:72,hp100:31310,dmg100:2678,res:"Earth",weak:"Wind"},
+  {name:"NecroManager",prefab:"Necromancer",type:"Base",hp1:400,dmg1:84,hp100:50096,dmg100:3125,res:"Ice",weak:"Fire"},
+  {name:"Daddy Femur",prefab:"Big Skeleton",type:"Boss",hp1:16000,dmg1:125,hp100:2003840,dmg100:4650,res:"Earth, Lightning",weak:"Wind"},
+  {name:"Wee Green",prefab:"Goblin",type:"Base",hp1:200,dmg1:50,hp100:25048,dmg100:1860,res:"Wind",weak:"Ice, Lightning"},
+  {name:"Boom Green",prefab:"Goblin Kamikaze",type:"Base",hp1:125,dmg1:150,hp100:15655,dmg100:5580,res:"Fire",weak:"Earth"},
+  {name:"Wolfgang",prefab:"Orc",type:"Boss",hp1:8000,dmg1:200,hp100:1001920,dmg100:7440,res:"Earth",weak:"Fire"},
+  {name:"Dumbbell",prefab:"Golem",type:"Base",hp1:600,dmg1:100,hp100:75144,dmg100:3720,res:"Earth, Lightning",weak:"Wind"},
+  {name:"IceAndBerg",prefab:"Ice Golem",type:"Base",hp1:900,dmg1:125,hp100:112716,dmg100:4650,res:"Ice",weak:"Fire"},
+  {name:"Magmalade",prefab:"Magma Golem",type:"Boss",hp1:20000,dmg1:150,hp100:2504800,dmg100:5580,res:"Fire, Ice",weak:"Earth"},
+  {name:"Caw",prefab:"Crow",type:"Base",hp1:200,dmg1:60,hp100:25048,dmg100:2232,res:"Wind",weak:"Ice, Lightning"},
+  {name:"Ratcoon",prefab:"Rat",type:"Base",hp1:125,dmg1:60,hp100:15655,dmg100:2232,res:"Earth",weak:"Ice"},
+  {name:"Gary Frogman",prefab:"Gary Frog",type:"Boss",hp1:18000,dmg1:130,hp100:2254320,dmg100:4836,res:"Wind",weak:"Ice, Lightning"},
+  {name:"Lord Metalikor",prefab:"Death Warlord",type:"Boss",hp1:22000,dmg1:80,hp100:2755280,dmg100:2976,res:"Fire, Lightning",weak:"Earth"},
+  {name:"IronBurn",prefab:"Flame Knight",type:"Base",hp1:250,dmg1:90,hp100:31310,dmg100:3348,res:"Fire, Ice",weak:"Earth"},
+  {name:"Tartargnan",prefab:"Ranged Knight",type:"Base",hp1:400,dmg1:80,hp100:50096,dmg100:2976,res:"Wind",weak:"Ice, Lightning"},
+  {name:"Batler",prefab:"Bat",type:"Base",hp1:200,dmg1:75,hp100:25048,dmg100:2790,res:"Wind",weak:"Lightning"},
+  {name:"Babewyn",prefab:"Gargoyle",type:"Base",hp1:600,dmg1:75,hp100:75144,dmg100:2790,res:"Earth",weak:"Wind"},
+];
+
+const SPELLS=[
+  {name:"Fire Strike",element:"Fire",tier0dmg:100,tier5dmg:3322,unlockLvl:1,type:"Strike"},
+  {name:"Fire Sword",element:"Fire",tier0dmg:70,tier5dmg:3938,unlockLvl:14,type:"Melee"},
+  {name:"Fire Nova",element:"Fire",tier0dmg:100,tier5dmg:3322,unlockLvl:30,type:"Nova"},
+  {name:"Ice Strike",element:"Ice",tier0dmg:100,tier5dmg:3322,unlockLvl:1,type:"Strike"},
+  {name:"Ice Nova",element:"Ice",tier0dmg:80,tier5dmg:3132,unlockLvl:16,type:"Nova"},
+  {name:"Blizzard",element:"Ice",tier0dmg:120,tier5dmg:3511,unlockLvl:40,type:"DoT"},
+  {name:"Frost Stream",element:"Ice",tier0dmg:130,tier5dmg:3606,unlockLvl:22,type:"Stream"},
+  {name:"Boulder",element:"Earth",tier0dmg:150,tier5dmg:3796,unlockLvl:5,type:"Projectile"},
+  {name:"Rock Wall",element:"Earth",tier0dmg:100,tier5dmg:949,unlockLvl:12,type:"Summon"},
+  {name:"Earth Nova",element:"Earth",tier0dmg:110,tier5dmg:3416,unlockLvl:20,type:"Nova"},
+  {name:"Healing Totem",element:"None",tier0dmg:40,tier5dmg:380,unlockLvl:8,type:"Support"},
+  {name:"Wind Strike",element:"Wind",tier0dmg:90,tier5dmg:3227,unlockLvl:1,type:"Strike"},
+  {name:"Wind Stream",element:"Wind",tier0dmg:80,tier5dmg:3606,unlockLvl:10,type:"Stream"},
+  {name:"Wind Nova",element:"Wind",tier0dmg:90,tier5dmg:3227,unlockLvl:25,type:"Nova"},
+  {name:"Lightning Arc",element:"Lightning",tier0dmg:76,tier5dmg:3094,unlockLvl:18,type:"Stream"},
+  {name:"Lightning Strand",element:"Lightning",tier0dmg:250,tier5dmg:2373,unlockLvl:28,type:"Special"},
+  {name:"Volt Gate",element:"Lightning",tier0dmg:200,tier5dmg:6026,unlockLvl:35,type:"Summon"},
+  {name:"Skeletal Horde",element:"Necro",tier0dmg:110,tier5dmg:3796,unlockLvl:25,type:"Summon"},
+  {name:"Spectral Skull",element:"Necro",tier0dmg:160,tier5dmg:4365,unlockLvl:32,type:"Projectile"},
+  {name:"Shadow Form",element:"Necro",tier0dmg:0,tier5dmg:0,unlockLvl:45,type:"Support"},
+];
+
+const ELEM_COL={Fire:"#e24b4a",Ice:"#378add",Earth:"#ba7517",Wind:"#1d9e75",Lightning:"#7f77dd",Necro:"#d4537e",None:"#888780"};
+const HP_PT=200,MANA_PT=10,DMG_PT=37,B_HP=500,B_MANA=100,B_DMG=100;
+const SHEET_ID='1dr5KLWYXi0LIAEcH4_GTtb2or8NC7rYy3QaKTuNhdIY';
+
+/* Cumulative spell base dmg per tier (from Spells Upgrade sheet) */
+const SPELL_TIERS={
+  "Fire Strike":     [100,110,130,170,240,350],
+  "Fire Sword":      [70, 85, 115,175,265,415],
+  "Fire Nova":       [100,110,130,170,240,350],
+  "Ice Strike":      [100,110,130,170,240,350],
+  "Ice Nova":        [80, 90, 110,150,220,330],
+  "Blizzard":        [120,130,150,190,260,370],
+  "Frost Stream":    [130,140,160,200,270,380],
+  "Boulder":         [150,160,180,220,290,400],
+  "Rock Wall":       [100,100,100,100,100,100],
+  "Earth Nova":      [110,120,140,180,250,360],
+  "Healing Totem":   [40, 40, 40, 40, 40, 40],
+  "Wind Strike":     [90, 100,120,160,230,340],
+  "Wind Stream":     [80, 95, 125,175,255,380],
+  "Wind Nova":       [90, 100,120,160,230,340],
+  "Lightning Arc":   [76, 86, 106,146,216,326],
+  "Lightning Strand":[250,250,250,250,250,250],
+  "Volt Gate":       [200,225,275,355,475,635],
+  "Skeletal Horde":  [110,120,145,195,275,400],
+  "Spectral Skull":  [160,175,205,255,335,460],
+  "Shadow Form":     [0,  0,  0,  0,  0,  0],
+};
+
+/* ════ GLOBAL BUILD STATE ════ */
+const BUILD = { hp: 50, mana: 25, dmg: 24 };
+
+function getBuildStats(level) {
+  const i = Math.min(level, 100) - 1;
+  const ptsAtLvl = (pts) => Math.round(i / 99 * pts);
+  return {
+    hp:   B_HP   + ptsAtLvl(BUILD.hp)   * HP_PT,
+    mana: B_MANA + ptsAtLvl(BUILD.mana) * MANA_PT,
+    dmg:  B_DMG  + ptsAtLvl(BUILD.dmg)  * DMG_PT,
+  };
+}
+
+function getBuildStatsL100() {
+  return {
+    hp:   B_HP   + BUILD.hp   * HP_PT,
+    mana: B_MANA + BUILD.mana * MANA_PT,
+    dmg:  B_DMG  + BUILD.dmg  * DMG_PT,
+  };
+}
+
+/* Called whenever sliders change — updates BUILD and refreshes everything */
+function onBuildChange() {
+  BUILD.hp   = +document.getElementById('sHP').value;
+  BUILD.mana = +document.getElementById('sMana').value;
+  BUILD.dmg  = +document.getElementById('sDMG').value;
+  updateCurveUI();
+  updateAllBanners();
+  simUpdate();
+  renderEnemies();
+}
+
+function updateAllBanners() {
+  const s = getBuildStatsL100();
+  const f = (n) => fmt(n);
+  ['bb','sb','eb'].forEach(p => {
+    const hEl = document.getElementById(p+'HP');
+    const mEl = document.getElementById(p+'Mana');
+    const dEl = document.getElementById(p+'DMG');
+    if(hEl) hEl.textContent = f(s.hp);
+    if(mEl) mEl.textContent = f(s.mana);
+    if(dEl) dEl.textContent = f(s.dmg);
+  });
+}
+
+/* ════ HELPERS ════ */
+function fmt(n){return Math.round(n).toLocaleString('en-US')}
+function getRow(lvl){return FULL_SCALING[Math.min(lvl,100)-1]}
+function spellDmgAtTier(spell,tier){
+  const t=SPELL_TIERS[spell.name];
+  return t?t[tier]:Math.round(spell.tier0dmg+(spell.tier5dmg-spell.tier0dmg)*tier/5);
+}
+/* Spell effective dmg = tier_base × spellDMG% (hero level scaling)
+   Totem DMG pts = hero melee/base dmg only, NOT a spell multiplier */
+function effectiveDmg(spellBase,scalingPct){return Math.round(spellBase*scalingPct/100)}
+function getEnemyHP(e,lvl){return Math.round(e.hp1*Math.pow(e.hp100/e.hp1,(lvl-1)/99))}
+function getEnemyDMG(e,lvl){return Math.round(e.dmg1*Math.pow(e.dmg100/e.dmg1,(lvl-1)/99))}
+
+/* ════ NAV ════ */
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else document.querySelectorAll('nav button').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"))b.classList.add('active')});
+  if(id==='combat') simUpdate();
+  if(id==='spells') renderSpells();
+  if(id==='enemies') renderEnemies();
+}
+
+/* ════ STAT CURVES ════ */
+let curveTab='hp', curveChartInst=null;
+
+function setCurveTab(tab,btn){
+  curveTab=tab;
+  document.querySelectorAll('#sec-curves .subtab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  drawCurve();
+}
+
+function updateCurveUI(){
+  const {hp:h,mana:m,dmg:d}=BUILD;
+  const used=h+m+d, rem=99-used;
+  document.getElementById('vHP').textContent=h;
+  document.getElementById('vMana').textContent=m;
+  document.getElementById('vDMG').textContent=d;
+  const b=document.getElementById('ptsBadge');
+  b.textContent=rem>=0?rem+' pts remaining':Math.abs(rem)+' pts over!';
+  b.className='badge-pts'+(rem<0?' over':'');
+  const s=getBuildStatsL100();
+  document.getElementById('cHP').textContent=fmt(s.hp);
+  document.getElementById('cMana').textContent=fmt(s.mana);
+  document.getElementById('cDMG').textContent=fmt(s.dmg);
+  document.getElementById('sHP2').textContent=Math.round(s.hp/(B_HP+99*HP_PT)*100)+'% of max';
+  document.getElementById('sMana2').textContent=Math.round(s.mana/(B_MANA+99*MANA_PT)*100)+'% of max';
+  document.getElementById('sDMG2').textContent=Math.round(s.dmg/(B_DMG+99*DMG_PT)*100)+'% of max';
+  drawCurve();
+  renderCurveTable();
+}
+
+function buildCurve(pts,ppt,base){return Array.from({length:100},(_,i)=>base+Math.round(i/99*pts)*ppt)}
+function fullCurve(ppt,base){return Array.from({length:100},(_,i)=>base+i*ppt)}
+
+function drawCurve(){
+  const lvls=Array.from({length:100},(_,i)=>i+1);
+  let datasets=[],legend=[];
+  const {hp,mana,dmg}=BUILD;
+  if(curveTab==='hp'){
+    datasets=[
+      {label:'Your build',data:buildCurve(hp,HP_PT,B_HP),borderColor:'#e24b4a',borderWidth:2.5,pointRadius:0,tension:0.3},
+      {label:'Full HP (99 pts)',data:fullCurve(HP_PT,B_HP),borderColor:'#f09595',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:0.3},
+      {label:'Enemy HP',data:FULL_SCALING.map(r=>r.enemyHP),borderColor:'#d85a30',borderWidth:1.5,pointRadius:0,tension:0.3},
+    ];
+    legend=[{col:'#e24b4a',label:'Your build'},{col:'#f09595',label:'Full HP',dash:true},{col:'#d85a30',label:'Enemy HP'}];
+  } else if(curveTab==='mana'){
+    datasets=[
+      {label:'Your build',data:buildCurve(mana,MANA_PT,B_MANA),borderColor:'#378add',borderWidth:2.5,pointRadius:0,tension:0.3},
+      {label:'Full Mana (99 pts)',data:fullCurve(MANA_PT,B_MANA),borderColor:'#85b7eb',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:0.3},
+    ];
+    legend=[{col:'#378add',label:'Your build'},{col:'#85b7eb',label:'Full Mana',dash:true}];
+  } else if(curveTab==='dmg'){
+    datasets=[
+      {label:'Your build',data:buildCurve(dmg,DMG_PT,B_DMG),borderColor:'#ef9f27',borderWidth:2.5,pointRadius:0,tension:0.3},
+      {label:'Full DMG (99 pts)',data:fullCurve(DMG_PT,B_DMG),borderColor:'#fac775',borderWidth:1.5,borderDash:[3,4],pointRadius:0,tension:0.3},
+    ];
+    legend=[{col:'#ef9f27',label:'Your build'},{col:'#fac775',label:'Full DMG',dash:true}];
+  } else {
+    const mxHP=B_HP+99*HP_PT,mxM=B_MANA+99*MANA_PT,mxD=B_DMG+99*DMG_PT;
+    datasets=[
+      {label:'HP %',data:buildCurve(hp,HP_PT,B_HP).map(v=>Math.round(v/mxHP*100)),borderColor:'#e24b4a',borderWidth:2,pointRadius:0,tension:0.3},
+      {label:'Mana %',data:buildCurve(mana,MANA_PT,B_MANA).map(v=>Math.round(v/mxM*100)),borderColor:'#378add',borderWidth:2,pointRadius:0,tension:0.3},
+      {label:'Base DMG %',data:buildCurve(dmg,DMG_PT,B_DMG).map(v=>Math.round(v/mxD*100)),borderColor:'#ef9f27',borderWidth:2,pointRadius:0,tension:0.3},
+    ];
+    legend=[{col:'#e24b4a',label:'HP'},{col:'#378add',label:'Mana'},{col:'#ef9f27',label:'Base DMG'}];
+  }
+  document.getElementById('curveLegend').innerHTML=legend.map(l=>`<div class="legend-item"><div class="legend-swatch" style="${l.dash?'background:repeating-linear-gradient(90deg,'+l.col+' 0,'+l.col+' 4px,transparent 4px,transparent 8px)':'background:'+l.col}"></div>${l.label}</div>`).join('');
+  if(curveChartInst) curveChartInst.destroy();
+  curveChartInst=new Chart(document.getElementById('curveChart'),{
+    type:'line',data:{labels:lvls,datasets},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>'Level '+i[0].label,label:c=>c.dataset.label+': '+fmt(c.raw)+(curveTab==='all'?'%':'')}}},
+      scales:{
+        x:{ticks:{color:'#555870',autoSkip:true,maxTicksLimit:10,font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#555870',callback:v=>curveTab==='all'?v+'%':fmt(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}
+      }
+    }
+  });
+}
+
+function renderCurveTable(){
+  const {hp,mana,dmg}=BUILD;
+  const milestones=[1,5,10,15,20,25,30,40,50,60,70,75,80,90,100];
+  const body=document.getElementById('curveTableBody'); body.innerHTML='';
+  milestones.forEach(lvl=>{
+    const i=lvl-1, r=FULL_SCALING[i];
+    const hpB=B_HP+Math.round(i/99*hp)*HP_PT, mB=B_MANA+Math.round(i/99*mana)*MANA_PT, dB=B_DMG+Math.round(i/99*dmg)*DMG_PT;
+    const hpF=B_HP+i*HP_PT, mF=B_MANA+i*MANA_PT, dF=B_DMG+i*DMG_PT;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="color:var(--accent);font-weight:600">${lvl}</td><td class="num-cell" style="color:var(--hp)">${fmt(hpB)}</td><td class="num-cell" style="color:var(--text3)">${fmt(hpF)}</td><td class="num-cell" style="color:var(--mana)">${fmt(mB)}</td><td class="num-cell" style="color:var(--text3)">${fmt(mF)}</td><td class="num-cell" style="color:var(--dmg)">${fmt(dB)}</td><td class="num-cell" style="color:var(--text3)">${fmt(dF)}</td><td class="num-cell">${fmt(r.enemyHP)}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+/* ════ COMBAT SIM ════ */
+let simCompChart=null;
+
+function initSim(){
+  const ss=document.getElementById('spellSel');
+  SPELLS.forEach(s=>{const o=document.createElement('option');o.value=s.name;o.textContent=s.name+' ('+s.element+')';ss.appendChild(o)});
+  const es=document.getElementById('enemySel');
+  ENEMIES.forEach(e=>{const o=document.createElement('option');o.value=e.name;o.textContent=e.name+(e.type==='Boss'?' ★':'');es.appendChild(o)});
+}
+
+function simUpdate(){
+  const heroLvl=+document.getElementById('heroLvl').value;
+  const spellTier=+document.getElementById('spellTier').value;
+  const enemyLvl=+document.getElementById('enemyLvl').value;
+  const spell=SPELLS.find(s=>s.name===document.getElementById('spellSel').value);
+  const enemy=ENEMIES.find(e=>e.name===document.getElementById('enemySel').value);
+  if(!spell||!enemy) return;
+
+  const heroRow=getRow(heroLvl);
+  const buildStats=getBuildStats(heroLvl);
+
+  /* Hero HP comes from the Totem build */
+  const heroHP=buildStats.hp;
+  /* Spell dmg = tier_base × spellDMG% from level table. Totem DMG pts = melee dmg, NOT spell multiplier */
+  const spellBase=spellDmgAtTier(spell,spellTier);
+  const effDmg=effectiveDmg(spellBase,heroRow.spellDMG);
+
+  const enemyHPVal=getEnemyHP(enemy,enemyLvl);
+  const enemyDMGVal=getEnemyDMG(enemy,enemyLvl);
+
+  const isRes=enemy.res.split(', ').some(r=>r.trim()===spell.element);
+  const isWeak=enemy.weak.split(', ').some(w=>w.trim()===spell.element);
+  const multi=isRes?0.5:isWeak?1.5:1;
+  const finalDmg=Math.round(effDmg*multi);
+
+  const ttk=Math.ceil(enemyHPVal/Math.max(finalDmg,1));
+  const ttd=Math.ceil(heroHP/Math.max(enemyDMGVal,1));
+
+  document.getElementById('simDmg').textContent=fmt(finalDmg);
+  document.getElementById('simTTK').textContent=ttk+' hits';
+  document.getElementById('simHeroHP').textContent=fmt(heroHP);
+  document.getElementById('simHeroHPSub').textContent=BUILD.hp+' HP pts invested';
+  document.getElementById('simTTD').textContent=ttd+' hits';
+  document.getElementById('rEnemyHP').textContent=fmt(enemyHPVal);
+  document.getElementById('rEnemyDMG').textContent=fmt(enemyDMGVal);
+  document.getElementById('rSpellBase').textContent=fmt(spellBase)+' base × '+heroRow.spellDMG+'% scaling = '+fmt(effDmg)+(multi!==1?' × '+multi+' = '+fmt(finalDmg):'');
+  document.getElementById('rResWeak').innerHTML=`<span style="color:${ELEM_COL[spell.element]}">${spell.element}</span> — Res: ${enemy.res} | Weak: ${enemy.weak}`;
+  document.getElementById('rMulti').textContent=isRes?'×0.5 (Resistance)':isWeak?'×1.5 (Weakness)':'×1.0 (Normal)';
+  document.getElementById('rMulti').style.color=isRes?'#888':isWeak?'#1d9e75':'var(--text)';
+
+  const hitsShown=Math.min(ttk,20);
+  const pct=Math.max(0,Math.round((enemyHPVal-hitsShown*finalDmg)/enemyHPVal*100));
+  document.getElementById('hpBarFill').style.width=pct+'%';
+  document.getElementById('hpBarLeft').textContent='After '+hitsShown+' hits';
+  document.getElementById('hpBarRight').textContent=pct+'% HP remaining';
+
+  const compData=SPELLS.filter(s=>s.tier5dmg>0).map(s=>{
+    const base=spellDmgAtTier(s,spellTier);
+    const eff=effectiveDmg(base,heroRow.spellDMG);
+    const r=enemy.res.split(', ').some(r=>r.trim()===s.element);
+    const w=enemy.weak.split(', ').some(w=>w.trim()===s.element);
+    return {name:s.name,dmg:Math.round(eff*(r?0.5:w?1.5:1)),color:ELEM_COL[s.element]||'#888',sel:s.name===spell.name};
+  }).sort((a,b)=>b.dmg-a.dmg).slice(0,12);
+
+  if(simCompChart) simCompChart.destroy();
+  simCompChart=new Chart(document.getElementById('simCompChart'),{
+    type:'bar',
+    data:{labels:compData.map(d=>d.name),datasets:[{data:compData.map(d=>d.dmg),backgroundColor:compData.map(d=>d.sel?d.color:d.color+'55'),borderColor:compData.map(d=>d.sel?d.color:'transparent'),borderWidth:compData.map(d=>d.sel?2:0)}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+' effective dmg'}}},
+      scales:{x:{ticks:{color:'#555870',callback:v=>fmt(v),font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8b8fa8',font:{size:11}},grid:{display:false}}}
+    }
+  });
+}
+
+/* ════ SPELLS ════ */
+let spellFilter='all';
+
+function initSpells(){
+  const filters=document.getElementById('spellFilters');
+  ['all','Fire','Ice','Earth','Wind','Lightning','Necro','None'].forEach(e=>{
+    const b=document.createElement('button');
+    b.className='filter-btn'+(e==='all'?' on':'');
+    b.textContent=e==='all'?'All':e;
+    if(e!=='all') b.style.cssText=`background:${ELEM_COL[e]}20;color:${ELEM_COL[e]};border-color:${ELEM_COL[e]}40`;
+    b.onclick=()=>{spellFilter=e;document.querySelectorAll('#spellFilters .filter-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderSpells()};
+    filters.appendChild(b);
+  });
+}
+
+function renderSpells(){
+  const grid=document.getElementById('spellGrid'); grid.innerHTML='';
+  const lvl=+document.getElementById('spellPreviewLvl').value;
+  const heroRow=getRow(lvl);
+  const maxDmg=Math.max(...Object.values(SPELL_TIERS).map(t=>t[5]));
+  SPELLS.filter(s=>spellFilter==='all'||s.element===spellFilter).forEach(spell=>{
+    const col=ELEM_COL[spell.element]||'#888';
+    const card=document.createElement('div');
+    card.className='spell-card'; card.style.borderColor=col+'30';
+    const tierRows=[0,1,2,3,4,5].map(t=>{
+      const base=spellDmgAtTier(spell,t);
+      const eff=effectiveDmg(base,heroRow.spellDMG);
+      const pct=base>0?Math.round(base/maxDmg*100):0;
+      return `<div class="spell-tier-row"><span style="color:var(--text3)">T${t}</span><span class="tval" style="color:${col}">${base>0?fmt(base):'—'}</span><span style="color:var(--text2);font-size:.7rem">${eff>0?'→ '+fmt(eff):''}</span></div><div class="spell-bar"><div class="spell-bar-fill" style="background:${col};width:${pct}%"></div></div>`;
+    }).join('');
+    card.innerHTML=`<div class="spell-name">${spell.name}</div><div class="spell-meta"><div class="elem-dot" style="background:${col}"></div>${spell.element} · ${spell.type} · Unlock ${spell.unlockLvl}</div><div style="font-size:.68rem;color:var(--text3);margin-bottom:6px">Base → Effective @ L${lvl}</div>${tierRows}`;
+    grid.appendChild(card);
+  });
+}
+
+/* ════ ENEMIES ════ */
+let enemyTypeFilter='all';
+
+function initEnemies(){
+  const bar=document.getElementById('enemyTypeFilter');
+  ['all','Base','Boss'].forEach(t=>{
+    const b=document.createElement('button');
+    b.className='filter-btn'+(t==='all'?' on':'');
+    b.textContent=t==='all'?'All':t;
+    if(t==='Boss') b.style.cssText='color:var(--fire);border-color:var(--fire)40';
+    b.onclick=()=>{enemyTypeFilter=t;document.querySelectorAll('#enemyTypeFilter .filter-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderEnemies()};
+    bar.appendChild(b);
+  });
+}
+
+function renderEnemies(){
+  const lvl=+document.getElementById('enemyLvlFilter').value;
+  const body=document.getElementById('enemyTableBody'); body.innerHTML='';
+  const heroRow=getRow(lvl);
+  const buildStats=getBuildStats(lvl);
+  const heroHP=buildStats.hp;
+  /* Spell reference: Fire Strike T3, no build DMG mult */
+  const refEff=effectiveDmg(spellDmgAtTier(SPELLS[0],3),heroRow.spellDMG);
+
+  ENEMIES.filter(e=>enemyTypeFilter==='all'||e.type===enemyTypeFilter).forEach(enemy=>{
+    const hp=getEnemyHP(enemy,lvl);
+    const dmg=getEnemyDMG(enemy,lvl);
+    const ttk=enemy.type==='Boss'?null:Math.ceil(hp/Math.max(refEff,1));
+    const ttd=Math.ceil(heroHP/Math.max(dmg,1));
+    const resCols=enemy.res.split(', ').map(r=>`<span class="res-pill" style="background:${ELEM_COL[r.trim()]||'#333'}30;color:${ELEM_COL[r.trim()]||'#888'}">${r.trim()}</span>`).join('');
+    const weakCols=enemy.weak.split(', ').map(w=>`<span class="res-pill" style="background:${ELEM_COL[w.trim()]||'#333'}30;color:${ELEM_COL[w.trim()]||'#888'}">${w.trim()}</span>`).join('');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><div style="font-weight:600">${enemy.name}</div><div style="color:var(--text3);font-size:.72rem">${enemy.prefab}</div></td><td><span class="type-${enemy.type.toLowerCase()}">${enemy.type}</span></td><td class="num-cell">${fmt(hp)}</td><td class="num-cell">${fmt(dmg)}</td><td class="num-cell" style="color:var(--accent)">${ttk?ttk+' hits':'<span style="color:var(--text3)">Boss</span>'}</td><td class="num-cell" style="color:var(--fire)">${ttd} hits</td><td>${resCols}</td><td>${weakCols}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+/* ════ LIVE DATA ════ */
+async function tryLoadLiveData(){
+  const dot=document.getElementById('liveDot'), status=document.getElementById('liveStatus');
+  try{
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Scaling%20Datas`;
+    const resp=await fetch(url);
+    if(!resp.ok) throw new Error();
+    const text=await resp.text();
+    JSON.parse(text.substring(47).slice(0,-2));
+    dot.className='live-dot ok';
+    status.textContent='Live · '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    dot.className='live-dot err';
+    status.textContent='Offline mode';
+  }
+}
+
+/* ════ INIT ════ */
+window.addEventListener('DOMContentLoaded',()=>{
+  updateCurveUI();
+  updateAllBanners();
+  initSim(); simUpdate();
+  initSpells(); renderSpells();
+  initEnemies(); renderEnemies();
+  tryLoadLiveData();
+});
+</script>
+</body>
+</html>
