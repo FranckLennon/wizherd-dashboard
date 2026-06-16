@@ -522,30 +522,33 @@ async function fetchSpells(){
     const r=await fetch(url); if(!r.ok) return;
     const txt=await r.text();
     const json=JSON.parse(txt.substring(47).slice(0,-2));
-    /* Parse: col0=Spell name, col1=Tier, col2=Unlock Level, col3=DMG Bonus */
-    /* Build cumulative tier bases per spell */
     const spellMap={};
     for(const row of json.table.rows){
       const c=row.c;
-      const name=c[0]?.v; const tier=c[1]?.v; const unlock=c[2]?.v; const dmgBonus=c[3]?.v;
-      if(!name||!tier||typeof name!=='string') continue;
+      const name=c[0]?.v; const tierRaw=c[1]?.v; const unlock=c[2]?.v; const dmgBonus=c[3]?.v;
+      if(!name||!tierRaw||typeof name!=='string') continue;
+      const tierStr=String(tierRaw).trim();
+      /* Only process "Tier 0" through "Tier 5" — ignore "Level X" rows (different system) */
+      if(!/^tier\s*\d/i.test(tierStr)) continue;
+      const tierNum=parseInt(tierStr.replace(/tier\s*/i,''));
+      if(isNaN(tierNum)||tierNum<0||tierNum>5) continue;
       const nm=name.trim();
       if(!spellMap[nm]) spellMap[nm]={unlock:unlock||1,bases:[0,0,0,0,0,0]};
-      const tierNum=parseInt(String(tier).replace(/tier\s*/i,'').replace(/level\s*/i,''))||0;
-      const bonus=typeof dmgBonus==='string'?parseInt(dmgBonus.replace(/[^0-9]/g,''))||0:dmgBonus||0;
-      spellMap[nm].bases[Math.min(tierNum,5)]=bonus;
+      /* Tier 0 has the absolute base damage (a number).
+         Tiers 1-5 have additive bonus strings like "DMG + 10". */
+      const bonus=typeof dmgBonus==='string'
+        ? parseInt(dmgBonus.replace(/[^0-9]/g,''))||0
+        : (typeof dmgBonus==='number'?dmgBonus:0);
+      spellMap[nm].bases[tierNum]=bonus;
     }
-    /* Convert additive bonuses to cumulative */
+    /* Convert: Tier 0 is already absolute. Tiers 1-5 are additive — make cumulative. */
     const newST={}, newSPELLS=[];
     for(const [nm,data] of Object.entries(spellMap)){
       const bases=[...data.bases];
-      /* Make cumulative (each tier includes previous DMG bonus) */
       for(let i=1;i<6;i++) bases[i]=bases[i-1]+bases[i];
       newST[nm]=bases;
-      /* Try to detect element from existing SPELLS array or default */
       const existing=SPELLS.find(s=>s.n===nm);
-      const el=existing?.el||'None'; const ty=existing?.ty||'Strike';
-      newSPELLS.push({n:nm,el,ul:data.unlock,ty});
+      newSPELLS.push({n:nm,el:existing?.el||'None',ul:data.unlock,ty:existing?.ty||'Strike'});
     }
     if(Object.keys(newST).length>0){
       Object.keys(ST).forEach(k=>delete ST[k]);
