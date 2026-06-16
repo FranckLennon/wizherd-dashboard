@@ -906,11 +906,12 @@ function simCalc(){
   const heroHp   = statHP(hpPtsAtLvl);
   const heroMana = statMana(manaPtsAtLvl);
   const heroBaseDmg = statDMG(dmgPtsAtLvl);
-  const dmgMultiplier = heroBaseDmg / BASE_DMG;
 
   const r=row(hLvl);
   const base=spellBase(spell.n,tier);
-  const eff=Math.round(base*r.spellDMGpct/100*dmgMultiplier);
+  /* SpellDMG% from the sheet already represents the full damage scaling at this level.
+     No additional dmgMultiplier — that would double-count. */
+  const eff=Math.round(base*r.spellDMGpct/100);
 
   const enemHP=eHP(enemy,eLv), enemDMG=eDMG(enemy,eLv);
   const isRes=enemy.res.split(', ').some(x=>x.trim()===spell.el);
@@ -927,12 +928,12 @@ function simCalc(){
   document.getElementById('rEHP').textContent=fmt(enemHP);
   document.getElementById('rEDMG').textContent=fmt(enemDMG);
   document.getElementById('rSpell').textContent=`${fmt(base)} × ${r.spellDMGpct}% = ${fmt(Math.round(base*r.spellDMGpct/100))}`;
-  document.getElementById('rMult').textContent=`×${dmgMultiplier.toFixed(2)} (${dmgPtsAtLvl} pts → ${fmt(heroBaseDmg)} base DMG)`;
+  document.getElementById('rMult').textContent=`SpellDMG% at L${hLvl}: ${r.spellDMGpct}%`;
   document.getElementById('rElem').innerHTML=`<span style="color:${EC[spell.el]}">${spell.el}</span> ${isRes?'<span style="color:#555">×0.5 resist</span>':isWeak?'<span style="color:#18a070">×1.5 weakness</span>':'×1.0 normal'}`;
 
   /* Spell comparison chart */
   const comp=SPELLS.filter(s=>ST[s.n]?.[tier]>0).map(s=>{
-    const b2=spellBase(s.n,tier), e2=Math.round(b2*r.spellDMGpct/100*dmgMultiplier);
+    const b2=spellBase(s.n,tier), e2=Math.round(b2*r.spellDMGpct/100);
     const rv=enemy.res.split(', ').some(x=>x.trim()===s.el), wv=enemy.weak.split(', ').some(x=>x.trim()===s.el);
     return {name:s.n,dmg:Math.round(e2*(rv?.5:wv?1.5:1)),col:EC[s.el]||'#555',sel:s.n===spell.n};
   }).sort((a,b)=>b.dmg-a.dmg).slice(0,12);
@@ -960,14 +961,12 @@ function renderSpells(){
   if(!SC) return;
   const grid=document.getElementById('spGrid'); grid.innerHTML='';
   const lvl=+document.getElementById('spLvl').value, r=row(lvl);
-  const dmgPtsAtLvl=ptsAtLevel(BUILD.dmg,lvl);
-  const heroBaseDmg=statDMG(dmgPtsAtLvl), dmgMult=heroBaseDmg/BASE_DMG;
   const maxB=Math.max(...Object.values(ST).map(t=>t[5]));
   SPELLS.filter(s=>spellFilt==='all'||s.el===spellFilt).forEach(spell=>{
     const col=EC[spell.el]||'#555', card=document.createElement('div');
     card.className='spc'; card.style.borderColor=col+'28';
     const rows=[0,1,2,3,4,5].map(t=>{
-      const b=spellBase(spell.n,t), eff=b>0?Math.round(b*r.spellDMGpct/100*dmgMult):0, pct=Math.round(b/maxB*100);
+      const b=spellBase(spell.n,t), eff=b>0?Math.round(b*r.spellDMGpct/100):0, pct=Math.round(b/maxB*100);
       return `<div class="str"><span style="color:var(--text3)">T${t}</span><span style="font-family:var(--fm);font-weight:600;color:${col}">${b>0?fmt(b):'—'}</span><span style="color:var(--text2);font-size:.66rem">${eff>0?'→ '+fmt(eff):''}</span></div><div class="sb"><div class="sbf" style="background:${col};width:${pct}%"></div></div>`;
     }).join('');
     card.innerHTML=`<div class="spn">${spell.n}</div><div class="spm"><div class="dsm" style="background:${col}"></div>${spell.el} · ${spell.ty} · Unlock ${spell.ul}</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L${lvl}</div>${rows}`;
@@ -991,9 +990,7 @@ function initEnemies(){
 function renderEnemies(){
   if(!SC) return;
   const lvl=+document.getElementById('eLvlFilt').value, r=row(lvl);
-  const dmgPtsAtLvl=ptsAtLevel(BUILD.dmg,lvl);
-  const heroBaseDmg=statDMG(dmgPtsAtLvl), dmgMult=heroBaseDmg/BASE_DMG;
-  const refEff=Math.round(spellBase('Fire Strike',3)*r.spellDMGpct/100*dmgMult);
+  const refEff=Math.round(spellBase('Fire Strike',3)*r.spellDMGpct/100);
   const heroHp=statHP(ptsAtLevel(BUILD.hp,lvl));
   const body=document.getElementById('eRows'); body.innerHTML='';
   ENEMIES.filter(e=>enemFilt==='all'||e.ty===enemFilt).forEach(enemy=>{
