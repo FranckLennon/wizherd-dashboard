@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0059)file:///Users/francklennon/Downloads/wizherd_dashboard.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wizherd — Balancing Dashboard</title>
-<script src="./index_files/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
   --bg:#0d0e12;--bg2:#13151c;--bg3:#1a1d28;--bg4:#22263a;
@@ -128,23 +128,23 @@ tbody td{padding:8px 11px}
 }
 </style>
 </head>
-<body style="overscroll-behavior-x: auto;">
+<body>
 
 <header>
   <div class="logo"><div class="gem"></div>WIZHERD<span class="sub" style="color:var(--text3);font-weight:400;margin-left:4px">/ Balancing</span></div>
   <nav>
-    <button class="" onclick="goTab(&#39;curves&#39;,this)">Stat Curves</button>
-    <button onclick="goTab(&#39;combat&#39;,this)" class="on">Combat Sim</button>
-    <button onclick="goTab(&#39;spells&#39;,this)">Spells</button>
-    <button onclick="goTab(&#39;enemies&#39;,this)">Enemies</button>
+    <button class="on" onclick="goTab('curves',this)">Stat Curves</button>
+    <button onclick="goTab('combat',this)">Combat Sim</button>
+    <button onclick="goTab('spells',this)">Spells</button>
+    <button onclick="goTab('enemies',this)">Enemies</button>
   </nav>
-  <div class="live"><div class="dot err" id="dot"></div><span id="lbl">Offline — fallback data</span></div>
+  <div class="live"><div class="dot spin" id="dot"></div><span id="lbl">Loading…</span></div>
 </header>
 
 <main>
 
 <!-- ═══ STAT CURVES ═══ -->
-<div class="tab" id="tab-curves">
+<div class="tab on" id="tab-curves">
   <div class="row" style="gap:1.5rem;flex-wrap:wrap">
 
     <!-- Left panel: allocation -->
@@ -160,17 +160,17 @@ tbody td{padding:8px 11px}
       <!-- Archetype presets -->
       <h3 style="margin-top:.1rem">Quick presets</h3>
       <div class="preset-row">
-        <button class="preset-btn balanced" onclick="applyPreset(&#39;balanced&#39;)">Balanced</button>
-        <button class="preset-btn dps" onclick="applyPreset(&#39;dps&#39;)">DPS</button>
-        <button class="preset-btn support" onclick="applyPreset(&#39;support&#39;)">Support</button>
-        <button class="preset-btn caster" onclick="applyPreset(&#39;caster&#39;)">Caster</button>
+        <button class="preset-btn balanced" onclick="applyPreset('balanced')">Balanced</button>
+        <button class="preset-btn dps" onclick="applyPreset('dps')">DPS</button>
+        <button class="preset-btn support" onclick="applyPreset('support')">Support</button>
+        <button class="preset-btn caster" onclick="applyPreset('caster')">Caster</button>
       </div>
 
       <!-- Stat results at L100 -->
       <div class="g3" style="gap:6px">
-        <div class="m"><div class="l">HP @ L100</div><div class="v" id="cHP" style="color:var(--hp);font-size:.95rem">4,663</div><div class="s" id="subHP">28% of max</div></div>
-        <div class="m"><div class="l">Mana @ L100</div><div class="v" id="cMana" style="color:var(--mana);font-size:.95rem">265</div><div class="s" id="subMana">61% of max</div></div>
-        <div class="m"><div class="l">BaseDMG @ L100</div><div class="v" id="cDMG" style="color:var(--dmg);font-size:.95rem">2,323</div><div class="s" id="subDMG">19% of max</div></div>
+        <div class="m"><div class="l">HP @ L100</div><div class="v" id="cHP" style="color:var(--hp);font-size:.95rem">—</div><div class="s" id="subHP"></div></div>
+        <div class="m"><div class="l">Mana @ L100</div><div class="v" id="cMana" style="color:var(--mana);font-size:.95rem">—</div><div class="s" id="subMana"></div></div>
+        <div class="m"><div class="l">BaseDMG @ L100</div><div class="v" id="cDMG" style="color:var(--dmg);font-size:.95rem">—</div><div class="s" id="subDMG"></div></div>
       </div>
     </div>
 
@@ -179,30 +179,30 @@ tbody td{padding:8px 11px}
       <!-- View toggle -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
         <div class="stabs" style="margin-bottom:0">
-          <button class="stab on" onclick="setCurve(&#39;hp&#39;,this)">HP</button>
-          <button class="stab" onclick="setCurve(&#39;mana&#39;,this)">Mana</button>
-          <button class="stab" onclick="setCurve(&#39;dmg&#39;,this)">Base DMG</button>
-          <button class="stab" onclick="setCurve(&#39;all&#39;,this)">Normalized</button>
+          <button class="stab on" onclick="setCurve('hp',this)">HP</button>
+          <button class="stab" onclick="setCurve('mana',this)">Mana</button>
+          <button class="stab" onclick="setCurve('dmg',this)">Base DMG</button>
+          <button class="stab" onclick="setCurve('all',this)">Normalized</button>
         </div>
         <div class="view-toggle">
-          <button class="vtbtn on" id="vtLine" onclick="setCurveView(&#39;line&#39;,this)">📈 Line</button>
-          <button class="vtbtn" id="vtBar" onclick="setCurveView(&#39;bar&#39;,this)">📊 Bar</button>
+          <button class="vtbtn on" id="vtLine" onclick="setCurveView('line',this)">📈 Line</button>
+          <button class="vtbtn" id="vtBar" onclick="setCurveView('bar',this)">📊 Bar</button>
         </div>
       </div>
-      <div class="leg" id="curveLeg"><div class="li"><div class="ls" style="background:#e04545"></div>Your build</div><div class="li"><div class="ls" style="background:repeating-linear-gradient(90deg,#6c63d4 0,#6c63d4 4px,transparent 4px,transparent 8px)"></div>Balanced</div><div class="li"><div class="ls" style="background:repeating-linear-gradient(90deg,#e09820 0,#e09820 4px,transparent 4px,transparent 8px)"></div>DPS</div><div class="li"><div class="ls" style="background:repeating-linear-gradient(90deg,#e04545 0,#e04545 4px,transparent 4px,transparent 8px)"></div>Support</div><div class="li"><div class="ls" style="background:repeating-linear-gradient(90deg,#3480d4 0,#3480d4 4px,transparent 4px,transparent 8px)"></div>Caster</div></div>
-      <div class="cw"><canvas id="curveC" style="box-sizing: border-box; display: block; height: 260px; width: 738px;" width="1476" height="520"></canvas></div>
+      <div class="leg" id="curveLeg"></div>
+      <div class="cw"><canvas id="curveC"></canvas></div>
     </div>
   </div>
 
   <div class="sep"></div>
   <h3>Archetype comparison — grouped bars</h3>
   <div class="stabs" style="margin-bottom:.75rem">
-    <button class="stab on" onclick="setCompStat(&#39;hp&#39;,this)">HP</button>
-    <button class="stab" onclick="setCompStat(&#39;mana&#39;,this)">Mana</button>
-    <button class="stab" onclick="setCompStat(&#39;dmg&#39;,this)">Base DMG</button>
-    <button class="stab" onclick="setCompStat(&#39;all&#39;,this)">All stats</button>
+    <button class="stab on" onclick="setCompStat('hp',this)">HP</button>
+    <button class="stab" onclick="setCompStat('mana',this)">Mana</button>
+    <button class="stab" onclick="setCompStat('dmg',this)">Base DMG</button>
+    <button class="stab" onclick="setCompStat('all',this)">All stats</button>
   </div>
-  <div class="cw-lg"><canvas id="compC" style="box-sizing: border-box; display: block; height: 320px; width: 1052px;" width="2104" height="640"></canvas></div>
+  <div class="cw-lg"><canvas id="compC"></canvas></div>
   <p class="muted" style="margin-top:.5rem;font-size:.68rem">Stats at level 100 for each archetype. Your build is highlighted.</p>
 
   <div class="sep"></div>
@@ -214,67 +214,7 @@ tbody td{padding:8px 11px}
       <th style="color:var(--mana)">Mana (build)</th><th style="color:var(--mana);opacity:.45">Mana (full 99)</th>
       <th style="color:var(--dmg)">Base DMG (build)</th><th style="color:var(--dmg);opacity:.45">DMG (full 99)</th>
       <th>Enemy HP (sheet)</th>
-    </tr></thead><tbody id="curveRows"><tr><td style="color:var(--accent);font-weight:600">1</td>
-      <td class="mc" style="color:var(--hp)">500</td><td class="mc" style="color:var(--text3)">500</td>
-      <td class="mc" style="color:var(--mana)">100</td><td class="mc" style="color:var(--text3)">100</td>
-      <td class="mc" style="color:var(--dmg)">100</td><td class="mc" style="color:var(--text3)">100</td>
-      <td class="mc">180</td></tr><tr><td style="color:var(--accent);font-weight:600">5</td>
-      <td class="mc" style="color:var(--hp)">535</td><td class="mc" style="color:var(--text3)">655</td>
-      <td class="mc" style="color:var(--mana)">105</td><td class="mc" style="color:var(--text3)">120</td>
-      <td class="mc" style="color:var(--dmg)">110</td><td class="mc" style="color:var(--text3)">146</td>
-      <td class="mc">223</td></tr><tr><td style="color:var(--accent);font-weight:600">10</td>
-      <td class="mc" style="color:var(--hp)">613</td><td class="mc" style="color:var(--text3)">919</td>
-      <td class="mc" style="color:var(--mana)">115</td><td class="mc" style="color:var(--text3)">145</td>
-      <td class="mc" style="color:var(--dmg)">133</td><td class="mc" style="color:var(--text3)">236</td>
-      <td class="mc">292</td></tr><tr><td style="color:var(--accent);font-weight:600">15</td>
-      <td class="mc" style="color:var(--hp)">701</td><td class="mc" style="color:var(--text3)">1,289</td>
-      <td class="mc" style="color:var(--mana)">125</td><td class="mc" style="color:var(--text3)">170</td>
-      <td class="mc" style="color:var(--dmg)">161</td><td class="mc" style="color:var(--text3)">380</td>
-      <td class="mc">382</td></tr><tr><td style="color:var(--accent);font-weight:600">20</td>
-      <td class="mc" style="color:var(--hp)">750</td><td class="mc" style="color:var(--text3)">1,808</td>
-      <td class="mc" style="color:var(--mana)">130</td><td class="mc" style="color:var(--text3)">195</td>
-      <td class="mc" style="color:var(--dmg)">177</td><td class="mc" style="color:var(--text3)">612</td>
-      <td class="mc">499</td></tr><tr><td style="color:var(--accent);font-weight:600">25</td>
-      <td class="mc" style="color:var(--hp)">859</td><td class="mc" style="color:var(--text3)">2,536</td>
-      <td class="mc" style="color:var(--mana)">140</td><td class="mc" style="color:var(--text3)">220</td>
-      <td class="mc" style="color:var(--dmg)">214</td><td class="mc" style="color:var(--text3)">985</td>
-      <td class="mc">650</td></tr><tr><td style="color:var(--accent);font-weight:600">30</td>
-      <td class="mc" style="color:var(--hp)">984</td><td class="mc" style="color:var(--text3)">3,557</td>
-      <td class="mc" style="color:var(--mana)">150</td><td class="mc" style="color:var(--text3)">245</td>
-      <td class="mc" style="color:var(--dmg)">259</td><td class="mc" style="color:var(--text3)">1,586</td>
-      <td class="mc">850</td></tr><tr><td style="color:var(--accent);font-weight:600">40</td>
-      <td class="mc" style="color:var(--hp)">1,205</td><td class="mc" style="color:var(--text3)">6,997</td>
-      <td class="mc" style="color:var(--mana)">165</td><td class="mc" style="color:var(--text3)">295</td>
-      <td class="mc" style="color:var(--dmg)">345</td><td class="mc" style="color:var(--text3)">4,114</td>
-      <td class="mc">1,453</td></tr><tr><td style="color:var(--accent);font-weight:600">50</td>
-      <td class="mc" style="color:var(--hp)">1,476</td><td class="mc" style="color:var(--text3)">8,948</td>
-      <td class="mc" style="color:var(--mana)">180</td><td class="mc" style="color:var(--text3)">327</td>
-      <td class="mc" style="color:var(--dmg)">459</td><td class="mc" style="color:var(--text3)">5,905</td>
-      <td class="mc">2,480</td></tr><tr><td style="color:var(--accent);font-weight:600">60</td>
-      <td class="mc" style="color:var(--hp)">1,935</td><td class="mc" style="color:var(--text3)">10,907</td>
-      <td class="mc" style="color:var(--mana)">200</td><td class="mc" style="color:var(--text3)">357</td>
-      <td class="mc" style="color:var(--dmg)">673</td><td class="mc" style="color:var(--text3)">7,936</td>
-      <td class="mc">4,237</td></tr><tr><td style="color:var(--accent);font-weight:600">70</td>
-      <td class="mc" style="color:var(--hp)">2,370</td><td class="mc" style="color:var(--text3)">12,168</td>
-      <td class="mc" style="color:var(--mana)">215</td><td class="mc" style="color:var(--text3)">378</td>
-      <td class="mc" style="color:var(--dmg)">895</td><td class="mc" style="color:var(--text3)">8,940</td>
-      <td class="mc">7,240</td></tr><tr><td style="color:var(--accent);font-weight:600">75</td>
-      <td class="mc" style="color:var(--hp)">2,714</td><td class="mc" style="color:var(--text3)">12,789</td>
-      <td class="mc" style="color:var(--mana)">225</td><td class="mc" style="color:var(--text3)">388</td>
-      <td class="mc" style="color:var(--dmg)">1,083</td><td class="mc" style="color:var(--text3)">9,396</td>
-      <td class="mc">9,461</td></tr><tr><td style="color:var(--accent);font-weight:600">80</td>
-      <td class="mc" style="color:var(--hp)">2,904</td><td class="mc" style="color:var(--text3)">13,441</td>
-      <td class="mc" style="color:var(--mana)">230</td><td class="mc" style="color:var(--text3)">398</td>
-      <td class="mc" style="color:var(--dmg)">1,192</td><td class="mc" style="color:var(--text3)">9,875</td>
-      <td class="mc">12,366</td></tr><tr><td style="color:var(--accent);font-weight:600">90</td>
-      <td class="mc" style="color:var(--hp)">3,806</td><td class="mc" style="color:var(--text3)">14,847</td>
-      <td class="mc" style="color:var(--mana)">250</td><td class="mc" style="color:var(--text3)">418</td>
-      <td class="mc" style="color:var(--dmg)">1,745</td><td class="mc" style="color:var(--text3)">10,909</td>
-      <td class="mc">21,123</td></tr><tr><td style="color:var(--accent);font-weight:600">100</td>
-      <td class="mc" style="color:var(--hp)">4,663</td><td class="mc" style="color:var(--text3)">16,401</td>
-      <td class="mc" style="color:var(--mana)">265</td><td class="mc" style="color:var(--text3)">438</td>
-      <td class="mc" style="color:var(--dmg)">2,323</td><td class="mc" style="color:var(--text3)">12,050</td>
-      <td class="mc">36,079</td></tr></tbody></table>
+    </tr></thead><tbody id="curveRows"></tbody></table>
   </div>
 </div>
 
@@ -282,69 +222,69 @@ tbody td{padding:8px 11px}
 <div class="tab" id="tab-compare" style="display:none!important"></div>
 
 <!-- ═══ COMBAT SIM ═══ -->
-<div class="tab on" id="tab-combat">
+<div class="tab" id="tab-combat">
   <div class="banner" id="simBanner">
     <span style="color:var(--text2)">Build —</span>
-    <span><b id="bHP" style="color:var(--hp)">4,663</b> HP</span>
-    <span><b id="bMana" style="color:var(--mana)">265</b> Mana</span>
-    <span><b id="bDMG" style="color:var(--dmg)">2,323</b> Base DMG</span>
-    <a onclick="goTab(&#39;curves&#39;,null)">← Edit build</a>
+    <span><b id="bHP" style="color:var(--hp)">—</b> HP</span>
+    <span><b id="bMana" style="color:var(--mana)">—</b> Mana</span>
+    <span><b id="bDMG" style="color:var(--dmg)">—</b> Base DMG</span>
+    <a onclick="goTab('curves',null)">← Edit build</a>
   </div>
   <div class="sg">
     <div class="card" style="display:flex;flex-direction:column;gap:.85rem">
       <div>
         <div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Hero level</div>
         <div class="ctrl" style="margin-bottom:0">
-          <input type="range" id="heroLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById(&#39;hLvlV&#39;).textContent=this.value;simCalc()">
-          <span class="num" id="hLvlV" style="color:var(--accent)">15</span>
+          <input type="range" id="heroLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById('hLvlV').textContent=this.value;simCalc()">
+          <span class="num" id="hLvlV" style="color:var(--accent)">50</span>
         </div>
-        <div style="font-size:.66rem;color:var(--text3);margin-top:3px">Points available: <span id="heroAvailPts" style="color:var(--text2);font-family:var(--fm)">14</span></div>
+        <div style="font-size:.66rem;color:var(--text3);margin-top:3px">Points available: <span id="heroAvailPts" style="color:var(--text2);font-family:var(--fm)">49</span></div>
         <!-- Archetype selector for sim -->
         <div style="margin-top:7px">
           <div class="muted" style="margin-bottom:4px;font-size:.66rem">Build for this level</div>
           <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <button id="simPresetBalanced" class="preset-btn balanced on" onclick="setSimPreset(&#39;balanced&#39;)">Balanced</button>
-            <button id="simPresetDps" class="preset-btn dps" onclick="setSimPreset(&#39;dps&#39;)">DPS</button>
-            <button id="simPresetSupport" class="preset-btn support" onclick="setSimPreset(&#39;support&#39;)">Support</button>
-            <button id="simPresetCaster" class="preset-btn caster" onclick="setSimPreset(&#39;caster&#39;)">Caster</button>
-            <button id="simPresetCustom" class="preset-btn" style="border-color:var(--text3);color:var(--text2)" onclick="setSimPreset(&#39;custom&#39;)">Custom</button>
+            <button id="simPresetBalanced" class="preset-btn balanced on" onclick="setSimPreset('balanced')">Balanced</button>
+            <button id="simPresetDps" class="preset-btn dps" onclick="setSimPreset('dps')">DPS</button>
+            <button id="simPresetSupport" class="preset-btn support" onclick="setSimPreset('support')">Support</button>
+            <button id="simPresetCaster" class="preset-btn caster" onclick="setSimPreset('caster')">Caster</button>
+            <button id="simPresetCustom" class="preset-btn" style="border-color:var(--text3);color:var(--text2)" onclick="setSimPreset('custom')">Custom</button>
           </div>
-          <div id="simBuildInfo" style="font-size:.66rem;color:var(--text3);margin-top:4px">Pts: 5 HP / 5 Mana / 5 DMG</div>
+          <div id="simBuildInfo" style="font-size:.66rem;color:var(--text3);margin-top:4px">Pts: 16 HP / 16 Mana / 17 DMG</div>
         </div>
       </div>
-      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell</div><select id="simSpell" onchange="simCalc()"><option value="Fire Strike">Fire Strike (Fire)</option><option value="Fire Sword">Fire Sword (Fire)</option><option value="Fire Nova">Fire Nova (Fire)</option><option value="Ice Strike">Ice Strike (Ice)</option><option value="Ice Nova">Ice Nova (Ice)</option><option value="Blizzard">Blizzard (Ice)</option><option value="Frost Stream">Frost Stream (Ice)</option><option value="Boulder">Boulder (Earth)</option><option value="Rock Wall">Rock Wall (Earth)</option><option value="Earth Nova">Earth Nova (Earth)</option><option value="Healing Totem">Healing Totem (None)</option><option value="Wind Strike">Wind Strike (Wind)</option><option value="Wind Stream">Wind Stream (Wind)</option><option value="Wind Nova">Wind Nova (Wind)</option><option value="Lightning Arc">Lightning Arc (Lightning)</option><option value="Lightning Strand">Lightning Strand (Lightning)</option><option value="Volt Gate">Volt Gate (Lightning)</option><option value="Skeletal Horde">Skeletal Horde (Necro)</option><option value="Spectral Skull">Spectral Skull (Necro)</option><option value="Shadow Form">Shadow Form (Necro)</option></select></div>
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell</div><select id="simSpell" onchange="simCalc()"></select></div>
       <div>
         <div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Spell tier</div>
         <div class="ctrl" style="margin-bottom:0">
-          <input type="range" id="simTier" min="0" max="5" value="3" style="flex:1" oninput="document.getElementById(&#39;sTierV&#39;).textContent=this.value;simCalc()">
-          <span class="num" id="sTierV" style="color:var(--accent)">0</span>
+          <input type="range" id="simTier" min="0" max="5" value="3" style="flex:1" oninput="document.getElementById('sTierV').textContent=this.value;simCalc()">
+          <span class="num" id="sTierV" style="color:var(--accent)">3</span>
         </div>
       </div>
-      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy</div><select id="simEnemy" onchange="simCalc()"><option value="Femur">Femur</option><option value="NecroManager">NecroManager</option><option value="Daddy Femur">Daddy Femur ★</option><option value="Wee Green">Wee Green</option><option value="Boom Green">Boom Green</option><option value="Wolfgang">Wolfgang ★</option><option value="Dumbbell">Dumbbell</option><option value="IceAndBerg">IceAndBerg</option><option value="Magmalade">Magmalade ★</option><option value="Caw">Caw</option><option value="Ratcoon">Ratcoon</option><option value="Gary Frogman">Gary Frogman ★</option><option value="Lord Metalikor">Lord Metalikor ★</option><option value="IronBurn">IronBurn</option><option value="Tartargnan">Tartargnan</option><option value="Batler">Batler</option><option value="Babewyn">Babewyn</option></select></div>
+      <div><div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy</div><select id="simEnemy" onchange="simCalc()"></select></div>
       <div>
         <div class="muted" style="margin-bottom:4px;font-size:.68rem;text-transform:uppercase;font-weight:600;letter-spacing:.06em">Enemy level</div>
         <div class="ctrl" style="margin-bottom:0">
-          <input type="range" id="eLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById(&#39;eLvlV&#39;).textContent=this.value;simCalc()">
+          <input type="range" id="eLvl" min="1" max="100" value="50" style="flex:1" oninput="document.getElementById('eLvlV').textContent=this.value;simCalc()">
           <span class="num" id="eLvlV" style="color:var(--fire)">50</span>
         </div>
       </div>
     </div>
     <div>
       <div class="g2" style="margin-bottom:.85rem">
-        <div class="m"><div class="l">Effective DMG / hit</div><div class="v" id="sDmg" style="color:var(--dmg)">612</div></div>
-        <div class="m"><div class="l">Hits to kill (TTK)</div><div class="v" id="sTTK" style="color:var(--accent)">6 hits</div></div>
-        <div class="m"><div class="l">Hero HP</div><div class="v" id="sHeroHP" style="color:var(--hp)">701</div><div class="s" id="sHPsub">5 pts at L15 (33 total)</div></div>
-        <div class="m"><div class="l">Hits to die (TTD)</div><div class="v" id="sTTD" style="color:var(--fire)">3 hits</div></div>
+        <div class="m"><div class="l">Effective DMG / hit</div><div class="v" id="sDmg" style="color:var(--dmg)">—</div></div>
+        <div class="m"><div class="l">Hits to kill (TTK)</div><div class="v" id="sTTK" style="color:var(--accent)">—</div></div>
+        <div class="m"><div class="l">Hero HP</div><div class="v" id="sHeroHP" style="color:var(--hp)">—</div><div class="s" id="sHPsub"></div></div>
+        <div class="m"><div class="l">Hits to die (TTD)</div><div class="v" id="sTTD" style="color:var(--fire)">—</div></div>
       </div>
       <div class="card" style="margin-bottom:.85rem">
-        <div class="rr"><span class="rl">Enemy HP</span><span class="rv" id="rEHP">3,446</span></div>
-        <div class="rr"><span class="rl">Enemy DMG / hit</span><span class="rv" id="rEDMG">242</span></div>
-        <div class="rr"><span class="rl">Spell base × SpellDMG%</span><span class="rv" id="rSpell">100 × 380% = 380</span></div>
-        <div class="rr"><span class="rl">Hero DMG multiplier</span><span class="rv" id="rMult">×1.61 (5 pts → 161 base DMG)</span></div>
-        <div class="rr"><span class="rl">Element modifier</span><span class="rv" id="rElem"><span style="color:#e04545">Fire</span> ×1.0 normal</span></div>
+        <div class="rr"><span class="rl">Enemy HP</span><span class="rv" id="rEHP">—</span></div>
+        <div class="rr"><span class="rl">Enemy DMG / hit</span><span class="rv" id="rEDMG">—</span></div>
+        <div class="rr"><span class="rl">Spell base × SpellDMG%</span><span class="rv" id="rSpell">—</span></div>
+        <div class="rr"><span class="rl">Hero DMG multiplier</span><span class="rv" id="rMult">—</span></div>
+        <div class="rr"><span class="rl">Element modifier</span><span class="rv" id="rElem">—</span></div>
       </div>
       <h3>All spells at this level</h3>
-      <div class="cw-sm"><canvas id="simComp" style="box-sizing: border-box; display: block; height: 200px; width: 772px;" width="1544" height="400"></canvas></div>
+      <div class="cw-sm"><canvas id="simComp"></canvas></div>
     </div>
   </div>
 </div>
@@ -354,13 +294,13 @@ tbody td{padding:8px 11px}
   <div class="banner">
     <span style="color:var(--text2)">Effective DMG at level</span>
     <div class="ctrl" style="margin-bottom:0;gap:6px">
-      <input type="range" id="spLvl" min="1" max="100" value="50" style="width:90px" oninput="document.getElementById(&#39;spLvlV&#39;).textContent=this.value;renderSpells()">
+      <input type="range" id="spLvl" min="1" max="100" value="50" style="width:90px" oninput="document.getElementById('spLvlV').textContent=this.value;renderSpells()">
       <span class="num" id="spLvlV" style="color:var(--accent)">50</span>
     </div>
     <span style="color:var(--text3);font-size:.68rem">· using your DMG mult</span>
   </div>
-  <div class="fb" id="spFilters"><button class="on">All</button><button class="" style="background: rgba(224, 69, 69, 0.094); color: rgb(224, 69, 69); border-color: rgba(224, 69, 69, 0.208);">Fire</button><button class="" style="background: rgba(52, 128, 212, 0.094); color: rgb(52, 128, 212); border-color: rgba(52, 128, 212, 0.208);">Ice</button><button class="" style="background: rgba(176, 112, 16, 0.094); color: rgb(176, 112, 16); border-color: rgba(176, 112, 16, 0.208);">Earth</button><button class="" style="background: rgba(24, 160, 112, 0.094); color: rgb(24, 160, 112); border-color: rgba(24, 160, 112, 0.208);">Wind</button><button class="" style="background: rgba(108, 99, 212, 0.094); color: rgb(108, 99, 212); border-color: rgba(108, 99, 212, 0.208);">Lightning</button><button class="" style="background: rgba(192, 72, 120, 0.094); color: rgb(192, 72, 120); border-color: rgba(192, 72, 120, 0.208);">Necro</button></div>
-  <div class="spg" id="spGrid"><div class="spc" style="border-color: rgba(224, 69, 69, 0.157);"><div class="spn">Fire Strike</div><div class="spm"><div class="dsm" style="background:#e04545"></div>Fire · Strike · Unlock 1</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">170</span><span style="color:var(--text2);font-size:.66rem">→ 46,077</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:27%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">240</span><span style="color:var(--text2);font-size:.66rem">→ 65,049</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:38%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">350</span><span style="color:var(--text2);font-size:.66rem">→ 94,864</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:55%"></div></div></div><div class="spc" style="border-color: rgba(224, 69, 69, 0.157);"><div class="spn">Fire Sword</div><div class="spm"><div class="dsm" style="background:#e04545"></div>Fire · Melee · Unlock 14</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">70</span><span style="color:var(--text2);font-size:.66rem">→ 18,973</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:11%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">85</span><span style="color:var(--text2);font-size:.66rem">→ 23,038</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:13%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">115</span><span style="color:var(--text2);font-size:.66rem">→ 31,170</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:18%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">175</span><span style="color:var(--text2);font-size:.66rem">→ 47,432</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">265</span><span style="color:var(--text2);font-size:.66rem">→ 71,825</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:42%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">415</span><span style="color:var(--text2);font-size:.66rem">→ 112,481</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:65%"></div></div></div><div class="spc" style="border-color: rgba(224, 69, 69, 0.157);"><div class="spn">Fire Nova</div><div class="spm"><div class="dsm" style="background:#e04545"></div>Fire · Nova · Unlock 30</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">170</span><span style="color:var(--text2);font-size:.66rem">→ 46,077</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:27%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">240</span><span style="color:var(--text2);font-size:.66rem">→ 65,049</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:38%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#e04545">350</span><span style="color:var(--text2);font-size:.66rem">→ 94,864</span></div><div class="sb"><div class="sbf" style="background:#e04545;width:55%"></div></div></div><div class="spc" style="border-color: rgba(52, 128, 212, 0.157);"><div class="spn">Ice Strike</div><div class="spm"><div class="dsm" style="background:#3480d4"></div>Ice · Strike · Unlock 1</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">170</span><span style="color:var(--text2);font-size:.66rem">→ 46,077</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:27%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">240</span><span style="color:var(--text2);font-size:.66rem">→ 65,049</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:38%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">350</span><span style="color:var(--text2);font-size:.66rem">→ 94,864</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:55%"></div></div></div><div class="spc" style="border-color: rgba(52, 128, 212, 0.157);"><div class="spn">Ice Nova</div><div class="spm"><div class="dsm" style="background:#3480d4"></div>Ice · Nova · Unlock 16</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">80</span><span style="color:var(--text2);font-size:.66rem">→ 21,683</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:13%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">90</span><span style="color:var(--text2);font-size:.66rem">→ 24,394</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:14%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">150</span><span style="color:var(--text2);font-size:.66rem">→ 40,656</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:24%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">220</span><span style="color:var(--text2);font-size:.66rem">→ 59,629</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:35%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">330</span><span style="color:var(--text2);font-size:.66rem">→ 89,443</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:52%"></div></div></div><div class="spc" style="border-color: rgba(52, 128, 212, 0.157);"><div class="spn">Blizzard</div><div class="spm"><div class="dsm" style="background:#3480d4"></div>Ice · DoT · Unlock 40</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">150</span><span style="color:var(--text2);font-size:.66rem">→ 40,656</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:24%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">190</span><span style="color:var(--text2);font-size:.66rem">→ 51,498</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:30%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">260</span><span style="color:var(--text2);font-size:.66rem">→ 70,470</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:41%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">370</span><span style="color:var(--text2);font-size:.66rem">→ 100,285</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:58%"></div></div></div><div class="spc" style="border-color: rgba(52, 128, 212, 0.157);"><div class="spn">Frost Stream</div><div class="spm"><div class="dsm" style="background:#3480d4"></div>Ice · Stream · Unlock 22</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">130</span><span style="color:var(--text2);font-size:.66rem">→ 35,235</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">140</span><span style="color:var(--text2);font-size:.66rem">→ 37,946</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:22%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">200</span><span style="color:var(--text2);font-size:.66rem">→ 54,208</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:31%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">270</span><span style="color:var(--text2);font-size:.66rem">→ 73,181</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:43%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#3480d4">380</span><span style="color:var(--text2);font-size:.66rem">→ 102,995</span></div><div class="sb"><div class="sbf" style="background:#3480d4;width:60%"></div></div></div><div class="spc" style="border-color: rgba(176, 112, 16, 0.157);"><div class="spn">Boulder</div><div class="spm"><div class="dsm" style="background:#b07010"></div>Earth · Projectile · Unlock 5</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">150</span><span style="color:var(--text2);font-size:.66rem">→ 40,656</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:24%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">180</span><span style="color:var(--text2);font-size:.66rem">→ 48,787</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">220</span><span style="color:var(--text2);font-size:.66rem">→ 59,629</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:35%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">290</span><span style="color:var(--text2);font-size:.66rem">→ 78,601</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:46%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">400</span><span style="color:var(--text2);font-size:.66rem">→ 108,416</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:63%"></div></div></div><div class="spc" style="border-color: rgba(176, 112, 16, 0.157);"><div class="spn">Rock Wall</div><div class="spm"><div class="dsm" style="background:#b07010"></div>Earth · Summon · Unlock 12</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:16%"></div></div></div><div class="spc" style="border-color: rgba(176, 112, 16, 0.157);"><div class="spn">Earth Nova</div><div class="spm"><div class="dsm" style="background:#b07010"></div>Earth · Nova · Unlock 20</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">140</span><span style="color:var(--text2);font-size:.66rem">→ 37,946</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:22%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">180</span><span style="color:var(--text2);font-size:.66rem">→ 48,787</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#b07010">360</span><span style="color:var(--text2);font-size:.66rem">→ 97,574</span></div><div class="sb"><div class="sbf" style="background:#b07010;width:57%"></div></div></div><div class="spc" style="border-color: rgba(85, 88, 112, 0.157);"><div class="spn">Healing Totem</div><div class="spm"><div class="dsm" style="background:#555870"></div>None · Support · Unlock 8</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#555870">40</span><span style="color:var(--text2);font-size:.66rem">→ 10,842</span></div><div class="sb"><div class="sbf" style="background:#555870;width:6%"></div></div></div><div class="spc" style="border-color: rgba(24, 160, 112, 0.157);"><div class="spn">Wind Strike</div><div class="spm"><div class="dsm" style="background:#18a070"></div>Wind · Strike · Unlock 1</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">90</span><span style="color:var(--text2);font-size:.66rem">→ 24,394</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:14%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">230</span><span style="color:var(--text2);font-size:.66rem">→ 62,339</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:36%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">340</span><span style="color:var(--text2);font-size:.66rem">→ 92,153</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:54%"></div></div></div><div class="spc" style="border-color: rgba(24, 160, 112, 0.157);"><div class="spn">Wind Stream</div><div class="spm"><div class="dsm" style="background:#18a070"></div>Wind · Stream · Unlock 10</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">80</span><span style="color:var(--text2);font-size:.66rem">→ 21,683</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:13%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">95</span><span style="color:var(--text2);font-size:.66rem">→ 25,749</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:15%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">125</span><span style="color:var(--text2);font-size:.66rem">→ 33,880</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:20%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">175</span><span style="color:var(--text2);font-size:.66rem">→ 47,432</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">255</span><span style="color:var(--text2);font-size:.66rem">→ 69,115</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:40%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">380</span><span style="color:var(--text2);font-size:.66rem">→ 102,995</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:60%"></div></div></div><div class="spc" style="border-color: rgba(24, 160, 112, 0.157);"><div class="spn">Wind Nova</div><div class="spm"><div class="dsm" style="background:#18a070"></div>Wind · Nova · Unlock 25</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">90</span><span style="color:var(--text2);font-size:.66rem">→ 24,394</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:14%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">100</span><span style="color:var(--text2);font-size:.66rem">→ 27,104</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:16%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">230</span><span style="color:var(--text2);font-size:.66rem">→ 62,339</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:36%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#18a070">340</span><span style="color:var(--text2);font-size:.66rem">→ 92,153</span></div><div class="sb"><div class="sbf" style="background:#18a070;width:54%"></div></div></div><div class="spc" style="border-color: rgba(108, 99, 212, 0.157);"><div class="spn">Lightning Arc</div><div class="spm"><div class="dsm" style="background:#6c63d4"></div>Lightning · Stream · Unlock 18</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">76</span><span style="color:var(--text2);font-size:.66rem">→ 20,599</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:12%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">86</span><span style="color:var(--text2);font-size:.66rem">→ 23,309</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:14%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">106</span><span style="color:var(--text2);font-size:.66rem">→ 28,730</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">146</span><span style="color:var(--text2);font-size:.66rem">→ 39,572</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:23%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">216</span><span style="color:var(--text2);font-size:.66rem">→ 58,545</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:34%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">326</span><span style="color:var(--text2);font-size:.66rem">→ 88,359</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:51%"></div></div></div><div class="spc" style="border-color: rgba(108, 99, 212, 0.157);"><div class="spn">Lightning Strand</div><div class="spm"><div class="dsm" style="background:#6c63d4"></div>Lightning · Special · Unlock 28</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">250</span><span style="color:var(--text2);font-size:.66rem">→ 67,760</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:39%"></div></div></div><div class="spc" style="border-color: rgba(108, 99, 212, 0.157);"><div class="spn">Volt Gate</div><div class="spm"><div class="dsm" style="background:#6c63d4"></div>Lightning · Summon · Unlock 35</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">200</span><span style="color:var(--text2);font-size:.66rem">→ 54,208</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:31%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">225</span><span style="color:var(--text2);font-size:.66rem">→ 60,984</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:35%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">275</span><span style="color:var(--text2);font-size:.66rem">→ 74,536</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:43%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">355</span><span style="color:var(--text2);font-size:.66rem">→ 96,219</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:56%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">475</span><span style="color:var(--text2);font-size:.66rem">→ 128,744</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:75%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#6c63d4">635</span><span style="color:var(--text2);font-size:.66rem">→ 172,110</span></div><div class="sb"><div class="sbf" style="background:#6c63d4;width:100%"></div></div></div><div class="spc" style="border-color: rgba(192, 72, 120, 0.157);"><div class="spn">Skeletal Horde</div><div class="spm"><div class="dsm" style="background:#c04878"></div>Necro · Summon · Unlock 25</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">110</span><span style="color:var(--text2);font-size:.66rem">→ 29,814</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:17%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">120</span><span style="color:var(--text2);font-size:.66rem">→ 32,525</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:19%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">145</span><span style="color:var(--text2);font-size:.66rem">→ 39,301</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:23%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">195</span><span style="color:var(--text2);font-size:.66rem">→ 52,853</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:31%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">275</span><span style="color:var(--text2);font-size:.66rem">→ 74,536</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:43%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">400</span><span style="color:var(--text2);font-size:.66rem">→ 108,416</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:63%"></div></div></div><div class="spc" style="border-color: rgba(192, 72, 120, 0.157);"><div class="spn">Spectral Skull</div><div class="spm"><div class="dsm" style="background:#c04878"></div>Necro · Projectile · Unlock 32</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">160</span><span style="color:var(--text2);font-size:.66rem">→ 43,366</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:25%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">175</span><span style="color:var(--text2);font-size:.66rem">→ 47,432</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:28%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">205</span><span style="color:var(--text2);font-size:.66rem">→ 55,563</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:32%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">255</span><span style="color:var(--text2);font-size:.66rem">→ 69,115</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:40%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">335</span><span style="color:var(--text2);font-size:.66rem">→ 90,798</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:53%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">460</span><span style="color:var(--text2);font-size:.66rem">→ 124,678</span></div><div class="sb"><div class="sbf" style="background:#c04878;width:72%"></div></div></div><div class="spc" style="border-color: rgba(192, 72, 120, 0.157);"><div class="spn">Shadow Form</div><div class="spm"><div class="dsm" style="background:#c04878"></div>Necro · Support · Unlock 45</div><div style="font-size:.64rem;color:var(--text3);margin-bottom:5px">Base → Effective @ L50</div><div class="str"><span style="color:var(--text3)">T0</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T1</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T2</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T3</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T4</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div><div class="str"><span style="color:var(--text3)">T5</span><span style="font-family:var(--fm);font-weight:600;color:#c04878">—</span><span style="color:var(--text2);font-size:.66rem"></span></div><div class="sb"><div class="sbf" style="background:#c04878;width:0%"></div></div></div></div>
+  <div class="fb" id="spFilters"></div>
+  <div class="spg" id="spGrid"></div>
 </div>
 
 <!-- ═══ ENEMIES ═══ -->
@@ -371,101 +311,16 @@ tbody td{padding:8px 11px}
       <span class="muted" style="font-size:.68rem">At level</span>
       <select id="eLvlFilt" onchange="renderEnemies()" style="width:auto">
         <option value="1">1</option><option value="10">10</option><option value="25">25</option>
-        <option value="50" selected="">50</option><option value="75">75</option><option value="100">100</option>
+        <option value="50" selected>50</option><option value="75">75</option><option value="100">100</option>
       </select>
     </div>
   </div>
-  <div class="fb" id="eFilters"><button class="on">All</button><button class="">Base</button><button class="" style="color: var(--fire); border-color: var(--fire)35;">Boss</button></div>
+  <div class="fb" id="eFilters"></div>
   <div class="etw">
     <table><thead><tr>
       <th>Enemy</th><th>Type</th><th>HP</th><th>DMG/hit</th>
       <th>TTK (your build)</th><th>TTD (you)</th><th>Resist</th><th>Weak</th>
-    </tr></thead><tbody id="eRows"><tr><td><div style="font-weight:600">Femur</div><div style="color:var(--text3);font-size:.68rem">Skeleton grunt</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">3,446</td><td class="mc">242</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">7 hits</td>
-      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td><td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td></tr><tr><td><div style="font-weight:600">NecroManager</div><div style="color:var(--text3);font-size:.68rem">Necromancer</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">5,513</td><td class="mc">282</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">6 hits</td>
-      <td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td><td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span></td></tr><tr><td><div style="font-weight:600">Daddy Femur</div><div style="color:var(--text3);font-size:.68rem">Big Skeleton</div></td>
-      <td><span class="boss-t">Boss</span></td>
-      <td class="mc">220,539</td><td class="mc">420</td>
-      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
-      <td class="mc" style="color:var(--fire)">4 hits</td>
-      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td><td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td></tr><tr><td><div style="font-weight:600">Wee Green</div><div style="color:var(--text3);font-size:.68rem">Goblin</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">2,757</td><td class="mc">168</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">9 hits</td>
-      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Boom Green</div><div style="color:var(--text3);font-size:.68rem">Goblin Kamikaze</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">1,723</td><td class="mc">504</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">3 hits</td>
-      <td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span></td><td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td></tr><tr><td><div style="font-weight:600">Wolfgang</div><div style="color:var(--text3);font-size:.68rem">Orc</div></td>
-      <td><span class="boss-t">Boss</span></td>
-      <td class="mc">110,270</td><td class="mc">671</td>
-      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
-      <td class="mc" style="color:var(--fire)">3 hits</td>
-      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td><td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span></td></tr><tr><td><div style="font-weight:600">Dumbbell</div><div style="color:var(--text3);font-size:.68rem">Golem</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">8,270</td><td class="mc">336</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">5 hits</td>
-      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td><td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td></tr><tr><td><div style="font-weight:600">IceAndBerg</div><div style="color:var(--text3);font-size:.68rem">Ice Golem</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">12,405</td><td class="mc">420</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">4 hits</td>
-      <td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td><td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span></td></tr><tr><td><div style="font-weight:600">Magmalade</div><div style="color:var(--text3);font-size:.68rem">Magma Golem</div></td>
-      <td><span class="boss-t">Boss</span></td>
-      <td class="mc">275,674</td><td class="mc">504</td>
-      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
-      <td class="mc" style="color:var(--fire)">3 hits</td>
-      <td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td><td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td></tr><tr><td><div style="font-weight:600">Caw</div><div style="color:var(--text3);font-size:.68rem">Crow</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">2,757</td><td class="mc">201</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">8 hits</td>
-      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Ratcoon</div><div style="color:var(--text3);font-size:.68rem">Rat</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">1,723</td><td class="mc">201</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">8 hits</td>
-      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td></tr><tr><td><div style="font-weight:600">Gary Frogman</div><div style="color:var(--text3);font-size:.68rem">Gary Frog</div></td>
-      <td><span class="boss-t">Boss</span></td>
-      <td class="mc">248,107</td><td class="mc">436</td>
-      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
-      <td class="mc" style="color:var(--fire)">4 hits</td>
-      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Lord Metalikor</div><div style="color:var(--text3);font-size:.68rem">Death Warlord</div></td>
-      <td><span class="boss-t">Boss</span></td>
-      <td class="mc">303,242</td><td class="mc">269</td>
-      <td class="mc" style="color:var(--accent)"><span style="color:var(--text3)">Boss</span></td>
-      <td class="mc" style="color:var(--fire)">6 hits</td>
-      <td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td><td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td></tr><tr><td><div style="font-weight:600">IronBurn</div><div style="color:var(--text3);font-size:.68rem">Flame Knight</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">3,446</td><td class="mc">302</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">5 hits</td>
-      <td><span class="pill" style="background:#e0454520;color:#e04545">Fire</span><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span></td><td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td></tr><tr><td><div style="font-weight:600">Tartargnan</div><div style="color:var(--text3);font-size:.68rem">Ranged Knight</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">5,513</td><td class="mc">269</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">6 hits</td>
-      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#3480d420;color:#3480d4">Ice</span><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Batler</div><div style="color:var(--text3);font-size:.68rem">Bat</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">2,757</td><td class="mc">252</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">6 hits</td>
-      <td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td><td><span class="pill" style="background:#6c63d420;color:#6c63d4">Lightning</span></td></tr><tr><td><div style="font-weight:600">Babewyn</div><div style="color:var(--text3);font-size:.68rem">Gargoyle</div></td>
-      <td><span class="base-t">Base</span></td>
-      <td class="mc">8,270</td><td class="mc">252</td>
-      <td class="mc" style="color:var(--accent)">1 hits</td>
-      <td class="mc" style="color:var(--fire)">6 hits</td>
-      <td><span class="pill" style="background:#b0701020;color:#b07010">Earth</span></td><td><span class="pill" style="background:#18a07020;color:#18a070">Wind</span></td></tr></tbody></table>
+    </tr></thead><tbody id="eRows"></tbody></table>
   </div>
   <p class="muted" style="margin-top:.5rem;font-size:.66rem">TTK = Enemy HP ÷ effective DMG. TTD = Your HP ÷ Enemy DMG. Enemies scale ×1.055/level.</p>
 </div>
@@ -1176,6 +1031,5 @@ function initAll(){
 }
 window.addEventListener('DOMContentLoaded',fetchSheet);
 </script>
-
-
-</body></html>
+</body>
+</html>
