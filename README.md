@@ -1,2 +1,2 @@
 # wizherd-dashboard
-Wizherd VR Balancing
+Wizherd VR Balancing Dashboard
