@@ -110,6 +110,10 @@ tbody td{padding:7px 10px}
 <body>
 <header>
   <div class="logo"><div class="gem"></div>WIZHERD <span style="color:var(--text3);font-weight:400;margin-left:6px">Balancing Dashboard</span></div>
+  <nav>
+    <button id="nav-build" class="on" onclick="switchTab('build')">Build</button>
+    <button id="nav-combat" onclick="switchTab('combat')">Combat Sim</button>
+  </nav>
   <div class="live"><div class="dot spin" id="dot"></div><span id="lbl">Loading…</span></div>
   <span id="debugInfo" style="font-size:.65rem;color:var(--text3);margin-left:.5rem"></span>
 </header>
@@ -117,7 +121,7 @@ tbody td{padding:7px 10px}
 <main>
 
 <!-- ══════════════ BUILD ══════════════ -->
-<div id="tab-build">
+<div id="tab-build" class="tab on">
   <div class="row" style="gap:1.5rem;flex-wrap:wrap">
 
     <!-- Left: allocation -->
@@ -168,7 +172,7 @@ tbody td{padding:7px 10px}
 </div>
 
 <!-- ══════════════ COMBAT SIM ══════════════ -->
-<div id="tab-combat" style="margin-top:2rem">
+<div id="tab-combat" class="tab" style="margin-top:2rem">
   <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem">
     <div style="height:1px;background:var(--border);flex:1"></div>
     <span style="font-size:.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.1em">Combat Simulator</span>
@@ -222,7 +226,7 @@ tbody td{padding:7px 10px}
         <div>
           <h3>Enemy level</h3>
           <div class="ctrl" style="margin-bottom:3px">
-            <input type="range" id="eLvl" min="1" max="99" value="20" style="flex:1" oninput="document.getElementById('eLvlV').textContent=this.value;simCalc()">
+            <input type="range" id="eLvl" min="1" max="100" value="20" style="flex:1" oninput="document.getElementById('eLvlV').textContent=this.value;simCalc()">
             <span class="num" id="eLvlV" style="color:var(--fire)">20</span>
           </div>
           <div style="font-size:.65rem;color:var(--text3)">Enemy pts invested: <b id="ePtsInfo" style="color:var(--text2);font-family:var(--fm)">20</b></div>
@@ -328,13 +332,13 @@ async function fetchAll(){
   const errors=[], info=[];
 
   try { await loadScaling(); info.push(`SC:${SC.length}`); }
-  catch(e){ errors.push('Scaling:'+e.message); SC=FALLBACK_SC; }
+  catch(e){ errors.push('Scaling:'+e.message); SC=[...FALLBACK_SC]; }
 
   try { await loadEnemies(); info.push(`En:${ENEMIES.length}`); }
-  catch(e){ errors.push('Enemies:'+e.message); ENEMIES.push(...FALLBACK_ENEMIES); }
+  catch(e){ errors.push('Enemies:'+e.message); ENEMIES=[...FALLBACK_ENEMIES]; }
 
   try { await loadSpells(); info.push(`Sp:${Object.keys(ST).length}`); }
-  catch(e){ errors.push('Spells:'+e.message); Object.assign(ST, FALLBACK_ST); }
+  catch(e){ errors.push('Spells:'+e.message); ST={...FALLBACK_ST}; }
 
   // Show debug info in header
   const debug=document.getElementById('debugInfo');
@@ -399,7 +403,6 @@ async function loadEnemies(){
 }
 
 async function loadSpells(){
-async function loadSpells(){
   const json = await gviz('Spells Upgrade');
   if(!json.table?.rows?.length) throw new Error('No rows in Spells Upgrade');
   const map = {};
@@ -433,11 +436,10 @@ async function loadSpells(){
 const fmt = n => Math.round(n).toLocaleString('en-US');
 const ceil = Math.ceil;
 
-/* Get SC row by points value — searches for the row where pts === target.
-   Falls back to closest row if exact match not found. */
-function scByPts(pts){
+/* Get SC row by level (1 to 100) */
+function scByLvl(lvl){
   if(!SC||!SC.length) return null;
-  const target = Math.min(Math.max(Math.round(pts), 1), 99);
+  const target = Math.min(Math.max(Math.round(lvl), 1), 100);
   // Exact match first
   const exact = SC.find(r=>r.pts===target);
   if(exact) return exact;
@@ -447,15 +449,20 @@ function scByPts(pts){
   , SC[0]);
 }
 
+/* Get SC row by points invested (0 to 99) */
+function scByPts(pts){
+  return scByLvl(pts + 1);
+}
+
 /* Enemy HP/DMG: Scaling Datas col D gives HP% relative to enemy's base (L1 HP).
    e.g. enemyHPpct=860 → enemy HP = e.hp1 * 860/100 */
 function enemyHPAtLvl(e, lvl){
-  const r = scByPts(lvl);
+  const r = scByLvl(lvl);
   if(!r) return e.hp1;
   return Math.round(e.hp1 * r.enemyHPpct / 100);
 }
 function enemyDMGAtLvl(e, lvl){
-  const r = scByPts(lvl);
+  const r = scByLvl(lvl);
   if(!r) return e.dmg1;
   return Math.round(e.dmg1 * r.enemyDMGpct / 100);
 }
@@ -531,49 +538,47 @@ function setCurve(tab,btn){
   btn.classList.add('on'); drawCurve();
 }
 /* Cap line plugin — vertical lines at pts=40 (Soft Cap) and pts=60 (Hard Cap) */
-Chart.register({
-  id:'capLines',
-  afterDraw(chart){
-    const {ctx,chartArea:{top,bottom},scales:{x}}=chart;
-    if(!x) return;
-    [{v:40,c:'rgba(240,180,41,.85)',l:'Soft Cap'},{v:60,c:'rgba(224,69,69,.85)',l:'Hard Cap'}].forEach(({v,c,l})=>{
-      // Labels are pts values (strings '1','2',...'99'). Find the index of label == v.
-      const labels = chart.data.labels;
-      const idx = labels ? labels.findIndex(lbl=>+lbl===v) : -1;
-      if(idx<0) return;
-      const px = x.getPixelForValue(idx);
-      if(px===undefined||px<x.left-1||px>x.right+1) return;
-      ctx.save();
-      ctx.beginPath(); ctx.moveTo(px,top); ctx.lineTo(px,bottom);
-      ctx.strokeStyle=c; ctx.lineWidth=2.5; ctx.setLineDash([]); ctx.stroke();
-      ctx.fillStyle=c; ctx.font='bold 10px Inter,system-ui,sans-serif';
-      ctx.textAlign='left'; ctx.fillText(l,px+4,top+13);
-      ctx.restore();
-    });
-  }
-});
+if (typeof Chart !== 'undefined') {
+  Chart.register({
+    id:'capLines',
+    afterDraw(chart){
+      const {ctx,chartArea:{top,bottom},scales:{x}}=chart;
+      if(!x) return;
+      [{v:40,c:'rgba(240,180,41,.85)',l:'Soft Cap'},{v:60,c:'rgba(224,69,69,.85)',l:'Hard Cap'}].forEach(({v,c,l})=>{
+        // Labels are pts values (strings '1','2',...'99'). Find the index of label == v.
+        const labels = chart.data.labels;
+        const idx = labels ? labels.findIndex(lbl=>+lbl===v) : -1;
+        if(idx<0) return;
+        const px = x.getPixelForValue(idx);
+        if(px===undefined||px<x.left-1||px>x.right+1) return;
+        ctx.save();
+        ctx.beginPath(); ctx.moveTo(px,top); ctx.lineTo(px,bottom);
+        ctx.strokeStyle=c; ctx.lineWidth=2.5; ctx.setLineDash([]); ctx.stroke();
+        ctx.fillStyle=c; ctx.font='bold 10px Inter,system-ui,sans-serif';
+        ctx.textAlign='left'; ctx.fillText(l,px+4,top+13);
+        ctx.restore();
+      });
+    }
+  });
+}
 
 function drawCurve(){
   if(!SC||!SC.length) return;
   const {hp,mana,dmg}=BUILD;
-  const labels=SC.map(r=>r.pts); // x-axis = pts invested
+  const labels=SC.map((_,i)=>i); // x-axis = pts invested (0-99)
 
   /* Your build curve: varies by pts allocated to that stat */
   let yourData, fullData, col, archData=[];
   if(curveTab==='hp'){
     col='#e04545';
-    yourData=SC.map((_,i)=>i<hp?SC[i].heroHP:null).filter(v=>v!==null).concat(
-      /* pad with last value for remaining pts */
-      Array(Math.max(0,SC.length-hp)).fill(scByPts(hp)?.heroHP||0)
-    );
-    /* Simpler: just plot the curve up to allocated pts, flat after */
-    yourData=SC.map((_,i)=>SC[Math.min(i,hp-1)]?.heroHP||SC[0].heroHP);
+    /* Plot the curve up to allocated pts, flat after */
+    yourData=SC.map((_,i)=>SC[Math.min(i,hp)]?.heroHP||SC[0].heroHP);
     fullData=SC.map(r=>r.heroHP);
     archData=[
-      {key:'balanced',d:SC.map((_,i)=>SC[Math.min(i,32)]?.heroHP||SC[0].heroHP),c:'#6c63d4'},
-      {key:'dps',     d:SC.map((_,i)=>SC[Math.min(i,14)]?.heroHP||SC[0].heroHP),c:'#e09820'},
-      {key:'support', d:SC.map((_,i)=>SC[Math.min(i,68)]?.heroHP||SC[0].heroHP),c:'#e04545'},
-      {key:'caster',  d:SC.map((_,i)=>SC[Math.min(i,14)]?.heroHP||SC[0].heroHP),c:'#3480d4'},
+      {key:'balanced',d:SC.map((_,i)=>SC[Math.min(i,33)]?.heroHP||SC[0].heroHP),c:'#6c63d4'},
+      {key:'dps',     d:SC.map((_,i)=>SC[Math.min(i,15)]?.heroHP||SC[0].heroHP),c:'#e09820'},
+      {key:'support', d:SC.map((_,i)=>SC[Math.min(i,69)]?.heroHP||SC[0].heroHP),c:'#e04545'},
+      {key:'caster',  d:SC.map((_,i)=>SC[Math.min(i,15)]?.heroHP||SC[0].heroHP),c:'#3480d4'},
     ];
     document.getElementById('curveLeg').innerHTML=makeLeg([
       {c:col,l:'Your build'},{c:'#f09090',l:'Full 99pts',d:1},
@@ -581,13 +586,13 @@ function drawCurve(){
     ]);
   } else if(curveTab==='mana'){
     col='#3480d4';
-    yourData=SC.map((_,i)=>SC[Math.min(i,mana-1)]?.heroMana||SC[0].heroMana);
+    yourData=SC.map((_,i)=>SC[Math.min(i,mana)]?.heroMana||SC[0].heroMana);
     fullData=SC.map(r=>r.heroMana);
     archData=[
-      {key:'balanced',d:SC.map((_,i)=>SC[Math.min(i,32)]?.heroMana||SC[0].heroMana),c:'#6c63d4'},
-      {key:'dps',     d:SC.map((_,i)=>SC[Math.min(i,14)]?.heroMana||SC[0].heroMana),c:'#e09820'},
-      {key:'support', d:SC.map((_,i)=>SC[Math.min(i,14)]?.heroMana||SC[0].heroMana),c:'#e04545'},
-      {key:'caster',  d:SC.map((_,i)=>SC[Math.min(i,68)]?.heroMana||SC[0].heroMana),c:'#3480d4'},
+      {key:'balanced',d:SC.map((_,i)=>SC[Math.min(i,33)]?.heroMana||SC[0].heroMana),c:'#6c63d4'},
+      {key:'dps',     d:SC.map((_,i)=>SC[Math.min(i,15)]?.heroMana||SC[0].heroMana),c:'#e09820'},
+      {key:'support', d:SC.map((_,i)=>SC[Math.min(i,15)]?.heroMana||SC[0].heroMana),c:'#e04545'},
+      {key:'caster',  d:SC.map((_,i)=>SC[Math.min(i,69)]?.heroMana||SC[0].heroMana),c:'#3480d4'},
     ];
     document.getElementById('curveLeg').innerHTML=makeLeg([
       {c:col,l:'Your build'},{c:'#80b4e8',l:'Full 99pts',d:1},
@@ -595,13 +600,13 @@ function drawCurve(){
     ]);
   } else {
     col='#e09820';
-    yourData=SC.map((_,i)=>SC[Math.min(i,dmg-1)]?.spellDMGpct||SC[0].spellDMGpct);
+    yourData=SC.map((_,i)=>SC[Math.min(i,dmg)]?.spellDMGpct||SC[0].spellDMGpct);
     fullData=SC.map(r=>r.spellDMGpct);
     archData=[
-      {key:'balanced',d:SC.map((_,i)=>SC[Math.min(i,32)]?.spellDMGpct||SC[0].spellDMGpct),c:'#6c63d4'},
-      {key:'dps',     d:SC.map((_,i)=>SC[Math.min(i,68)]?.spellDMGpct||SC[0].spellDMGpct),c:'#e09820'},
-      {key:'support', d:SC.map((_,i)=>SC[Math.min(i,14)]?.spellDMGpct||SC[0].spellDMGpct),c:'#e04545'},
-      {key:'caster',  d:SC.map((_,i)=>SC[Math.min(i,14)]?.spellDMGpct||SC[0].spellDMGpct),c:'#3480d4'},
+      {key:'balanced',d:SC.map((_,i)=>SC[Math.min(i,33)]?.spellDMGpct||SC[0].spellDMGpct),c:'#6c63d4'},
+      {key:'dps',     d:SC.map((_,i)=>SC[Math.min(i,69)]?.spellDMGpct||SC[0].spellDMGpct),c:'#e09820'},
+      {key:'support', d:SC.map((_,i)=>SC[Math.min(i,15)]?.spellDMGpct||SC[0].spellDMGpct),c:'#e04545'},
+      {key:'caster',  d:SC.map((_,i)=>SC[Math.min(i,15)]?.spellDMGpct||SC[0].spellDMGpct),c:'#3480d4'},
     ];
     document.getElementById('curveLeg').innerHTML=makeLeg([
       {c:col,l:'Your build'},{c:'#f0c870',l:'Full 99pts',d:1},
@@ -763,7 +768,7 @@ function simCalc(){
       const m2=SPELL_META[nm]||{el:'None'};
       const r2=enemy.res.split(',').some(x=>x.trim()===m2.el);
       const w2=enemy.weak.split(',').some(x=>x.trim()===m2.el);
-      return {name:nm, dmg:Math.round(b2*spellPct/100*(r2?.5:w2?1.5:1)), col:EC[m2.el]||'#555', sel:nm===spell};
+      return {name:nm, dmg:Math.round(b2*spellPct/100*(r2 ? 0.5 : w2 ? 1.5 : 1)), col:EC[m2.el]||'#555', sel:nm===spell};
     })
     .filter(Boolean)
     .sort((a,b)=>b.dmg-a.dmg).slice(0,12);
@@ -794,7 +799,20 @@ function initSim(){
   });
 }
 
-function mkC(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg);}
+function mkC(id,cfg){
+  if (typeof Chart === 'undefined') return;
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),cfg);
+}
+
+function switchTab(tabId){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  const targetTab = document.getElementById('tab-' + tabId);
+  if(targetTab) targetTab.classList.add('on');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('on'));
+  const targetBtn = document.getElementById('nav-' + tabId);
+  if(targetBtn) targetBtn.classList.add('on');
+}
 
 /* ═══════════════════════════════════════════
    INIT
@@ -936,7 +954,6 @@ const FALLBACK_ST={
   'Skeletal Horde':  [110,120,145,195,275,400],
   'Spectral Skull':  [160,175,205,255,335,460],
   'Shadow Form':     [0,  0,  0,  0,  0,  0],
-  'Ligthning Arc':   [76, 86, 106,146,216,326],
 };
 
 window.addEventListener('DOMContentLoaded', fetchAll);
