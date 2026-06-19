@@ -394,19 +394,21 @@ async function loadEnemies(){
 async function loadSpells(){
   const json = await gviz('Spells Upgrade');
   const map = {};
+  let currentName = null; // carry spell name across empty cells (Tier 1-5 rows)
   for(const row of json.table.rows){
     const c=row.c;
-    const name=c[0]?.v; const tierRaw=c[1]?.v;
-    if(!name||!tierRaw||typeof name!=='string') continue;
+    // col A (spell name) is only filled on Tier 0 row — carry it forward
+    if(c[0]?.v && typeof c[0].v==='string') currentName = c[0].v.trim();
+    const tierRaw=c[1]?.v;
+    if(!currentName||!tierRaw) continue;
     const tierStr=String(tierRaw).trim();
     if(!/^tier\s*\d/i.test(tierStr)) continue;
     const tierNum=parseInt(tierStr.replace(/tier\s*/i,''));
     if(isNaN(tierNum)||tierNum<0||tierNum>5) continue;
-    const nm=name.trim();
-    if(!map[nm]) map[nm]=[0,0,0,0,0,0];
+    if(!map[currentName]) map[currentName]=[0,0,0,0,0,0];
     const raw=c[3]?.v;
     const bonus=typeof raw==='string'?parseInt(raw.replace(/[^0-9]/g,''))||0:(typeof raw==='number'?raw:0);
-    map[nm][tierNum]=bonus;
+    map[currentName][tierNum]=bonus;
   }
   ST={};
   for(const [nm,bases] of Object.entries(map)){
