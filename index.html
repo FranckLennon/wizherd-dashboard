@@ -111,6 +111,7 @@ tbody td{padding:7px 10px}
 <header>
   <div class="logo"><div class="gem"></div>WIZHERD <span style="color:var(--text3);font-weight:400;margin-left:6px">Balancing Dashboard</span></div>
   <div class="live"><div class="dot spin" id="dot"></div><span id="lbl">Loading…</span></div>
+  <span id="debugInfo" style="font-size:.65rem;color:var(--text3);margin-left:.5rem"></span>
 </header>
 
 <main>
@@ -310,32 +311,41 @@ let ST = {};
 ═══════════════════════════════════════════ */
 async function gviz(sheet){
   const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
-  const r=await fetch(url); if(!r.ok) throw new Error(sheet);
+  const r=await fetch(url); if(!r.ok) throw new Error(`HTTP ${r.status} for ${sheet}`);
   const txt=await r.text();
-  return JSON.parse(txt.substring(47).slice(0,-2));
+  /* gviz wraps JSON in: /*O_o*/\ngoogle.visualization.Query.setResponse({...}); 
+     Find first { and last } to extract reliably */
+  const start=txt.indexOf('{');
+  const end=txt.lastIndexOf('}');
+  if(start===-1||end===-1) throw new Error(`Bad gviz response for ${sheet}`);
+  return JSON.parse(txt.slice(start, end+1));
 }
 
 async function fetchAll(){
   const dot=document.getElementById('dot'), lbl=document.getElementById('lbl');
   dot.className='dot spin'; lbl.textContent='Loading…';
 
-  let errors=[];
+  const errors=[], info=[];
 
-  try { await loadScaling(); }
-  catch(e){ errors.push('Scaling'); SC=FALLBACK_SC; }
+  try { await loadScaling(); info.push(`SC:${SC.length}`); }
+  catch(e){ errors.push('Scaling:'+e.message); SC=FALLBACK_SC; }
 
-  try { await loadEnemies(); }
-  catch(e){ errors.push('Enemies'); ENEMIES.push(...FALLBACK_ENEMIES); }
+  try { await loadEnemies(); info.push(`En:${ENEMIES.length}`); }
+  catch(e){ errors.push('Enemies:'+e.message); ENEMIES.push(...FALLBACK_ENEMIES); }
 
-  try { await loadSpells(); }
-  catch(e){ errors.push('Spells'); Object.assign(ST, FALLBACK_ST); }
+  try { await loadSpells(); info.push(`Sp:${Object.keys(ST).length}`); }
+  catch(e){ errors.push('Spells:'+e.message); Object.assign(ST, FALLBACK_ST); }
+
+  // Show debug info in header
+  const debug=document.getElementById('debugInfo');
+  if(debug) debug.textContent='['+info.join(' ')+']'+(errors.length?' ⚠ '+errors.join(' | '):'');
 
   if(errors.length===0){
     dot.className='dot ok';
     lbl.textContent='Live · '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
   } else {
     dot.className='dot err';
-    lbl.textContent='Partial offline: '+errors.join(', ');
+    lbl.textContent=errors.length===3?'Offline':'Partial';
   }
 
   initAll();
@@ -389,12 +399,13 @@ async function loadEnemies(){
 }
 
 async function loadSpells(){
+async function loadSpells(){
   const json = await gviz('Spells Upgrade');
+  if(!json.table?.rows?.length) throw new Error('No rows in Spells Upgrade');
   const map = {};
-  let currentName = null; // carry spell name across empty cells (Tier 1-5 rows)
+  let currentName = null;
   for(const row of json.table.rows){
     const c=row.c;
-    // col A (spell name) is only filled on Tier 0 row — carry it forward
     if(c[0]?.v && typeof c[0].v==='string') currentName = c[0].v.trim();
     const tierRaw=c[1]?.v;
     if(!currentName||!tierRaw) continue;
@@ -407,6 +418,7 @@ async function loadSpells(){
     const bonus=typeof raw==='string'?parseInt(raw.replace(/[^0-9]/g,''))||0:(typeof raw==='number'?raw:0);
     map[currentName][tierNum]=bonus;
   }
+  if(!Object.keys(map).length) throw new Error('Parsed 0 spells');
   ST={};
   for(const [nm,bases] of Object.entries(map)){
     const cum=[...bases];
