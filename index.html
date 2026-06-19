@@ -164,20 +164,6 @@ tbody td{padding:7px 10px}
   <h3>Archetype comparison @ L100</h3>
   <div class="cw" style="height:220px"><canvas id="compC"></canvas></div>
 
-  <div class="sep"></div>
-
-  <!-- Raw table -->
-  <h3>Raw values — key levels</h3>
-  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--rlg)">
-    <table><thead><tr>
-      <th>Pts allocated</th>
-      <th style="color:var(--hp)">HP (build)</th>
-      <th style="color:var(--mana)">Mana (build)</th>
-      <th style="color:var(--dmg)">SpellDMG% (build)</th>
-      <th>Enemy HP (ref)</th>
-      <th>Enemy DMG (ref)</th>
-    </tr></thead><tbody id="curveRows"></tbody></table>
-  </div>
 </div>
 
 <!-- ══════════════ COMBAT SIM ══════════════ -->
@@ -331,16 +317,27 @@ async function gviz(sheet){
 
 async function fetchAll(){
   const dot=document.getElementById('dot'), lbl=document.getElementById('lbl');
-  try {
-    await Promise.all([loadScaling(), loadEnemies(), loadSpells()]);
+  dot.className='dot spin'; lbl.textContent='Loading…';
+
+  let errors=[];
+
+  try { await loadScaling(); }
+  catch(e){ errors.push('Scaling'); SC=FALLBACK_SC; }
+
+  try { await loadEnemies(); }
+  catch(e){ errors.push('Enemies'); ENEMIES.push(...FALLBACK_ENEMIES); }
+
+  try { await loadSpells(); }
+  catch(e){ errors.push('Spells'); Object.assign(ST, FALLBACK_ST); }
+
+  if(errors.length===0){
     dot.className='dot ok';
     lbl.textContent='Live · '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  } catch(e){
-    dot.className='dot err'; lbl.textContent='Offline — cached data';
-    if(!SC) SC=FALLBACK_SC;
-    if(!ENEMIES.length) ENEMIES.push(...FALLBACK_ENEMIES);
-    if(!Object.keys(ST).length) Object.assign(ST, FALLBACK_ST);
+  } else {
+    dot.className='dot err';
+    lbl.textContent='Partial offline: '+errors.join(', ');
   }
+
   initAll();
 }
 
@@ -513,7 +510,7 @@ function updateBuildUI(){
   document.getElementById('cHP').textContent   = rHP   ? fmt(rHP.heroHP)      : '—';
   document.getElementById('cMana').textContent = rMana ? fmt(rMana.heroMana)  : '—';
   document.getElementById('cDMG').textContent  = rDMG  ? rDMG.spellDMGpct+'%': '—';
-  drawCurve(); drawCompBars(); renderCurveTable();
+  drawCurve(); drawCompBars();
 }
 
 function setCurve(tab,btn){
@@ -671,26 +668,6 @@ function drawCompBars(){
       y:{ticks:{color:'#454860',callback:v=>fmt(v),font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}}
     }
   }});
-}
-
-function renderCurveTable(){
-  if(!SC) return;
-  const {hp,mana,dmg}=BUILD;
-  const body=document.getElementById('curveRows'); body.innerHTML='';
-  [1,5,10,15,20,25,30,40,50,60,70,80,90,99].forEach(pts=>{
-    if(pts>SC.length) return;
-    const r=scByPts(pts);
-    const hpPts=Math.min(hp,pts), manaPts=Math.min(mana,pts), dmgPts=Math.min(dmg,pts);
-    const rHP=scByPts(hpPts), rMana=scByPts(manaPts), rDMG=scByPts(dmgPts);
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:var(--accent);font-weight:600">${pts}</td>
-      <td class="mc" style="color:var(--hp)">${rHP?fmt(rHP.heroHP):'—'}</td>
-      <td class="mc" style="color:var(--mana)">${rMana?fmt(rMana.heroMana):'—'}</td>
-      <td class="mc" style="color:var(--dmg)">${rDMG?rDMG.spellDMGpct+'%':'—'}</td>
-      <td class="mc">${r?fmt(r.enemyHP):'—'}</td>
-      <td class="mc">${r?fmt(r.enemyDMG):'—'}</td>`;
-    body.appendChild(tr);
-  });
 }
 
 /* ═══════════════════════════════════════════
@@ -927,11 +904,27 @@ const FALLBACK_ENEMIES=[
   {n:'Wolfgang',ty:'Boss',pfx:'Orc',hp1:8000,dmg1:200,hp100:442400,dmg100:2780,res:'Earth',weak:'Fire'},
 ];
 const FALLBACK_ST={
-  'Fire Strike':    [100,110,130,170,240,350],
-  'Boulder':        [150,160,180,220,290,400],
-  'Lightning Arc':  [76,86,106,146,216,326],
-  'Volt Gate':      [200,225,275,355,475,635],
-  'Spectral Skull': [160,175,205,255,335,460],
+  'Fire Strike':     [100,110,130,170,240,350],
+  'Fire Sword':      [70, 80, 100,130,170,220],
+  'Fire Nova':       [100,110,130,170,240,350],
+  'Ice Strike':      [100,110,130,170,240,350],
+  'Ice Nova':        [80, 90, 110,150,220,330],
+  'Blizzard':        [80, 90, 110,150,220,330],
+  'Frost Stream':    [110,120,140,180,250,360],
+  'Boulder':         [150,160,180,220,290,400],
+  'Rock Wall':       [100,100,100,100,100,100],
+  'Earth Nova':      [110,120,140,180,250,360],
+  'Healing Totem':   [40, 40, 40, 40, 40, 40],
+  'Wind Strike':     [90, 100,120,160,230,340],
+  'Wind Stream':     [80, 90, 110,150,220,330],
+  'Wind Nova':       [90, 100,120,160,230,340],
+  'Lightning Arc':   [76, 86, 106,146,216,326],
+  'Lightning Strand':[250,250,250,250,250,250],
+  'Volt Gate':       [200,210,230,260,300,350],
+  'Skeletal Horde':  [110,120,145,195,275,400],
+  'Spectral Skull':  [160,175,205,255,335,460],
+  'Shadow Form':     [0,  0,  0,  0,  0,  0],
+  'Ligthning Arc':   [76, 86, 106,146,216,326],
 };
 
 window.addEventListener('DOMContentLoaded', fetchAll);
