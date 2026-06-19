@@ -316,8 +316,8 @@ async function gviz(sheet){
   const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
   const r=await fetch(url); if(!r.ok) throw new Error(`HTTP ${r.status} for ${sheet}`);
   const txt=await r.text();
-  /* gviz wraps JSON in: /*O_o*/\ngoogle.visualization.Query.setResponse({...}); 
-     Find first { and last } to extract reliably */
+  // gviz wraps response in: google.visualization.Query.setResponse({...});
+  // Extract JSON by finding the first { and last }
   const start=txt.indexOf('{');
   const end=txt.lastIndexOf('}');
   if(start===-1||end===-1) throw new Error(`Bad gviz response for ${sheet}`);
