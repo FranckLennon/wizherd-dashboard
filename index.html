@@ -361,15 +361,15 @@ async function loadScaling(){
     const c=row.c;
     // Sheet cols: A=Level(1-100), B=Points(0-99), C=Tier,
     // D=EnemyHP%, E=DMGDealt%, F=EnemyHP, G=DMGDealt,
-    // H=HeroHP, I=HeroMana, J=SpellDMG%, K=SpellDMG
+    // H=HeroHP, I=HeroMana, J=SpellDMG%
     const level=c[0]?.v;
     if(typeof level!=='number'||level<1||level>100) continue;
+    const pts = (typeof c[1]?.v==='number') ? Math.round(c[1].v) : level-1;
     SC.push({
-      pts:         level,          // use Level as the lookup key (1–100)
+      level,                       // Level 1-100 (col A) — for enemy lookup
+      pts,                         // Points 0-99  (col B) — for hero stat lookup
       enemyHPpct:  c[3]?.v||100,  // col D — Enemy HP %
       enemyDMGpct: c[4]?.v||100,  // col E — DMG Dealt %
-      enemyHP:     c[5]?.v||0,    // col F
-      enemyDMG:    c[6]?.v||0,    // col G
       heroHP:      c[7]?.v||0,    // col H
       heroMana:    c[8]?.v||0,    // col I
       spellDMGpct: c[9]?.v||0,    // col J
@@ -384,19 +384,22 @@ async function loadEnemies(){
   for(const row of json.table.rows){
     const c=row.c;
     const name=c[0]?.v;
-    if(!name||typeof name!=='string'||name.includes('Name')||name.trim()==='') continue;
-    const hp1=c[4]?.v, dmg1=c[5]?.v, hp100=c[6]?.v, dmg100=c[7]?.v;
+    // Skip header row and empty rows
+    if(!name||typeof name!=='string'||name.trim()===''||name.trim()==='In-game Name') continue;
+    const hp1=c[4]?.v, dmg1=c[5]?.v;
     if(!hp1) continue;
+    // c[8]=Resistance, c[9]=Weakness (comma-separated element names)
+    const res  = c[8]?.v ? String(c[8].v).trim() : 'None';
+    const weak = c[9]?.v ? String(c[9].v).trim() : 'None';
     ENEMIES.push({
       n:    name.trim(),
-      pfx:  c[1]?.v||name,
-      ty:   (c[2]?.v||'Base').trim(),
+      pfx:  c[1]?.v ? String(c[1].v).trim() : name.trim(),
+      ty:   c[2]?.v ? String(c[2].v).trim() : 'Base',
+      desc: c[3]?.v ? String(c[3].v).trim() : '',
       hp1:  Math.round(hp1),
       dmg1: Math.round(dmg1||0),
-      hp100:Math.round(hp100||hp1),
-      dmg100:Math.round(dmg100||dmg1||0),
-      res:  String(c[8]?.v||'None'),
-      weak: String(c[9]?.v||'None'),
+      res,
+      weak,
     });
   }
 }
@@ -408,24 +411,28 @@ async function loadSpells(){
   let currentName = null;
   for(const row of json.table.rows){
     const c=row.c;
+    // Col A: spell name (string, present on first row of each spell block)
     if(c[0]?.v && typeof c[0].v==='string') currentName = c[0].v.trim();
-    const tierRaw=c[1]?.v;
-    if(!currentName||!tierRaw) continue;
-    const tierStr=String(tierRaw).trim();
-    if(!/^tier\s*\d/i.test(tierStr)) continue;
-    const tierNum=parseInt(tierStr.replace(/tier\s*/i,''));
-    if(isNaN(tierNum)||tierNum<0||tierNum>5) continue;
-    if(!map[currentName]) map[currentName]=[0,0,0,0,0,0];
-    const raw=c[3]?.v;
-    const bonus=typeof raw==='string'?parseInt(raw.replace(/[^0-9]/g,''))||0:(typeof raw==='number'?raw:0);
-    map[currentName][tierNum]=bonus;
+    if(!currentName) continue;
+    // Col B: Tier — the sheet stores this as a NUMBER (0, 1, 2, 3, 4, 5)
+    // c[1].v = 0.0 / 1.0 / ... — NOT a string like "Tier 0"
+    const tierRaw = c[1]?.v;
+    if(tierRaw === null || tierRaw === undefined) continue;
+    const tierNum = (typeof tierRaw === 'number') ? Math.round(tierRaw) : parseInt(String(tierRaw));
+    if(isNaN(tierNum) || tierNum < 0 || tierNum > 5) continue;
+    if(!map[currentName]) map[currentName] = [0,0,0,0,0,0];
+    // Col D: DMG Bonus — numeric value (base DMG at T0, incremental bonus at T1-T5)
+    const raw = c[3]?.v;
+    const bonus = typeof raw === 'number' ? raw : (typeof raw === 'string' ? parseInt(raw.replace(/[^0-9]/g,''))||0 : 0);
+    map[currentName][tierNum] = bonus;
   }
   if(!Object.keys(map).length) throw new Error('Parsed 0 spells');
-  ST={};
-  for(const [nm,bases] of Object.entries(map)){
-    const cum=[...bases];
-    for(let i=1;i<6;i++) cum[i]=cum[i-1]+cum[i];
-    ST[nm]=cum;
+  ST = {};
+  for(const [nm, bases] of Object.entries(map)){
+    // Build cumulative damage: T0=base, T1=T0+bonus1, T2=T1+bonus2, ...
+    const cum = [...bases];
+    for(let i = 1; i < 6; i++) cum[i] = cum[i-1] + cum[i];
+    ST[nm] = cum;
   }
 }
 
@@ -435,29 +442,39 @@ async function loadSpells(){
 const fmt = n => Math.round(n).toLocaleString('en-US');
 const ceil = Math.ceil;
 
-/* Get SC row by points value — searches for the row where pts === target.
-   Falls back to closest row if exact match not found. */
+/* scByPts — hero stat lookup by POINTS invested (0-99, col B of Scaling Datas) */
 function scByPts(pts){
   if(!SC||!SC.length) return null;
-  const target = Math.min(Math.max(Math.round(pts), 1), 99);
-  // Exact match first
-  const exact = SC.find(r=>r.pts===target);
+  const target = Math.min(Math.max(Math.round(pts), 0), 99);
+  const exact = SC.find(r => r.pts === target);
   if(exact) return exact;
   // Closest match (for sparse fallback data)
-  return SC.reduce((best,r)=>
+  return SC.reduce((best,r) =>
     Math.abs(r.pts-target) < Math.abs(best.pts-target) ? r : best
   , SC[0]);
 }
 
-/* Enemy HP/DMG: Scaling Datas col D gives HP% relative to enemy's base (L1 HP).
-   e.g. enemyHPpct=860 → enemy HP = e.hp1 * 860/100 */
+/* scByLevel — enemy stat lookup by LEVEL (1-100, col A of Scaling Datas).
+   Enemies scale by their level, independent of hero point allocation. */
+function scByLevel(lvl){
+  if(!SC||!SC.length) return null;
+  const target = Math.min(Math.max(Math.round(lvl), 1), 100);
+  const exact = SC.find(r => r.level === target);
+  if(exact) return exact;
+  return SC.reduce((best,r) =>
+    Math.abs(r.level-target) < Math.abs(best.level-target) ? r : best
+  , SC[0]);
+}
+
+/* Enemy HP/DMG scale by the enemy's LEVEL, not by hero points.
+   enemyHPpct from Scaling Datas col D: e.g. pct=860 → HP = base * 860/100 */
 function enemyHPAtLvl(e, lvl){
-  const r = scByPts(lvl);
+  const r = scByLevel(lvl);
   if(!r) return e.hp1;
   return Math.round(e.hp1 * r.enemyHPpct / 100);
 }
 function enemyDMGAtLvl(e, lvl){
-  const r = scByPts(lvl);
+  const r = scByLevel(lvl);
   if(!r) return e.dmg1;
   return Math.round(e.dmg1 * r.enemyDMGpct / 100);
 }
@@ -825,9 +842,108 @@ function initAll(){
    FALLBACK DATA
 ═══════════════════════════════════════════ */
 const FALLBACK_SC=[
-{pts:1,enemyHPpct:100,enemyDMGpct:100,enemyHP:180,enemyDMG:72,heroHP:500,heroMana:100,spellDMGpct:100},
-{pts:2,enemyHPpct:140,enemyDMGpct:115,enemyHP:252,enemyDMG:83,heroHP:600,heroMana:105,spellDMGpct:125},
-{pts:3,enemyHPpct:180,enemyDMGpct:130,enemyHP:324,enemyDMG:94,heroHP:700,heroMana:110,spellDMGpct:150},
+{level:1,  pts:0, enemyHPpct:100, enemyDMGpct:100, heroHP:500,  heroMana:100,spellDMGpct:100},
+{level:2,  pts:1, enemyHPpct:140, enemyDMGpct:115, heroHP:600,  heroMana:105,spellDMGpct:125},
+{level:3,  pts:2, enemyHPpct:180, enemyDMGpct:130, heroHP:700,  heroMana:110,spellDMGpct:150},
+{level:4,  pts:3, enemyHPpct:220, enemyDMGpct:145, heroHP:800,  heroMana:115,spellDMGpct:175},
+{level:5,  pts:4, enemyHPpct:260, enemyDMGpct:160, heroHP:900,  heroMana:120,spellDMGpct:200},
+{level:6,  pts:5, enemyHPpct:300, enemyDMGpct:175, heroHP:1000, heroMana:125,spellDMGpct:225},
+{level:7,  pts:6, enemyHPpct:340, enemyDMGpct:190, heroHP:1100, heroMana:130,spellDMGpct:250},
+{level:8,  pts:7, enemyHPpct:380, enemyDMGpct:205, heroHP:1200, heroMana:135,spellDMGpct:275},
+{level:9,  pts:8, enemyHPpct:420, enemyDMGpct:220, heroHP:1300, heroMana:140,spellDMGpct:300},
+{level:10, pts:9, enemyHPpct:460, enemyDMGpct:235, heroHP:1400, heroMana:145,spellDMGpct:325},
+{level:11, pts:10,enemyHPpct:500, enemyDMGpct:250, heroHP:1500, heroMana:150,spellDMGpct:350},
+{level:12, pts:11,enemyHPpct:540, enemyDMGpct:265, heroHP:1600, heroMana:155,spellDMGpct:375},
+{level:13, pts:12,enemyHPpct:580, enemyDMGpct:280, heroHP:1700, heroMana:160,spellDMGpct:400},
+{level:14, pts:13,enemyHPpct:620, enemyDMGpct:295, heroHP:1800, heroMana:165,spellDMGpct:425},
+{level:15, pts:14,enemyHPpct:660, enemyDMGpct:310, heroHP:1900, heroMana:170,spellDMGpct:450},
+{level:16, pts:15,enemyHPpct:700, enemyDMGpct:325, heroHP:2000, heroMana:175,spellDMGpct:475},
+{level:17, pts:16,enemyHPpct:740, enemyDMGpct:340, heroHP:2100, heroMana:180,spellDMGpct:500},
+{level:18, pts:17,enemyHPpct:780, enemyDMGpct:355, heroHP:2200, heroMana:185,spellDMGpct:525},
+{level:19, pts:18,enemyHPpct:820, enemyDMGpct:370, heroHP:2300, heroMana:190,spellDMGpct:550},
+{level:20, pts:19,enemyHPpct:860, enemyDMGpct:385, heroHP:2400, heroMana:195,spellDMGpct:575},
+{level:21, pts:20,enemyHPpct:900, enemyDMGpct:400, heroHP:2500, heroMana:200,spellDMGpct:600},
+{level:22, pts:21,enemyHPpct:940, enemyDMGpct:415, heroHP:2600, heroMana:205,spellDMGpct:625},
+{level:23, pts:22,enemyHPpct:980, enemyDMGpct:430, heroHP:2700, heroMana:210,spellDMGpct:650},
+{level:24, pts:23,enemyHPpct:1020,enemyDMGpct:445, heroHP:2800, heroMana:215,spellDMGpct:675},
+{level:25, pts:24,enemyHPpct:1060,enemyDMGpct:460, heroHP:2900, heroMana:220,spellDMGpct:700},
+{level:26, pts:25,enemyHPpct:1100,enemyDMGpct:475, heroHP:3000, heroMana:225,spellDMGpct:725},
+{level:27, pts:26,enemyHPpct:1140,enemyDMGpct:490, heroHP:3100, heroMana:230,spellDMGpct:750},
+{level:28, pts:27,enemyHPpct:1180,enemyDMGpct:505, heroHP:3200, heroMana:235,spellDMGpct:775},
+{level:29, pts:28,enemyHPpct:1220,enemyDMGpct:520, heroHP:3300, heroMana:240,spellDMGpct:800},
+{level:30, pts:29,enemyHPpct:1260,enemyDMGpct:535, heroHP:3400, heroMana:245,spellDMGpct:825},
+{level:31, pts:30,enemyHPpct:1300,enemyDMGpct:550, heroHP:3500, heroMana:250,spellDMGpct:850},
+{level:32, pts:31,enemyHPpct:1340,enemyDMGpct:565, heroHP:3600, heroMana:255,spellDMGpct:875},
+{level:33, pts:32,enemyHPpct:1380,enemyDMGpct:580, heroHP:3700, heroMana:260,spellDMGpct:900},
+{level:34, pts:33,enemyHPpct:1420,enemyDMGpct:595, heroHP:3800, heroMana:265,spellDMGpct:925},
+{level:35, pts:34,enemyHPpct:1460,enemyDMGpct:610, heroHP:3900, heroMana:270,spellDMGpct:950},
+{level:36, pts:35,enemyHPpct:1500,enemyDMGpct:625, heroHP:4000, heroMana:275,spellDMGpct:975},
+{level:37, pts:36,enemyHPpct:1540,enemyDMGpct:640, heroHP:4100, heroMana:280,spellDMGpct:1000},
+{level:38, pts:37,enemyHPpct:1580,enemyDMGpct:655, heroHP:4200, heroMana:285,spellDMGpct:1025},
+{level:39, pts:38,enemyHPpct:1620,enemyDMGpct:670, heroHP:4300, heroMana:290,spellDMGpct:1050},
+{level:40, pts:39,enemyHPpct:1660,enemyDMGpct:685, heroHP:4400, heroMana:295,spellDMGpct:1075},
+{level:41, pts:40,enemyHPpct:1700,enemyDMGpct:700, heroHP:4500, heroMana:300,spellDMGpct:1100},
+{level:42, pts:41,enemyHPpct:1755,enemyDMGpct:715, heroHP:4575, heroMana:303,spellDMGpct:1115},
+{level:43, pts:42,enemyHPpct:1810,enemyDMGpct:730, heroHP:4650, heroMana:306,spellDMGpct:1130},
+{level:44, pts:43,enemyHPpct:1865,enemyDMGpct:745, heroHP:4725, heroMana:309,spellDMGpct:1145},
+{level:45, pts:44,enemyHPpct:1920,enemyDMGpct:760, heroHP:4800, heroMana:312,spellDMGpct:1160},
+{level:46, pts:45,enemyHPpct:1975,enemyDMGpct:775, heroHP:4875, heroMana:315,spellDMGpct:1175},
+{level:47, pts:46,enemyHPpct:2030,enemyDMGpct:790, heroHP:4950, heroMana:318,spellDMGpct:1190},
+{level:48, pts:47,enemyHPpct:2085,enemyDMGpct:805, heroHP:5025, heroMana:321,spellDMGpct:1205},
+{level:49, pts:48,enemyHPpct:2140,enemyDMGpct:820, heroHP:5100, heroMana:324,spellDMGpct:1220},
+{level:50, pts:49,enemyHPpct:2195,enemyDMGpct:835, heroHP:5175, heroMana:327,spellDMGpct:1235},
+{level:51, pts:50,enemyHPpct:2250,enemyDMGpct:850, heroHP:5250, heroMana:330,spellDMGpct:1250},
+{level:52, pts:51,enemyHPpct:2305,enemyDMGpct:865, heroHP:5325, heroMana:333,spellDMGpct:1265},
+{level:53, pts:52,enemyHPpct:2360,enemyDMGpct:880, heroHP:5400, heroMana:336,spellDMGpct:1280},
+{level:54, pts:53,enemyHPpct:2415,enemyDMGpct:895, heroHP:5475, heroMana:339,spellDMGpct:1295},
+{level:55, pts:54,enemyHPpct:2470,enemyDMGpct:910, heroHP:5550, heroMana:342,spellDMGpct:1310},
+{level:56, pts:55,enemyHPpct:2525,enemyDMGpct:925, heroHP:5625, heroMana:345,spellDMGpct:1325},
+{level:57, pts:56,enemyHPpct:2580,enemyDMGpct:940, heroHP:5700, heroMana:348,spellDMGpct:1340},
+{level:58, pts:57,enemyHPpct:2635,enemyDMGpct:955, heroHP:5775, heroMana:351,spellDMGpct:1355},
+{level:59, pts:58,enemyHPpct:2690,enemyDMGpct:970, heroHP:5850, heroMana:354,spellDMGpct:1370},
+{level:60, pts:59,enemyHPpct:2745,enemyDMGpct:985, heroHP:5925, heroMana:357,spellDMGpct:1385},
+{level:61, pts:60,enemyHPpct:2800,enemyDMGpct:1000,heroHP:6000, heroMana:360,spellDMGpct:1400},
+{level:62, pts:61,enemyHPpct:2870,enemyDMGpct:1010,heroHP:6050, heroMana:362,spellDMGpct:1410},
+{level:63, pts:62,enemyHPpct:2940,enemyDMGpct:1020,heroHP:6100, heroMana:364,spellDMGpct:1420},
+{level:64, pts:63,enemyHPpct:3010,enemyDMGpct:1030,heroHP:6150, heroMana:366,spellDMGpct:1430},
+{level:65, pts:64,enemyHPpct:3080,enemyDMGpct:1040,heroHP:6200, heroMana:368,spellDMGpct:1440},
+{level:66, pts:65,enemyHPpct:3150,enemyDMGpct:1050,heroHP:6250, heroMana:370,spellDMGpct:1450},
+{level:67, pts:66,enemyHPpct:3220,enemyDMGpct:1060,heroHP:6300, heroMana:372,spellDMGpct:1460},
+{level:68, pts:67,enemyHPpct:3290,enemyDMGpct:1070,heroHP:6350, heroMana:374,spellDMGpct:1470},
+{level:69, pts:68,enemyHPpct:3360,enemyDMGpct:1080,heroHP:6400, heroMana:376,spellDMGpct:1480},
+{level:70, pts:69,enemyHPpct:3430,enemyDMGpct:1090,heroHP:6450, heroMana:378,spellDMGpct:1490},
+{level:71, pts:70,enemyHPpct:3500,enemyDMGpct:1100,heroHP:6500, heroMana:380,spellDMGpct:1500},
+{level:72, pts:71,enemyHPpct:3570,enemyDMGpct:1110,heroHP:6550, heroMana:382,spellDMGpct:1510},
+{level:73, pts:72,enemyHPpct:3640,enemyDMGpct:1120,heroHP:6600, heroMana:384,spellDMGpct:1520},
+{level:74, pts:73,enemyHPpct:3710,enemyDMGpct:1130,heroHP:6650, heroMana:386,spellDMGpct:1530},
+{level:75, pts:74,enemyHPpct:3780,enemyDMGpct:1140,heroHP:6700, heroMana:388,spellDMGpct:1540},
+{level:76, pts:75,enemyHPpct:3850,enemyDMGpct:1150,heroHP:6750, heroMana:390,spellDMGpct:1550},
+{level:77, pts:76,enemyHPpct:3920,enemyDMGpct:1160,heroHP:6800, heroMana:392,spellDMGpct:1560},
+{level:78, pts:77,enemyHPpct:3990,enemyDMGpct:1170,heroHP:6850, heroMana:394,spellDMGpct:1570},
+{level:79, pts:78,enemyHPpct:4060,enemyDMGpct:1180,heroHP:6900, heroMana:396,spellDMGpct:1580},
+{level:80, pts:79,enemyHPpct:4130,enemyDMGpct:1190,heroHP:6950, heroMana:398,spellDMGpct:1590},
+{level:81, pts:80,enemyHPpct:4200,enemyDMGpct:1200,heroHP:7000, heroMana:400,spellDMGpct:1600},
+{level:82, pts:81,enemyHPpct:4270,enemyDMGpct:1210,heroHP:7050, heroMana:402,spellDMGpct:1610},
+{level:83, pts:82,enemyHPpct:4340,enemyDMGpct:1220,heroHP:7100, heroMana:404,spellDMGpct:1620},
+{level:84, pts:83,enemyHPpct:4410,enemyDMGpct:1230,heroHP:7150, heroMana:406,spellDMGpct:1630},
+{level:85, pts:84,enemyHPpct:4480,enemyDMGpct:1240,heroHP:7200, heroMana:408,spellDMGpct:1640},
+{level:86, pts:85,enemyHPpct:4550,enemyDMGpct:1250,heroHP:7250, heroMana:410,spellDMGpct:1650},
+{level:87, pts:86,enemyHPpct:4620,enemyDMGpct:1260,heroHP:7300, heroMana:412,spellDMGpct:1660},
+{level:88, pts:87,enemyHPpct:4690,enemyDMGpct:1270,heroHP:7350, heroMana:414,spellDMGpct:1670},
+{level:89, pts:88,enemyHPpct:4760,enemyDMGpct:1280,heroHP:7400, heroMana:416,spellDMGpct:1680},
+{level:90, pts:89,enemyHPpct:4830,enemyDMGpct:1290,heroHP:7450, heroMana:418,spellDMGpct:1690},
+{level:91, pts:90,enemyHPpct:4900,enemyDMGpct:1300,heroHP:7500, heroMana:420,spellDMGpct:1700},
+{level:92, pts:91,enemyHPpct:4970,enemyDMGpct:1310,heroHP:7550, heroMana:422,spellDMGpct:1710},
+{level:93, pts:92,enemyHPpct:5040,enemyDMGpct:1320,heroHP:7600, heroMana:424,spellDMGpct:1720},
+{level:94, pts:93,enemyHPpct:5110,enemyDMGpct:1330,heroHP:7650, heroMana:426,spellDMGpct:1730},
+{level:95, pts:94,enemyHPpct:5180,enemyDMGpct:1340,heroHP:7700, heroMana:428,spellDMGpct:1740},
+{level:96, pts:95,enemyHPpct:5250,enemyDMGpct:1350,heroHP:7750, heroMana:430,spellDMGpct:1750},
+{level:97, pts:96,enemyHPpct:5320,enemyDMGpct:1360,heroHP:7800, heroMana:432,spellDMGpct:1760},
+{level:98, pts:97,enemyHPpct:5390,enemyDMGpct:1370,heroHP:7850, heroMana:434,spellDMGpct:1770},
+{level:99, pts:98,enemyHPpct:5460,enemyDMGpct:1380,heroHP:7900, heroMana:436,spellDMGpct:1780},
+{level:100,pts:99,enemyHPpct:5530,enemyDMGpct:1390,heroHP:7950, heroMana:438,spellDMGpct:1790},
+];
+
 {pts:4,enemyHPpct:220,enemyDMGpct:145,enemyHP:396,enemyDMG:104,heroHP:800,heroMana:115,spellDMGpct:175},
 {pts:5,enemyHPpct:260,enemyDMGpct:160,enemyHP:468,enemyDMG:115,heroHP:900,heroMana:120,spellDMGpct:200},
 {pts:6,enemyHPpct:300,enemyDMGpct:175,enemyHP:540,enemyDMG:126,heroHP:1000,heroMana:125,spellDMGpct:225},
@@ -927,31 +1043,48 @@ const FALLBACK_SC=[
 {pts:100,enemyHPpct:5530,enemyDMGpct:1390,enemyHP:9954,enemyDMG:1001,heroHP:7950,heroMana:438,spellDMGpct:1790},
 ];
 const FALLBACK_ENEMIES=[
-  {n:'Femur',ty:'Base',pfx:'Skeleton grunt',hp1:250,dmg1:72,hp100:13825,dmg100:1001,res:'Earth',weak:'Wind'},
-  {n:'Daddy Femur',ty:'Boss',pfx:'Big Skeleton',hp1:16000,dmg1:125,hp100:884800,dmg100:1738,res:'Earth, Lightning',weak:'Wind'},
-  {n:'Wee Green',ty:'Base',pfx:'Goblin',hp1:200,dmg1:50,hp100:11060,dmg100:695,res:'Wind',weak:'Ice, Lightning'},
-  {n:'Wolfgang',ty:'Boss',pfx:'Orc',hp1:8000,dmg1:200,hp100:442400,dmg100:2780,res:'Earth',weak:'Fire'},
+  // All 18 enemies from Enemies Datas sheet (res=Resistance, weak=Weakness)
+  {n:'Femur',          pfx:'Skeleton grunt',   ty:'Base', hp1:250,   dmg1:72,  res:'Earth',           weak:'Wind'},
+  {n:'NecroManager',   pfx:'Necromancer',      ty:'Base', hp1:400,   dmg1:84,  res:'Ice',             weak:'Fire'},
+  {n:'Daddy Femur',    pfx:'Big Skeleton',     ty:'Boss', hp1:16000, dmg1:125, res:'Earth, Lightning', weak:'Wind'},
+  {n:'Wee Green',      pfx:'Goblin',           ty:'Base', hp1:200,   dmg1:50,  res:'Wind',            weak:'Ice, Lightning'},
+  {n:'Boom Green',     pfx:'Goblin Kamikaze',  ty:'Base', hp1:125,   dmg1:150, res:'Fire',            weak:'Earth'},
+  {n:'Wolfgang Grub & Noms', pfx:'Orc',        ty:'Boss', hp1:8000,  dmg1:200, res:'Earth',           weak:'Fire'},
+  {n:'Dumbbell',       pfx:'Golem',            ty:'Base', hp1:600,   dmg1:100, res:'Earth, Lightning', weak:'Wind'},
+  {n:'IceAndBerg',     pfx:'Ice Golem',        ty:'Base', hp1:900,   dmg1:125, res:'Ice',             weak:'Fire'},
+  {n:'Magmalade',      pfx:'Magma Golem',      ty:'Boss', hp1:20000, dmg1:150, res:'Fire, Ice',       weak:'Earth'},
+  {n:'Caw',            pfx:'Crow',             ty:'Base', hp1:200,   dmg1:60,  res:'Wind',            weak:'Ice, Lightning'},
+  {n:'Ratcoon',        pfx:'Rat',              ty:'Base', hp1:125,   dmg1:60,  res:'Earth',           weak:'Ice'},
+  {n:'Gary Frogman',   pfx:'Gary Frog',        ty:'Boss', hp1:18000, dmg1:130, res:'Wind',            weak:'Ice, Lightning'},
+  {n:'Lord Metalikor', pfx:'Death Warlord',    ty:'Boss', hp1:22000, dmg1:80,  res:'Fire, Lightning', weak:'Earth'},
+  {n:'IronBurn',       pfx:'Flame Knight',     ty:'Base', hp1:250,   dmg1:90,  res:'Fire, Ice',       weak:'Earth'},
+  {n:'Tartargnan',     pfx:'Ranged Knight',    ty:'Base', hp1:400,   dmg1:80,  res:'Wind',            weak:'Ice, Lightning'},
+  {n:'Batler',         pfx:'Bat',              ty:'Base', hp1:200,   dmg1:75,  res:'Wind',            weak:'Lightning'},
+  {n:'Babewyn',        pfx:'Gargoyle',         ty:'Base', hp1:600,   dmg1:75,  res:'Earth',           weak:'Wind'},
+  {n:'Special Boss Hub', pfx:'Special Boss',   ty:'Boss', hp1:72333, dmg1:60,  res:'Earth',           weak:'Wind'},
 ];
+// Cumulative damage per tier (T0=base, T1=T0+bonus, T2=T1+bonus, ...)
+// Matches real Spells Upgrade sheet data: col D T0=base, T1-T5=incremental bonuses of +10,+20,+30,+40,+50
 const FALLBACK_ST={
-  'Fire Strike':     [100,110,130,170,240,350],
+  'Fire Strike':     [100,110,130,160,200,250],
   'Fire Sword':      [70, 80, 100,130,170,220],
-  'Fire Nova':       [100,110,130,170,240,350],
-  'Ice Strike':      [100,110,130,170,240,350],
-  'Ice Nova':        [80, 90, 110,150,220,330],
-  'Blizzard':        [80, 90, 110,150,220,330],
-  'Frost Stream':    [110,120,140,180,250,360],
-  'Boulder':         [150,160,180,220,290,400],
+  'Fire Nova':       [100,110,130,160,200,250],
+  'Ice Strike':      [100,110,130,160,200,250],
+  'Ice Nova':        [80, 90, 110,140,180,230],
+  'Blizzard':        [80, 90, 110,140,180,230],
+  'Frost Stream':    [110,120,140,170,210,260],
+  'Boulder':         [150,160,180,210,250,300],
   'Rock Wall':       [100,100,100,100,100,100],
-  'Earth Nova':      [110,120,140,180,250,360],
+  'Earth Nova':      [110,120,140,170,210,260],
   'Healing Totem':   [40, 40, 40, 40, 40, 40],
-  'Wind Strike':     [90, 100,120,160,230,340],
-  'Wind Stream':     [80, 90, 110,150,220,330],
-  'Wind Nova':       [90, 100,120,160,230,340],
-  'Lightning Arc':   [76, 86, 106,146,216,326],
+  'Wind Strike':     [90, 100,120,150,190,240],
+  'Wind Stream':     [80, 90, 110,140,180,230],
+  'Wind Nova':       [90, 100,120,150,190,240],
+  'Lightning Arc':   [76, 86, 106,136,176,226],
   'Lightning Strand':[250,250,250,250,250,250],
   'Volt Gate':       [200,210,230,260,300,350],
-  'Skeletal Horde':  [110,120,145,195,275,400],
-  'Spectral Skull':  [160,175,205,255,335,460],
+  'Skeletal Horde':  [110,120,140,170,210,260],
+  'Spectral Skull':  [160,170,190,220,260,310],
   'Shadow Form':     [0,  0,  0,  0,  0,  0],
 };
 
